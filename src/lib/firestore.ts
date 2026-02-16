@@ -14,10 +14,59 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { encrypt, decrypt } from './crypto';
 import { CheckinEntry, CheckinFormData, EmotionalRegisterEntry, EmotionalRegisterFormData } from '@/types/checkin';
 import { SharingCode, SharingLink } from '@/types/sharing';
 import { PremiumCode, PremiumStatus } from '@/types/premium';
 import { formatDate } from '@/utils/date';
+
+// --- Encryption helpers ---
+
+function encryptCheckinData(data: any) {
+  return {
+    ...data,
+    notes: encrypt(data.notes || ''),
+    events: (data.events || []).map((e: any) => ({
+      ...e,
+      title: encrypt(e.title || ''),
+      description: encrypt(e.description || ''),
+    })),
+  };
+}
+
+function decryptCheckinEntry(entry: CheckinEntry): CheckinEntry {
+  return {
+    ...entry,
+    notes: decrypt(entry.notes || ''),
+    events: (entry.events || []).map((e) => ({
+      ...e,
+      title: decrypt(e.title || ''),
+      description: decrypt(e.description || ''),
+    })),
+  };
+}
+
+const REGISTER_TEXT_FIELDS = [
+  'emotionCustom', 'vulnerability', 'trigger', 'interpretations',
+  'internalSensations', 'externalLanguage', 'impulses', 'behavior',
+  'consequences', 'emotionFunction',
+] as const;
+
+function encryptRegisterData(data: any) {
+  const encrypted = { ...data };
+  for (const field of REGISTER_TEXT_FIELDS) {
+    if (encrypted[field]) encrypted[field] = encrypt(encrypted[field]);
+  }
+  return encrypted;
+}
+
+function decryptRegisterEntry(entry: EmotionalRegisterEntry): EmotionalRegisterEntry {
+  const decrypted = { ...entry };
+  for (const field of REGISTER_TEXT_FIELDS) {
+    if (decrypted[field]) (decrypted as any)[field] = decrypt(decrypted[field]);
+  }
+  return decrypted;
+}
 
 // --- Check-ins ---
 
@@ -31,7 +80,7 @@ export async function createCheckin(
 ): Promise<string> {
   const now = Timestamp.now();
   const docRef = await addDoc(checkinsRef(userId), {
-    ...data,
+    ...encryptCheckinData(data),
     userId,
     date: formatDate(new Date()),
     createdAt: now,
@@ -49,7 +98,7 @@ export async function getCheckinsByDate(
     where('date', '==', date)
   );
   const snapshot = await getDocs(q);
-  const results = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as CheckinEntry));
+  const results = snapshot.docs.map((d) => decryptCheckinEntry({ id: d.id, ...d.data() } as CheckinEntry));
   // Sort client-side to avoid composite index requirement
   return results.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 }
@@ -65,7 +114,7 @@ export async function getCheckinsByDateRange(
     where('date', '<=', endDate)
   );
   const snapshot = await getDocs(q);
-  const results = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as CheckinEntry));
+  const results = snapshot.docs.map((d) => decryptCheckinEntry({ id: d.id, ...d.data() } as CheckinEntry));
   // Sort client-side: by date desc, then createdAt desc
   return results.sort((a, b) => {
     if (b.date !== a.date) return b.date.localeCompare(a.date);
@@ -76,7 +125,7 @@ export async function getCheckinsByDateRange(
 export async function getAllCheckins(userId: string): Promise<CheckinEntry[]> {
   const q = query(checkinsRef(userId), orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as CheckinEntry));
+  return snapshot.docs.map((d) => decryptCheckinEntry({ id: d.id, ...d.data() } as CheckinEntry));
 }
 
 export async function getCheckinById(
@@ -85,7 +134,7 @@ export async function getCheckinById(
 ): Promise<CheckinEntry | null> {
   const docSnap = await getDoc(doc(checkinsRef(userId), checkinId));
   if (!docSnap.exists()) return null;
-  return { id: docSnap.id, ...docSnap.data() } as CheckinEntry;
+  return decryptCheckinEntry({ id: docSnap.id, ...docSnap.data() } as CheckinEntry);
 }
 
 export async function updateCheckin(
@@ -94,7 +143,7 @@ export async function updateCheckin(
   data: Partial<CheckinFormData>
 ): Promise<void> {
   await updateDoc(doc(checkinsRef(userId), checkinId), {
-    ...data,
+    ...encryptCheckinData(data),
     updatedAt: Timestamp.now(),
   });
 }
@@ -118,7 +167,7 @@ export async function createEmotionalRegister(
 ): Promise<string> {
   const now = Timestamp.now();
   const docRef = await addDoc(registersRef(userId), {
-    ...data,
+    ...encryptRegisterData(data),
     userId,
     date: formatDate(new Date()),
     createdAt: now,
@@ -138,7 +187,7 @@ export async function getEmotionalRegistersByDate(
   }
   const q = query(registersRef(userId), ...constraints);
   const snapshot = await getDocs(q);
-  const results = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as EmotionalRegisterEntry));
+  const results = snapshot.docs.map((d) => decryptRegisterEntry({ id: d.id, ...d.data() } as EmotionalRegisterEntry));
   return results.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 }
 
@@ -148,7 +197,7 @@ export async function getEmotionalRegisterById(
 ): Promise<EmotionalRegisterEntry | null> {
   const docSnap = await getDoc(doc(registersRef(userId), registerId));
   if (!docSnap.exists()) return null;
-  return { id: docSnap.id, ...docSnap.data() } as EmotionalRegisterEntry;
+  return decryptRegisterEntry({ id: docSnap.id, ...docSnap.data() } as EmotionalRegisterEntry);
 }
 
 export async function updateEmotionalRegister(
@@ -157,7 +206,7 @@ export async function updateEmotionalRegister(
   data: Partial<EmotionalRegisterFormData>
 ): Promise<void> {
   await updateDoc(doc(registersRef(userId), registerId), {
-    ...data,
+    ...encryptRegisterData(data),
     updatedAt: Timestamp.now(),
   });
 }
@@ -179,7 +228,7 @@ export async function getAllEmotionalRegisters(
   }
   const q = query(registersRef(userId), ...constraints);
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as EmotionalRegisterEntry));
+  return snapshot.docs.map((d) => decryptRegisterEntry({ id: d.id, ...d.data() } as EmotionalRegisterEntry));
 }
 
 export async function getEmotionalRegistersByDateRange(
@@ -197,7 +246,7 @@ export async function getEmotionalRegistersByDateRange(
   }
   const q = query(registersRef(userId), ...constraints);
   const snapshot = await getDocs(q);
-  const results = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as EmotionalRegisterEntry));
+  const results = snapshot.docs.map((d) => decryptRegisterEntry({ id: d.id, ...d.data() } as EmotionalRegisterEntry));
   return results.sort((a, b) => {
     if (b.date !== a.date) return b.date.localeCompare(a.date);
     return b.createdAt.seconds - a.createdAt.seconds;

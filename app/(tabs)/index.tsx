@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
@@ -109,22 +108,6 @@ export default function CheckinHomeScreen() {
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={styles.name}>{displayName}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.avatarButton}
-          onPress={() => router.push('/perfil')}
-        >
-          <LinearGradient
-            colors={[colors.primary[200], colors.primary[400]]}
-            style={styles.avatar}
-          >
-            <Ionicons name="person" size={20} color={colors.surface} />
-          </LinearGradient>
-          {isPremium && (
-            <View style={styles.premiumDot}>
-              <Text style={styles.premiumDotText}>P</Text>
-            </View>
-          )}
-        </TouchableOpacity>
       </Animated.View>
 
       {/* Streak Badge — tap to open garden */}
@@ -268,34 +251,6 @@ const styles = StyleSheet.create({
     ...typography.displaySmall,
     color: colors.neutral[800],
     marginTop: 2,
-  },
-  avatarButton: {
-    position: 'relative',
-  },
-  premiumDot: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: colors.accent[400],
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
-  premiumDotText: {
-    fontFamily: fonts.sansBold,
-    fontSize: 9,
-    color: colors.surface,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   // Streak
   streakCard: {

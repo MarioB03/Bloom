@@ -1,12 +1,20 @@
+import { useEffect } from 'react';
 import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { migrateUserEncryption } from '@/lib/crypto';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts } from '@/constants/theme';
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      migrateUserEncryption(user.uid);
+    }
+  }, [user]);
 
   if (loading) return <LoadingSpinner />;
   if (!user) return <Redirect href="/(auth)/login" />;
