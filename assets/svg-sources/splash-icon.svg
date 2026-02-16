@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <g transform="translate(100, 100) scale(0.3515625)">
+    <!-- Stem -->
+    <path d="M 0 160 Q 0 60, 0 -40"
+          stroke="#C4725A" stroke-width="20" fill="none"
+          stroke-linecap="round"/>
+
+    <!-- Central large leaf -->
+    <path d="M 0 -40
+             Q -20 -180, 40 -280
+             Q 80 -320, 120 -280
+             Q 160 -220, 100 -140
+             Q 60 -80, 0 -40 Z"
+          fill="#8BA888" opacity="0.95"/>
+    <!-- Central leaf vein -->
+    <path d="M 10 -60 Q 50 -160, 70 -240"
+          stroke="#FAF6F0" stroke-width="6" fill="none"
+          stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Left leaf -->
+    <path d="M -5 20
+             Q -60 -60, -140 -120
+             Q -180 -150, -170 -100
+             Q -155 -40, -100 0
+             Q -50 30, -5 20 Z"
+          fill="#C4725A" opacity="0.85"/>
+    <!-- Left leaf vein -->
+    <path d="M -15 10 Q -70 -30, -130 -80"
+          stroke="#FAF6F0" stroke-width="5" fill="none"
+          stroke-linecap="round" opacity="0.4"/>
+
+    <!-- Right leaf -->
+    <path d="M 5 30
+             Q 70 -20, 150 -40
+             Q 190 -50, 175 -10
+             Q 155 40, 100 55
+             Q 50 60, 5 30 Z"
+          fill="#8BA888" opacity="0.8"/>
+    <!-- Right leaf vein -->
+    <path d="M 15 20 Q 80 0, 140 -20"
+          stroke="#FAF6F0" stroke-width="5" fill="none"
+          stroke-linecap="round" opacity="0.4"/>
+
+    <!-- Accent dot at base -->
+    <circle cx="0" cy="170" r="14" fill="#E8A948" opacity="0.8"/>
+  </g>
+</svg>
