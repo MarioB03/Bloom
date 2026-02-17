@@ -33,6 +33,7 @@ export const EARNING_RATES = {
   waterAllBonus: 5,
   achievementUnlocked: 15,
   plantStage5: 3,
+  compostReflection: 8,
 } as const;
 
 export const STREAK_BONUS_THRESHOLDS = [
@@ -68,6 +69,7 @@ export const SHOP_CATALOG: ShopItem[] = [
 
 const BALANCE_KEY = '@bloom_seed_balance';
 const PURCHASES_KEY = '@bloom_seed_purchases';
+const CELEBRATED_KEY = '@bloom_celebrated_milestones';
 
 // ── Default balance ──
 
@@ -174,6 +176,25 @@ export async function awardDailyCheckin(streak: number): Promise<DailyRewardResu
   await saveSeedBalance(balance);
 
   return { seeds: totalSeeds, bonusReason, streakBonus };
+}
+
+// ── Celebrated milestones (visual celebration tracking) ──
+
+export async function getCelebratedMilestones(): Promise<number[]> {
+  try {
+    const stored = await AsyncStorage.getItem(CELEBRATED_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function markMilestoneCelebrated(milestone: number): Promise<void> {
+  const celebrated = await getCelebratedMilestones();
+  if (!celebrated.includes(milestone)) {
+    celebrated.push(milestone);
+    await AsyncStorage.setItem(CELEBRATED_KEY, JSON.stringify(celebrated));
+  }
 }
 
 // ── Helper: get shop item by id ──

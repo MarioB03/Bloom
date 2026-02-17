@@ -7,6 +7,9 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { makeImageFromView } from '@shopify/react-native-skia';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -20,6 +23,7 @@ import { DecorationPicker } from '@/components/garden/DecorationPicker';
 import { PlantInfoModal } from '@/components/garden/PlantInfoModal';
 import { AchievementToast } from '@/components/garden/AchievementToast';
 import { GardenShop } from '@/components/garden/GardenShop';
+import { StreakCelebration } from '@/components/garden/StreakCelebration';
 import { useGardenState } from '@/components/garden/gardenState';
 import { DecorationType, InteractionMode, PetType, getActiveGridSize, getGardenLevel, getNextGardenLevel } from '@/components/garden/gardenTypes';
 import { inBounds } from '@/components/garden/gardenUtils';
@@ -37,13 +41,17 @@ import {
   getPurchasedItems,
   purchaseItem,
   awardDailyCheckin,
+  getCelebratedMilestones,
+  markMilestoneCelebrated,
   EARNING_RATES,
+  STREAK_BONUS_THRESHOLDS,
   type SeedBalance,
 } from '@/components/garden/gardenEconomy';
 import { getCheckinsByDateRange } from '@/lib/firestore';
 import { calculateStreak, getStreakEmoji, getStreakMessage } from '@/utils/streak';
 import { formatDate } from '@/utils/date';
 import { EmotionId } from '@/types/checkin';
+import { syncWidgetData } from '@/lib/widget-sync';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts, spacing, borderRadius, shadows } from '@/constants/theme';
 
@@ -125,6 +133,9 @@ export default function JardinScreen() {
   const [shopVisible, setShopVisible] = useState(false);
   const [seedToast, setSeedToast] = useState<number | null>(null);
   const [activePets, setActivePets] = useState<PetType[]>([]);
+  const [celebration, setCelebration] = useState<{ milestone: number; seeds: number } | null>(null);
+  const gardenViewRef = useRef<View>(null);
+  const [isSharing, setIsSharing] = useState(false);
   const wateredThisSessionRef = useRef(new Set<string>());
   const allWateredBonusGivenRef = useRef(false);
 
@@ -174,6 +185,30 @@ export default function JardinScreen() {
         if (reward) {
           setSeedBalance((prev) => prev + reward.seeds);
           setSeedToast(reward.seeds);
+        }
+      }
+
+      // Sync widget data (best-effort)
+      syncWidgetData({
+        streak: currentStreak,
+        streakEmoji: getStreakEmoji(currentStreak),
+        streakMessage: getStreakMessage(currentStreak),
+        gardenLevel: getGardenLevel(currentStreak).level,
+        gardenName: getGardenLevel(currentStreak).name,
+        seedBalance: bal.total,
+        totalPlants: garden.layout.plants.length,
+        lastCheckinDate: checkins[0]?.date || '',
+        updatedAt: '',
+      }).catch(() => {});
+
+      // Check for uncelebrated milestone
+      const CELEBRATION_MILESTONES = [3, 7, 14, 21, 30];
+      const celebrated = await getCelebratedMilestones();
+      for (const ms of CELEBRATION_MILESTONES) {
+        if (currentStreak >= ms && !celebrated.includes(ms)) {
+          const bonus = STREAK_BONUS_THRESHOLDS.find((t) => t.streak === ms);
+          setCelebration({ milestone: ms, seeds: bonus?.seeds ?? 0 });
+          break; // show one at a time
         }
       }
     } catch (error) {
@@ -352,6 +387,33 @@ export default function JardinScreen() {
     }
   }, []);
 
+  const handleShareGarden = useCallback(async () => {
+    if (!gardenViewRef.current || isSharing) return;
+    setIsSharing(true);
+    try {
+      const image = await makeImageFromView(gardenViewRef);
+      if (!image) throw new Error('capture failed');
+      const bytes = image.encodeToBytes();
+      const base64 = btoa(String.fromCharCode(...bytes));
+      const filePath = `${FileSystem.cacheDirectory}bloom-garden-${Date.now()}.png`;
+      await FileSystem.writeAsStringAsync(filePath, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(filePath, {
+          mimeType: 'image/png',
+          dialogTitle: strings.garden.shareTitle,
+        });
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      Alert.alert(strings.garden.shareError);
+    } finally {
+      setIsSharing(false);
+    }
+  }, [isSharing]);
+
   const streakEmoji = getStreakEmoji(streak);
   const streakMessage = getStreakMessage(streak);
 
@@ -377,6 +439,18 @@ export default function JardinScreen() {
             <View style={styles.seedBadge}>
               <Text style={styles.seedText}>{seedBalance} {strings.shop.seedUnit}</Text>
             </View>
+            {/* Share button */}
+            <TouchableOpacity
+              style={styles.shopButton}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleShareGarden();
+              }}
+              hitSlop={8}
+              disabled={isSharing}
+            >
+              <Ionicons name="share-outline" size={20} color={isSharing ? colors.neutral[300] : colors.accent[500]} />
+            </TouchableOpacity>
             {/* Shop button */}
             <TouchableOpacity
               style={styles.shopButton}
@@ -468,17 +542,19 @@ export default function JardinScreen() {
             </Animated.View>
 
             {/* Garden Canvas */}
-            <Animated.View entering={FadeInDown.delay(350).duration(600)} style={styles.canvasContainer}>
-              <GardenCanvas
-                plants={garden.layout.plants}
-                decorations={garden.layout.decorations}
-                streak={streak}
-                mode={garden.mode}
-                waterEffects={garden.waterEffects}
-                activePets={activePets}
-                onTapCell={handleTapCell}
-                onLongPressCell={handleLongPressCell}
-              />
+            <Animated.View entering={FadeInDown.delay(350).duration(600)} style={{ flex: 1 }}>
+              <View ref={gardenViewRef} collapsable={false} style={styles.canvasContainer}>
+                <GardenCanvas
+                  plants={garden.layout.plants}
+                  decorations={garden.layout.decorations}
+                  streak={streak}
+                  mode={garden.mode}
+                  waterEffects={garden.waterEffects}
+                  activePets={activePets}
+                  onTapCell={handleTapCell}
+                  onLongPressCell={handleLongPressCell}
+                />
+              </View>
             </Animated.View>
 
             {/* Stats */}
@@ -535,6 +611,18 @@ export default function JardinScreen() {
         {/* Seed toast */}
         {seedToast !== null && (
           <SeedToast amount={seedToast} onDone={() => setSeedToast(null)} />
+        )}
+
+        {/* Streak celebration overlay */}
+        {celebration && (
+          <StreakCelebration
+            milestone={celebration.milestone}
+            seedsEarned={celebration.seeds}
+            onDismiss={async () => {
+              await markMilestoneCelebrated(celebration.milestone);
+              setCelebration(null);
+            }}
+          />
         )}
 
         {/* Shop modal */}

@@ -7,18 +7,21 @@ interface ScreenWrapperProps {
   children: React.ReactNode;
   scroll?: boolean;
   style?: ViewStyle;
+  scrollRef?: React.RefObject<ScrollView | null>;
 }
 
 export function ScreenWrapper({
   children,
   scroll = true,
   style,
+  scrollRef,
 }: ScreenWrapperProps) {
   const Container = scroll ? ScrollView : View;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <Container
+        ref={scroll ? scrollRef : undefined}
         style={[styles.container, style]}
         contentContainerStyle={scroll ? styles.scrollContent : undefined}
         showsVerticalScrollIndicator={false}

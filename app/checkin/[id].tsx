@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/contexts/AuthContext';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { getCheckinById, deleteCheckin } from '@/lib/firestore';
+import { getCheckinById, deleteCheckin, compostCheckin } from '@/lib/firestore';
+import { addSeeds, EARNING_RATES } from '@/components/garden/gardenEconomy';
 import { CheckinEntry } from '@/types/checkin';
 import { emotionMap } from '@/constants/emotions';
 import { strings } from '@/constants/strings';
@@ -21,17 +23,24 @@ export default function CheckinDetailScreen() {
   const { user } = useAuth();
   const [checkin, setCheckin] = useState<CheckinEntry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [compostOpen, setCompostOpen] = useState(false);
+  const [reflection, setReflection] = useState('');
+  const [saving, setSaving] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   const isSharedView = !!owner;
   const targetUserId = owner || user?.uid;
 
-  useEffect(() => {
-    if (!targetUserId || !id) return;
-    getCheckinById(targetUserId, id)
-      .then(setCheckin)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [targetUserId, id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!targetUserId || !id) return;
+      setLoading(true);
+      getCheckinById(targetUserId, id)
+        .then(setCheckin)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }, [targetUserId, id])
+  );
 
   const handleDelete = () => {
     Alert.alert(
@@ -56,6 +65,28 @@ export default function CheckinDetailScreen() {
     );
   };
 
+  const handleCompost = async () => {
+    if (!user || !id || reflection.length < 30) return;
+    setSaving(true);
+    try {
+      await compostCheckin(user.uid, id, reflection);
+      await addSeeds(EARNING_RATES.compostReflection);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setCheckin((prev) => prev ? { ...prev, composted: true, compostReflection: reflection } : prev);
+      setCompostOpen(false);
+      Alert.alert(strings.compostar.success);
+    } catch {
+      Alert.alert(strings.common.error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleOpenCompost = () => {
+    setCompostOpen(true);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+  };
+
   if (loading) return <LoadingSpinner />;
   if (!checkin) {
     return (
@@ -74,7 +105,7 @@ export default function CheckinDetailScreen() {
   const timeDisplay = checkin.createdAt?.toDate ? formatTime(checkin.createdAt.toDate()) : '';
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper scrollRef={scrollRef}>
       <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color={colors.neutral[600]} />
@@ -84,6 +115,11 @@ export default function CheckinDetailScreen() {
           <View style={{ width: 40 }} />
         ) : (
           <View style={styles.headerActions}>
+            {!checkin.composted && (
+              <TouchableOpacity onPress={handleOpenCompost} style={styles.compostButton}>
+                <Text style={styles.compostButtonText}>🌱</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity onPress={() => router.push(`/checkin/nuevo?editId=${id}`)} style={styles.editButton}>
               <Ionicons name="create-outline" size={20} color={colors.primary[400]} />
             </TouchableOpacity>
@@ -173,6 +209,45 @@ export default function CheckinDetailScreen() {
         </Animated.View>
       ) : null}
 
+      {checkin.composted && checkin.compostReflection ? (
+        <Animated.View entering={FadeInDown.delay(750).duration(500)}>
+          <Card variant="outlined" style={styles.section}>
+            <View style={styles.compostHeader}>
+              <Text style={styles.sectionTitle}>🌿 {strings.compostar.reflectionLabel}</Text>
+              <Badge label={strings.compostar.alreadyDone} color={colors.secondary[500]} />
+            </View>
+            <Text style={styles.notesText}>{checkin.compostReflection}</Text>
+          </Card>
+        </Animated.View>
+      ) : compostOpen && !isSharedView ? (
+        <Animated.View entering={FadeInDown.duration(400)}>
+          <Card variant="outlined" style={styles.section}>
+            <Text style={styles.sectionTitle}>🌿 {strings.compostar.title}</Text>
+            <Text style={styles.compostPrompt}>{strings.compostar.prompt}</Text>
+            <TextInput
+              style={[styles.compostInput, reflection.length > 0 && styles.compostInputActive]}
+              placeholder={strings.compostar.placeholder}
+              placeholderTextColor={colors.neutral[400]}
+              value={reflection}
+              onChangeText={setReflection}
+              multiline
+              textAlignVertical="top"
+            />
+            <View style={styles.compostFooter}>
+              <Text style={[styles.charCount, reflection.length < 30 && styles.charCountWarn]}>
+                {reflection.length}/30 {reflection.length < 30 ? strings.compostar.minChars : ''}
+              </Text>
+              <Button
+                title={saving ? strings.common.loading : strings.compostar.submit}
+                onPress={handleCompost}
+                disabled={reflection.length < 30 || saving}
+                style={styles.compostSubmit}
+              />
+            </View>
+          </Card>
+        </Animated.View>
+      ) : null}
+
       <Animated.View entering={FadeInUp.delay(800).duration(400)}>
         <Button title="← Volver" onPress={() => router.back()} variant="ghost" style={styles.backBtn} />
       </Animated.View>
@@ -212,5 +287,15 @@ const styles = StyleSheet.create({
   notFoundContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.md },
   notFoundEmoji: { fontSize: 48 },
   notFound: { ...typography.body, color: colors.neutral[500], textAlign: 'center' },
+  compostButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.secondary[50], alignItems: 'center', justifyContent: 'center' },
+  compostButtonText: { fontSize: 20 },
+  compostHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  compostPrompt: { ...typography.body, color: colors.neutral[500], marginBottom: spacing.sm },
+  compostInput: { ...typography.body, color: colors.neutral[700], backgroundColor: colors.neutral[50], borderWidth: 1, borderColor: colors.neutral[200], borderRadius: borderRadius.md, padding: spacing.md, minHeight: 100, marginBottom: spacing.sm },
+  compostInputActive: { borderColor: colors.accent[500] },
+  compostFooter: { gap: spacing.sm },
+  charCount: { ...typography.caption, color: colors.neutral[400], textAlign: 'right' },
+  charCountWarn: { color: colors.accent[500] },
+  compostSubmit: { marginTop: spacing.xs },
   backBtn: { marginTop: spacing.sm, marginBottom: spacing.lg },
 });

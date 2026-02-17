@@ -45,6 +45,8 @@ export interface CheckinEntry {
   cyclePhase: CyclePhase | null;
   events: ImportantEvent[];
   notes: string;
+  composted?: boolean;
+  compostReflection?: string;
 }
 
 export interface CheckinFormData {

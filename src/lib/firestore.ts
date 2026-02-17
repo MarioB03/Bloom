@@ -43,6 +43,7 @@ function decryptCheckinEntry(entry: CheckinEntry): CheckinEntry {
       title: decrypt(e.title || ''),
       description: decrypt(e.description || ''),
     })),
+    compostReflection: entry.compostReflection ? decrypt(entry.compostReflection) : undefined,
   };
 }
 
@@ -153,6 +154,18 @@ export async function deleteCheckin(
   checkinId: string
 ): Promise<void> {
   await deleteDoc(doc(checkinsRef(userId), checkinId));
+}
+
+export async function compostCheckin(
+  userId: string,
+  checkinId: string,
+  reflection: string
+): Promise<void> {
+  await updateDoc(doc(checkinsRef(userId), checkinId), {
+    composted: true,
+    compostReflection: encrypt(reflection),
+    updatedAt: Timestamp.now(),
+  });
 }
 
 // --- Emotional Registers (Observar y Describir) ---

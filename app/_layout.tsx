@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -21,6 +21,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { PremiumProvider } from '@/contexts/PremiumContext';
 import { SharingProvider } from '@/contexts/SharingContext';
 import { colors } from '@/constants/theme';
+import AnimatedSplash from '@/components/ui/AnimatedSplash';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,7 @@ export default function RootLayout() {
     Nunito_600SemiBold,
     Nunito_700Bold,
   });
+  const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -43,9 +45,7 @@ export default function RootLayout() {
 
   if (!fontsLoaded && !fontError) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.primary[400]} />
-      </View>
+      <View style={styles.loading} />
     );
   }
 
@@ -128,6 +128,12 @@ export default function RootLayout() {
           options={{ animation: 'fade' }}
         />
       </Stack>
+      {!splashDone && (
+        <AnimatedSplash
+          isReady={fontsLoaded || !!fontError}
+          onFinish={() => setSplashDone(true)}
+        />
+      )}
       </SharingProvider>
       </PremiumProvider>
     </AuthProvider>

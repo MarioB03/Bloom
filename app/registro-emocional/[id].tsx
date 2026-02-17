@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -35,16 +35,19 @@ export default function EmotionalRegisterDetailScreen() {
   const isSharedView = !!owner;
   const targetUserId = owner || user?.uid;
 
-  useEffect(() => {
-    if (!targetUserId || !id) return;
-    getEmotionalRegisterById(targetUserId, id)
-      .then((entry) => {
-        setRegister(entry);
-        if (entry) setSharedVisible(entry.sharedVisible ?? false);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [targetUserId, id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!targetUserId || !id) return;
+      setLoading(true);
+      getEmotionalRegisterById(targetUserId, id)
+        .then((entry) => {
+          setRegister(entry);
+          if (entry) setSharedVisible(entry.sharedVisible ?? false);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }, [targetUserId, id])
+  );
 
   const handleDelete = () => {
     Alert.alert(

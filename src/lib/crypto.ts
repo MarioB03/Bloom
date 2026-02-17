@@ -30,7 +30,12 @@ function getCrypto(): CryptoJSLib {
 
 export function encrypt(text: string): string {
   if (!text || !KEY) return text;
-  return getCrypto().AES.encrypt(text, KEY).toString();
+  try {
+    return getCrypto().AES.encrypt(text, KEY).toString();
+  } catch {
+    // Fallback: store plaintext rather than lose data
+    return text;
+  }
 }
 
 export function decrypt(ciphertext: string): string {
