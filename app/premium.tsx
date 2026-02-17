@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,10 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/Button';
-import { redeemPremiumCode } from '@/lib/firestore';
+import { redeemPremiumCode, createPremiumCode, togglePremiumStatus } from '@/lib/firestore';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts, spacing, borderRadius, shadows } from '@/constants/theme';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, Clipboard } from 'react-native';
+import * as ExpoClipboard from 'expo-clipboard';
 
 const FEATURES = [
   { emoji: '📤', title: 'Exportar datos', desc: 'Descarga tus registros en CSV' },
@@ -25,6 +26,35 @@ export default function PremiumScreen() {
   const { isPremium, refresh: refreshPremium } = usePremium();
   const [code, setCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
+  const [generatingCode, setGeneratingCode] = useState(false);
+  const isAdmin = user?.uid === 'IUrBhjLrTLZZkwuj8B8qSXRX7iH3';
+
+  const handleGenerateCode = async () => {
+    if (!user) return;
+    setGeneratingCode(true);
+    try {
+      const newCode = await createPremiumCode(user.uid);
+      await ExpoClipboard.setStringAsync(newCode);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Código generado', `${newCode}\n\nCopiado al portapapeles.`);
+    } catch {
+      Alert.alert('Error', 'No se pudo generar el código.');
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const handleTogglePremium = async () => {
+    if (!user) return;
+    try {
+      const newState = await togglePremiumStatus(user.uid);
+      await refreshPremium();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Premium', newState ? 'Premium activado' : 'Premium desactivado');
+    } catch {
+      Alert.alert('Error', 'No se pudo cambiar el estado.');
+    }
+  };
 
   const handleRedeem = async () => {
     if (!user || code.length < 6) return;
@@ -72,6 +102,25 @@ export default function PremiumScreen() {
               ))}
             </View>
             <Button title="Volver" onPress={() => router.back()} variant="outline" style={{ marginTop: spacing.lg }} />
+
+            {isAdmin && (
+              <View style={styles.adminSection}>
+                <Text style={styles.adminTitle}>Admin / Testing</Text>
+                <Button
+                  title={generatingCode ? 'Generando...' : 'Generar código Premium'}
+                  onPress={handleGenerateCode}
+                  loading={generatingCode}
+                  size="md"
+                  style={{ marginBottom: spacing.sm }}
+                />
+                <Button
+                  title="Toggle Premium (activar/desactivar)"
+                  onPress={handleTogglePremium}
+                  variant="outline"
+                  size="md"
+                />
+              </View>
+            )}
           </Animated.View>
         </View>
       </SafeAreaView>
@@ -81,58 +130,79 @@ export default function PremiumScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={12}>
-          <Ionicons name="chevron-back" size={22} color={colors.neutral[600]} />
-        </TouchableOpacity>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={12}>
+            <Ionicons name="chevron-back" size={22} color={colors.neutral[600]} />
+          </TouchableOpacity>
 
-        {/* Hero */}
-        <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.hero}>
-          <Text style={styles.heroEmoji}>✨</Text>
-          <Text style={styles.heroTitle}>Bloom Premium</Text>
-          <Text style={styles.heroDesc}>
-            Desbloquea todo el potencial de tu bienestar emocional
-          </Text>
-        </Animated.View>
+          {/* Hero */}
+          <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.hero}>
+            <Text style={styles.heroEmoji}>✨</Text>
+            <Text style={styles.heroTitle}>Bloom Premium</Text>
+            <Text style={styles.heroDesc}>
+              Desbloquea todo el potencial de tu bienestar emocional
+            </Text>
+          </Animated.View>
 
-        {/* Features */}
-        <Animated.View entering={FadeInDown.delay(250).duration(500)}>
-          {FEATURES.map((f, i) => (
-            <Animated.View
-              key={i}
-              entering={FadeInDown.delay(300 + i * 80).duration(400)}
-              style={styles.featureCard}
-            >
-              <Text style={styles.featureEmoji}>{f.emoji}</Text>
-              <View style={styles.featureInfo}>
-                <Text style={styles.featureTitle}>{f.title}</Text>
-                <Text style={styles.featureDesc}>{f.desc}</Text>
-              </View>
+          {/* Features */}
+          <Animated.View entering={FadeInDown.delay(250).duration(500)}>
+            {FEATURES.map((f, i) => (
+              <Animated.View
+                key={i}
+                entering={FadeInDown.delay(300 + i * 80).duration(400)}
+                style={styles.featureCard}
+              >
+                <Text style={styles.featureEmoji}>{f.emoji}</Text>
+                <View style={styles.featureInfo}>
+                  <Text style={styles.featureTitle}>{f.title}</Text>
+                  <Text style={styles.featureDesc}>{f.desc}</Text>
+                </View>
+              </Animated.View>
+            ))}
+          </Animated.View>
+
+          {/* Redeem section */}
+          <Animated.View entering={FadeInDown.delay(650).duration(500)} style={styles.redeemSection}>
+            <Text style={styles.redeemLabel}>¿Tienes un código de regalo?</Text>
+            <View style={styles.redeemRow}>
+              <TextInput
+                style={styles.redeemInput}
+                placeholder={strings.premium.giftCodePlaceholder}
+                placeholderTextColor={colors.neutral[300]}
+                value={code}
+                onChangeText={(t) => setCode(t.toUpperCase())}
+                autoCapitalize="characters"
+                maxLength={6}
+              />
+              <Button
+                title={redeeming ? strings.premium.redeeming : strings.premium.redeem}
+                onPress={handleRedeem}
+                loading={redeeming}
+                disabled={code.length < 6 || redeeming}
+                size="md"
+              />
+            </View>
+          </Animated.View>
+
+          {isAdmin && (
+            <Animated.View entering={FadeInDown.duration(300)} style={[styles.adminSection, { marginTop: spacing.lg }]}>
+              <Text style={styles.adminTitle}>Admin / Testing</Text>
+              <Button
+                title={generatingCode ? 'Generando...' : 'Generar código Premium'}
+                onPress={handleGenerateCode}
+                loading={generatingCode}
+                size="md"
+                style={{ marginBottom: spacing.sm }}
+              />
+              <Button
+                title="Toggle Premium (activar/desactivar)"
+                onPress={handleTogglePremium}
+                variant="outline"
+                size="md"
+              />
             </Animated.View>
-          ))}
-        </Animated.View>
-
-        {/* Redeem section */}
-        <Animated.View entering={FadeInDown.delay(650).duration(500)} style={styles.redeemSection}>
-          <Text style={styles.redeemLabel}>¿Tienes un código de regalo?</Text>
-          <View style={styles.redeemRow}>
-            <TextInput
-              style={styles.redeemInput}
-              placeholder={strings.premium.giftCodePlaceholder}
-              placeholderTextColor={colors.neutral[300]}
-              value={code}
-              onChangeText={(t) => setCode(t.toUpperCase())}
-              autoCapitalize="characters"
-              maxLength={6}
-            />
-            <Button
-              title={redeeming ? strings.premium.redeeming : strings.premium.redeem}
-              onPress={handleRedeem}
-              loading={redeeming}
-              disabled={code.length < 6 || redeeming}
-              size="md"
-            />
-          </View>
-        </Animated.View>
+          )}
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -282,5 +352,25 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 15,
     color: colors.neutral[600],
+  },
+  adminSection: {
+    marginTop: spacing.xl,
+    padding: spacing.md,
+    backgroundColor: colors.neutral[50],
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    borderStyle: 'dashed',
+    alignSelf: 'stretch',
+    gap: spacing.sm,
+  },
+  adminTitle: {
+    fontFamily: fonts.sansBold,
+    fontSize: 13,
+    color: colors.neutral[400],
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });

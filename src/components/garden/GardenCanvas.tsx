@@ -798,6 +798,7 @@ export function GardenCanvas({
   const sunBaseR = 14 + Math.min(streak, 10);
   const sunR = useDerivedValue(() => sunBaseR + Math.sin(progress.value * Math.PI * 4) * 2);
   const sunGlowR = useDerivedValue(() => sunBaseR + 8 + Math.sin(progress.value * Math.PI * 2) * 3);
+  const sunInnerR = useDerivedValue(() => sunR.value * 0.75);
 
   // 4 sway transforms for plants (different offsets for variety)
   const sway0 = useDerivedValue(() => [
@@ -1073,7 +1074,7 @@ export function GardenCanvas({
                 <Group>
                   <Circle cx={canvasW - 45} cy={35} r={sunGlowR} color="rgba(248,200,80,0.08)" />
                   <Circle cx={canvasW - 45} cy={35} r={sunR} color="#F5D48A" />
-                  <Circle cx={canvasW - 45} cy={35} r={useDerivedValue(() => sunR.value * 0.75)} color="#FCEBC4" />
+                  <Circle cx={canvasW - 45} cy={35} r={sunInnerR} color="#FCEBC4" />
                 </Group>
               )}
               {/* Moon */}

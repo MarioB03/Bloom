@@ -1,3 +1,4 @@
+import { getRandomValues } from 'expo-crypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   collection,
@@ -6,6 +7,14 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
+
+// Polyfill crypto.getRandomValues for crypto-js in React Native
+if (typeof globalThis.crypto === 'undefined') {
+  (globalThis as any).crypto = {};
+}
+if (!globalThis.crypto.getRandomValues) {
+  (globalThis.crypto as any).getRandomValues = getRandomValues;
+}
 
 const KEY = process.env.EXPO_PUBLIC_ENCRYPTION_KEY || '';
 

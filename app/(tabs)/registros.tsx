@@ -375,6 +375,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 13,
     color: colors.neutral[400],
+    textAlign: 'center',
   },
   segmentTextActive: {
     color: colors.neutral[700],
