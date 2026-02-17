@@ -16,6 +16,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.akemi01.bloom",
+      "appleTeamId": "LLU2292H63",
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.com.akemi01.bloom"]
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -34,7 +38,9 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "@bacons/apple-targets",
+      "./plugins/withWidgetReload"
     ],
     "extra": {
       "router": {},
