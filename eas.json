@@ -14,36 +14,11 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "appExtensions": [
-          {
-            "targetName": "BloomWidget",
-            "bundleIdentifier": "com.akemi01.bloom.BloomWidget",
-            "entitlements": {
-              "com.apple.security.application-groups": [
-                "group.com.akemi01.bloom"
-              ]
-            }
-          }
-        ]
       }
     },
     "production": {
       "android": {},
-      "ios": {
-        "appExtensions": [
-          {
-            "targetName": "BloomWidget",
-            "bundleIdentifier": "com.akemi01.bloom.BloomWidget",
-            "entitlements": {
-              "com.apple.security.application-groups": [
-                "group.com.akemi01.bloom"
-              ]
-            }
-          }
-        ]
-      }
+      "ios": {}
     }
   }
 }

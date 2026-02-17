@@ -45,7 +45,24 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3251f5f3-65ec-4981-b92b-713a469a77ad"
+        "projectId": "3251f5f3-65ec-4981-b92b-713a469a77ad",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "BloomWidget",
+                  "bundleIdentifier": "com.akemi01.bloom.BloomWidget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.akemi01.bloom"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     },
     "owner": "akemi01"
