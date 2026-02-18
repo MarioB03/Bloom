@@ -112,15 +112,7 @@ export default function TuScreen() {
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      'Exportar datos',
-      'Elige el formato de exportación',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'CSV', onPress: () => doExport('csv') },
-        { text: 'PDF', onPress: () => doExport('pdf') },
-      ]
-    );
+    doExport('pdf');
   };
 
   const handleLogout = () => {
@@ -300,7 +292,7 @@ export default function TuScreen() {
               </View>
               <View>
                 <Text style={styles.navLabel}>Exportar datos</Text>
-                <Text style={styles.navDesc}>Descargar PDF o CSV con tus check-ins</Text>
+                <Text style={styles.navDesc}>Descargar PDF con tus check-ins</Text>
               </View>
             </View>
             <View style={styles.navRight}>
