@@ -4,6 +4,8 @@ import { CheckinEntry } from '@/types/checkin';
 import { emotionMap } from '@/constants/emotions';
 import { strings } from '@/constants/strings';
 
+export { exportCheckinsPdf } from './export-pdf';
+
 function formatTimestamp(ts: { seconds: number }): string {
   const date = new Date(ts.seconds * 1000);
   return date.toISOString().replace('T', ' ').substring(0, 19);

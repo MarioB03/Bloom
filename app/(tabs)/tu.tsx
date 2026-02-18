@@ -14,7 +14,7 @@ import { SkeletonProfile } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
 import { logoutUser } from '@/lib/auth';
 import { getAllCheckins } from '@/lib/firestore';
-import { exportCheckins } from '@/lib/export';
+import { exportCheckins, exportCheckinsPdf } from '@/lib/export';
 import {
   getReminderSettings,
   saveReminderSettings,
@@ -83,13 +83,8 @@ export default function TuScreen() {
     await scheduleReminder(newSettings);
   };
 
-  const handleExport = async () => {
+  const doExport = async (format: 'csv' | 'pdf') => {
     if (!user) return;
-    if (!isPremium) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('Premium', 'La exportación de datos es una función Premium. Canjea un código de regalo para activarla.');
-      return;
-    }
     setExporting(true);
     try {
       const checkins = await getAllCheckins(user.uid);
@@ -97,12 +92,35 @@ export default function TuScreen() {
         Alert.alert('', 'No hay check-ins para exportar');
         return;
       }
-      await exportCheckins(checkins);
+      if (format === 'pdf') {
+        await exportCheckinsPdf(checkins, user.displayName || 'Usuario');
+      } else {
+        await exportCheckins(checkins);
+      }
     } catch {
       Alert.alert('Error', 'No se pudieron exportar los datos');
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleExport = () => {
+    if (!user) return;
+    if (!isPremium) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert('Premium', 'La exportación de datos es una función Premium. Canjea un código de regalo para activarla.');
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      'Exportar datos',
+      'Elige el formato de exportación',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'CSV', onPress: () => doExport('csv') },
+        { text: 'PDF', onPress: () => doExport('pdf') },
+      ]
+    );
   };
 
   const handleLogout = () => {
@@ -282,7 +300,7 @@ export default function TuScreen() {
               </View>
               <View>
                 <Text style={styles.navLabel}>Exportar datos</Text>
-                <Text style={styles.navDesc}>Descargar CSV con tus check-ins</Text>
+                <Text style={styles.navDesc}>Descargar PDF o CSV con tus check-ins</Text>
               </View>
             </View>
             <View style={styles.navRight}>
