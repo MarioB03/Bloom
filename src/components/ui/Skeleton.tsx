@@ -143,6 +143,29 @@ export function SkeletonHomeRecords() {
   );
 }
 
+/** Skeleton for the Agenda/Journal modal screen */
+export function SkeletonAgenda() {
+  return (
+    <View style={styles.container}>
+      {/* Serif title */}
+      <SkeletonBox width="40%" height={28} style={{ marginBottom: 6 }} />
+      <SkeletonBox width="55%" height={14} style={{ marginBottom: 16 }} />
+      {/* Search bar */}
+      <SkeletonBox height={44} borderRadius={borderRadius.md} style={{ marginBottom: 12 }} />
+      {/* Segments */}
+      <SkeletonBox height={40} borderRadius={borderRadius.lg} style={{ marginBottom: 16 }} />
+      {/* Date badge centered */}
+      <View style={{ alignItems: 'center', marginBottom: 12 }}>
+        <SkeletonBox width={70} height={24} borderRadius={12} />
+      </View>
+      {/* Cards */}
+      <SkeletonCard />
+      <SkeletonCard />
+      <SkeletonCard />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.md,

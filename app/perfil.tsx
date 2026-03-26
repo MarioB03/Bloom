@@ -6,6 +6,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGender } from '@/contexts/GenderContext';
 import { useSharing } from '@/contexts/SharingContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
@@ -22,6 +23,7 @@ import { colors, typography, fonts, spacing, borderRadius } from '@/constants/th
 
 export default function PerfilScreen() {
   const { user } = useAuth();
+  const { g } = useGender();
   const { viewer, sharedAccount, refresh: refreshSharing } = useSharing();
   const { isPremium } = usePremium();
 
@@ -66,7 +68,7 @@ export default function PerfilScreen() {
         INVALID_CODE: strings.sharing.errorInvalidCode,
         CODE_EXPIRED: strings.sharing.errorExpiredCode,
         CANNOT_LINK_SELF: strings.sharing.errorSelfLink,
-        ALREADY_LINKED: strings.sharing.errorAlreadyLinked,
+        ALREADY_LINKED: g(strings.sharing.errorAlreadyLinked),
         LINK_REVOKED: strings.sharing.errorLinkRevoked,
       };
       Alert.alert('', errorMessages[error.message] || strings.common.error);
@@ -82,7 +84,7 @@ export default function PerfilScreen() {
     if (!user || !viewer) return;
     Alert.alert(
       strings.sharing.revokeConfirmTitle,
-      strings.sharing.revokeConfirmMessage,
+      g(strings.sharing.revokeConfirmMessage),
       [
         { text: strings.common.cancel, style: 'cancel' },
         {

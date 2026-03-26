@@ -15,7 +15,10 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { encrypt, decrypt } from './crypto';
-import { CheckinEntry, CheckinFormData, EmotionalRegisterEntry, EmotionalRegisterFormData } from '@/types/checkin';
+import { CheckinEntry, CheckinFormData, EmotionalRegisterEntry, EmotionalRegisterFormData, GratitudeEntry, GratitudeFormData } from '@/types/checkin';
+import { SkillPractice, SkillPracticeFormData } from '@/types/skill';
+import { GenderForm } from '@/types/user';
+import { SafetyPlan } from '@/types/safetyPlan';
 import { SharingCode, SharingLink } from '@/types/sharing';
 import { PremiumCode, PremiumStatus } from '@/types/premium';
 import { formatDate } from '@/utils/date';
@@ -266,6 +269,90 @@ export async function getEmotionalRegistersByDateRange(
   });
 }
 
+// --- Gratitude Diary ---
+
+function gratitudeRef(userId: string) {
+  return collection(db, 'users', userId, 'gratitude');
+}
+
+export async function createGratitude(
+  userId: string,
+  data: GratitudeFormData
+): Promise<string> {
+  const now = Timestamp.now();
+  const docRef = await addDoc(gratitudeRef(userId), {
+    userId,
+    date: formatDate(new Date()),
+    items: data.items.map((item) => encrypt(item)),
+    createdAt: now,
+    updatedAt: now,
+  });
+  return docRef.id;
+}
+
+export async function getGratitudeByDate(
+  userId: string,
+  date: string
+): Promise<GratitudeEntry | null> {
+  const q = query(gratitudeRef(userId), where('date', '==', date));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  const d = snapshot.docs[0];
+  const entry = { id: d.id, ...d.data() } as GratitudeEntry;
+  return {
+    ...entry,
+    items: (entry.items || []).map((item) => decrypt(item)),
+  };
+}
+
+export async function updateGratitude(
+  userId: string,
+  gratitudeId: string,
+  data: GratitudeFormData
+): Promise<void> {
+  await updateDoc(doc(gratitudeRef(userId), gratitudeId), {
+    items: data.items.map((item) => encrypt(item)),
+    updatedAt: Timestamp.now(),
+  });
+}
+
+export async function getAllGratitude(userId: string): Promise<GratitudeEntry[]> {
+  const q = query(gratitudeRef(userId), orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => {
+    const entry = { id: d.id, ...d.data() } as GratitudeEntry;
+    return {
+      ...entry,
+      items: (entry.items || []).map((item) => decrypt(item)),
+    };
+  });
+}
+
+export async function getGratitudeCount(userId: string): Promise<number> {
+  const q = query(gratitudeRef(userId));
+  const snapshot = await getDocs(q);
+  return snapshot.size;
+}
+
+// --- Achievement Helpers ---
+
+export async function getCompostCount(userId: string): Promise<number> {
+  const q = query(checkinsRef(userId), where('composted', '==', true));
+  const snapshot = await getDocs(q);
+  return snapshot.size;
+}
+
+export async function getUniqueEmotionsUsed(userId: string): Promise<string[]> {
+  const q = query(checkinsRef(userId));
+  const snapshot = await getDocs(q);
+  const emotions = new Set<string>();
+  snapshot.docs.forEach((d) => {
+    const data = d.data() as CheckinEntry;
+    if (data.emotion) emotions.add(data.emotion);
+  });
+  return Array.from(emotions);
+}
+
 // --- Streak / Stats ---
 
 export async function getCheckinDatesLast30Days(
@@ -299,6 +386,18 @@ export async function getCheckinStats(userId: string): Promise<{
     uniqueDays,
     dates,
   };
+}
+
+// --- Gender Preference ---
+
+export async function updateGenderPreference(
+  userId: string,
+  genderForm: GenderForm
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId), {
+    'preferences.genderForm': genderForm,
+    updatedAt: Timestamp.now(),
+  });
 }
 
 // --- Sharing ---
@@ -484,6 +583,7 @@ export async function redeemPremiumCode(
 
   const premiumStatus: PremiumStatus = {
     isActive: true,
+    source: 'gift_code',
     expiresAt: premiumExpiresAt,
     giftCode: code.toUpperCase(),
     activatedAt: now,
@@ -516,6 +616,11 @@ export async function getUserPremiumStatus(
 
   const premium = data.premium as PremiumStatus;
 
+  // Backfill source for legacy records
+  if (!premium.source) {
+    premium.source = premium.giftCode ? 'gift_code' : null;
+  }
+
   // Check expiration
   if (premium.isActive && premium.expiresAt && premium.expiresAt.toMillis() < Date.now()) {
     // Premium expired — update in background
@@ -536,6 +641,7 @@ export async function togglePremiumStatus(userId: string): Promise<boolean> {
     // Activate without a code (admin self-activate)
     await updateDoc(doc(db, 'users', userId), {
       'premium.isActive': true,
+      'premium.source': 'gift_code',
       'premium.activatedAt': Timestamp.now(),
       'premium.expiresAt': Timestamp.fromMillis(Date.now() + 365 * 24 * 60 * 60 * 1000),
       'premium.giftCode': 'ADMIN',
@@ -547,4 +653,106 @@ export async function togglePremiumStatus(userId: string): Promise<boolean> {
   }
 
   return newActive;
+}
+
+// --- Skill Practices ---
+
+function skillPracticeRef(userId: string) {
+  return collection(db, 'users', userId, 'skillPractice');
+}
+
+export async function createSkillPractice(
+  userId: string,
+  data: SkillPracticeFormData
+): Promise<string> {
+  const docRef = await addDoc(skillPracticeRef(userId), {
+    ...data,
+    userId,
+    completedAt: Timestamp.now(),
+  });
+  return docRef.id;
+}
+
+export async function getSkillPracticeHistory(
+  userId: string
+): Promise<SkillPractice[]> {
+  const q = query(skillPracticeRef(userId), orderBy('completedAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as SkillPractice));
+}
+
+export async function getSkillPracticeCount(
+  userId: string
+): Promise<number> {
+  const q = query(skillPracticeRef(userId));
+  const snapshot = await getDocs(q);
+  return snapshot.size;
+}
+
+export async function getUniquePracticedSkillIds(
+  userId: string
+): Promise<string[]> {
+  const q = query(skillPracticeRef(userId));
+  const snapshot = await getDocs(q);
+  const ids = new Set<string>();
+  snapshot.docs.forEach((d) => {
+    const data = d.data();
+    if (data.skillId) ids.add(data.skillId);
+  });
+  return Array.from(ids);
+}
+
+export async function getUniquePracticedCategories(
+  userId: string
+): Promise<string[]> {
+  const q = query(skillPracticeRef(userId));
+  const snapshot = await getDocs(q);
+  const cats = new Set<string>();
+  snapshot.docs.forEach((d) => {
+    const data = d.data();
+    if (data.category) cats.add(data.category);
+  });
+  return Array.from(cats);
+}
+
+// --- Safety Plan ---
+
+const SAFETY_PLAN_FIELDS = ['warningSigns', 'copingStrategies', 'personalSteps'] as const;
+
+function encryptSafetyPlan(data: SafetyPlan) {
+  return {
+    warningSigns: data.warningSigns.map((s) => encrypt(s)),
+    copingStrategies: data.copingStrategies.map((s) => encrypt(s)),
+    trustedContacts: data.trustedContacts.map((c) => ({
+      name: encrypt(c.name),
+      phone: encrypt(c.phone),
+    })),
+    personalSteps: data.personalSteps.map((s) => encrypt(s)),
+  };
+}
+
+function decryptSafetyPlan(data: any): SafetyPlan {
+  return {
+    warningSigns: (data.warningSigns || []).map((s: string) => decrypt(s)),
+    copingStrategies: (data.copingStrategies || []).map((s: string) => decrypt(s)),
+    trustedContacts: (data.trustedContacts || []).map((c: any) => ({
+      name: decrypt(c.name || ''),
+      phone: decrypt(c.phone || ''),
+    })),
+    personalSteps: (data.personalSteps || []).map((s: string) => decrypt(s)),
+    updatedAt: data.updatedAt,
+  };
+}
+
+export async function getSafetyPlan(userId: string): Promise<SafetyPlan | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'safetyPlan', 'plan'));
+  if (!docSnap.exists()) return null;
+  return decryptSafetyPlan(docSnap.data());
+}
+
+export async function saveSafetyPlan(userId: string, data: SafetyPlan): Promise<void> {
+  await setDoc(doc(db, 'users', userId, 'safetyPlan', 'plan'), {
+    ...encryptSafetyPlan(data),
+    updatedAt: Timestamp.now(),
+  });
 }

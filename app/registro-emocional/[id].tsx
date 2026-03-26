@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGender } from '@/contexts/GenderContext';
 import { useSharing } from '@/contexts/SharingContext';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
 import { Card } from '@/components/ui/Card';
@@ -27,6 +28,7 @@ interface DetailField {
 export default function EmotionalRegisterDetailScreen() {
   const { id, owner } = useLocalSearchParams<{ id: string; owner?: string }>();
   const { user } = useAuth();
+  const { g } = useGender();
   const { viewer } = useSharing();
   const [register, setRegister] = useState<EmotionalRegisterEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function EmotionalRegisterDetailScreen() {
   const handleDelete = () => {
     Alert.alert(
       'Eliminar registro',
-      '¿Estás segura de que quieres eliminar este registro?',
+      g({ f: '¿Estás segura de que quieres eliminar este registro?', m: '¿Estás seguro de que quieres eliminar este registro?', n: '¿Seguro/a de que quieres eliminar este registro?' }),
       [
         { text: strings.common.cancel, style: 'cancel' },
         {

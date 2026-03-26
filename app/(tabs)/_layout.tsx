@@ -57,13 +57,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="registros"
-        options={{
-          title: strings.tabs.registers,
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-text-outline" size={size} color={color} />
-          ),
-        }}
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="calendario"
@@ -72,6 +66,16 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="habilidades"
+        options={{
+          title: strings.tabs.skills,
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bulb-outline" size={size} color={color} />
           ),
         }}
       />
@@ -92,10 +96,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="compartido"
-        options={{ href: null }}
-      />
-      <Tabs.Screen
-        name="habilidades"
         options={{ href: null }}
       />
     </Tabs>

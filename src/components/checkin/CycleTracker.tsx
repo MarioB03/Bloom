@@ -43,7 +43,7 @@ export function CycleTracker({ value, onChange }: CycleTrackerProps) {
                   styles.phaseLabel,
                   isSelected && styles.phaseLabelSelected,
                 ]}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {strings.cycle[phase.id]}
               </Text>

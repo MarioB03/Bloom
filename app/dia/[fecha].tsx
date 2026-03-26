@@ -10,8 +10,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CheckinCard } from '@/components/checkin/CheckinCard';
 import { EmotionalRegisterCard } from '@/components/checkin/EmotionalRegisterCard';
-import { getCheckinsByDate, getEmotionalRegistersByDate } from '@/lib/firestore';
-import { CheckinEntry, EmotionalRegisterEntry } from '@/types/checkin';
+import { getCheckinsByDate, getEmotionalRegistersByDate, getGratitudeByDate } from '@/lib/firestore';
+import { CheckinEntry, EmotionalRegisterEntry, GratitudeEntry } from '@/types/checkin';
 import { formatDate, formatDisplayDate } from '@/utils/date';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts, spacing, borderRadius } from '@/constants/theme';
@@ -24,6 +24,7 @@ export default function DayDetailScreen() {
   const { fecha, owner } = useLocalSearchParams<{ fecha: string; owner?: string }>();
   const { user } = useAuth();
   const [records, setRecords] = useState<DayRecord[]>([]);
+  const [gratitude, setGratitude] = useState<GratitudeEntry | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isSharedView = !!owner;
@@ -34,14 +35,16 @@ export default function DayDetailScreen() {
     Promise.all([
       getCheckinsByDate(targetUserId, fecha),
       getEmotionalRegistersByDate(targetUserId, fecha, isSharedView ? { sharedOnly: true } : undefined),
+      getGratitudeByDate(targetUserId, fecha).catch(() => null),
     ])
-      .then(([checkins, registers]) => {
+      .then(([checkins, registers, grat]) => {
         const mixed: DayRecord[] = [
           ...checkins.map((c) => ({ type: 'checkin' as const, data: c })),
           ...registers.map((r) => ({ type: 'register' as const, data: r })),
         ];
         mixed.sort((a, b) => b.data.createdAt.seconds - a.data.createdAt.seconds);
         setRecords(mixed);
+        setGratitude(grat);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -73,7 +76,7 @@ export default function DayDetailScreen() {
         </View>
       </Animated.View>
 
-      {records.length === 0 ? (
+      {records.length === 0 && !gratitude ? (
         <Animated.View entering={FadeInUp.delay(300).duration(500)} style={styles.emptyContainer}>
           <EmptyState emoji="🌤️" message={'Tu jardín está esperando\n¡Añade tu primer registro del día!'} />
         </Animated.View>
@@ -100,6 +103,16 @@ export default function DayDetailScreen() {
               )}
             </Animated.View>
           )}
+          ListFooterComponent={gratitude ? (
+            <Animated.View entering={FadeInDown.delay(400).duration(500)}>
+              <Text style={styles.gratitudeTitle}>🙏 Gratitud</Text>
+              <View style={styles.gratitudeCard}>
+                {gratitude.items.map((item, i) => (
+                  <Text key={i} style={styles.gratitudeItem}>{i + 1}. {item}</Text>
+                ))}
+              </View>
+            </Animated.View>
+          ) : null}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
         />
@@ -136,4 +149,15 @@ const styles = StyleSheet.create({
   emptyContainer: { flex: 1, justifyContent: 'center' },
   list: { paddingHorizontal: spacing.md, paddingBottom: 100 },
   footer: { padding: spacing.md, paddingBottom: spacing.lg },
+  gratitudeTitle: { ...typography.bodyBold, color: colors.neutral[700], marginTop: spacing.md, marginBottom: spacing.sm },
+  gratitudeCard: {
+    backgroundColor: colors.accent[50],
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.accent[100],
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  gratitudeItem: { ...typography.body, color: colors.neutral[600], lineHeight: 22 },
 });

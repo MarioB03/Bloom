@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/Button';
 import { redeemPremiumCode, createPremiumCode, togglePremiumStatus } from '@/lib/firestore';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts, spacing, borderRadius, shadows } from '@/constants/theme';
-import { TouchableOpacity, Clipboard } from 'react-native';
 import * as ExpoClipboard from 'expo-clipboard';
 
 const FEATURES = [
-  { emoji: '📤', title: 'Exportar datos', desc: 'Descarga tus registros en CSV' },
+  { emoji: '📤', title: 'Exportar datos', desc: 'Descarga tus registros en PDF' },
   { emoji: '👥', title: 'Compartir', desc: 'Comparte tu bienestar con alguien de confianza' },
   { emoji: '🏪', title: 'Tienda del jardín', desc: 'Compra mascotas, decoraciones y más' },
   { emoji: '📊', title: 'Insights avanzados', desc: 'Promedios, calidad de sueño y consejos' },
@@ -23,11 +34,70 @@ const FEATURES = [
 
 export default function PremiumScreen() {
   const { user } = useAuth();
-  const { isPremium, refresh: refreshPremium } = usePremium();
+  const {
+    isPremium,
+    premiumStatus,
+    refresh: refreshPremium,
+    offerings,
+    loadingOfferings,
+    purchase,
+    restore,
+  } = usePremium();
   const [code, setCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
   const isAdmin = user?.uid === 'IUrBhjLrTLZZkwuj8B8qSXRX7iH3';
+
+  const monthlyPkg = offerings?.current?.availablePackages.find(
+    (p) => p.packageType === PACKAGE_TYPE.MONTHLY,
+  );
+  const annualPkg = offerings?.current?.availablePackages.find(
+    (p) => p.packageType === PACKAGE_TYPE.ANNUAL,
+  );
+
+  const selectedPkg: PurchasesPackage | undefined =
+    selectedPlan === 'annual' ? annualPkg : monthlyPkg;
+
+  const handlePurchase = async () => {
+    if (!selectedPkg || purchasing) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setPurchasing(true);
+    try {
+      await purchase(selectedPkg);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
+        strings.subscription.successTitle,
+        strings.subscription.successMessage,
+        [{ text: 'Genial', onPress: () => router.back() }],
+      );
+    } catch (error: any) {
+      if (error?.userCancelled) return;
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(strings.subscription.errorTitle, strings.subscription.errorPurchase);
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (restoring) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setRestoring(true);
+    try {
+      await restore();
+      await refreshPremium();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(strings.subscription.restoreSuccess);
+    } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(strings.subscription.errorTitle, strings.subscription.errorRestore);
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   const handleGenerateCode = async () => {
     if (!user) return;
@@ -67,7 +137,7 @@ export default function PremiumScreen() {
       Alert.alert(
         strings.premium.successRedeemed,
         'Ya tienes acceso a todas las funciones Premium.',
-        [{ text: 'Genial', onPress: () => router.back() }]
+        [{ text: 'Genial', onPress: () => router.back() }],
       );
     } catch (error: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -81,6 +151,7 @@ export default function PremiumScreen() {
     }
   };
 
+  // --- Already premium ---
   if (isPremium) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
@@ -93,6 +164,11 @@ export default function PremiumScreen() {
             <Text style={styles.activeEmoji}>👑</Text>
             <Text style={styles.activeTitle}>Ya eres Premium</Text>
             <Text style={styles.activeDesc}>Tienes acceso a todas las funciones.</Text>
+
+            {premiumStatus?.source === 'subscription' && (
+              <Text style={styles.managedNote}>{strings.subscription.managedByStore}</Text>
+            )}
+
             <View style={styles.featureList}>
               {FEATURES.map((f, i) => (
                 <View key={i} style={styles.featureRow}>
@@ -127,6 +203,7 @@ export default function PremiumScreen() {
     );
   }
 
+  // --- Paywall ---
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -161,8 +238,96 @@ export default function PremiumScreen() {
             ))}
           </Animated.View>
 
-          {/* Redeem section */}
-          <Animated.View entering={FadeInDown.delay(650).duration(500)} style={styles.redeemSection}>
+          {/* Subscription pricing */}
+          <Animated.View entering={FadeInDown.delay(650).duration(500)} style={styles.pricingSection}>
+            {loadingOfferings ? (
+              <ActivityIndicator color={colors.primary[500]} style={{ marginVertical: spacing.lg }} />
+            ) : (
+              <>
+                {/* Pricing cards */}
+                <View style={styles.pricingRow}>
+                  {/* Annual */}
+                  <TouchableOpacity
+                    style={[
+                      styles.pricingCard,
+                      selectedPlan === 'annual' && styles.pricingCardSelected,
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedPlan('annual');
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.popularBadge}>
+                      <Text style={styles.popularBadgeText}>{strings.subscription.popular}</Text>
+                    </View>
+                    <Text style={styles.pricingPlanName}>{strings.subscription.annualLabel}</Text>
+                    <Text style={styles.pricingPrice}>
+                      {annualPkg?.product.priceString ?? strings.subscription.annualPrice}
+                    </Text>
+                    <Text style={styles.pricingPeriod}>/año</Text>
+                    <View style={styles.saveBadge}>
+                      <Text style={styles.saveBadgeText}>{strings.subscription.annualSave}</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Monthly */}
+                  <TouchableOpacity
+                    style={[
+                      styles.pricingCard,
+                      selectedPlan === 'monthly' && styles.pricingCardSelected,
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedPlan('monthly');
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.pricingPlanName}>{strings.subscription.monthlyLabel}</Text>
+                    <Text style={styles.pricingPrice}>
+                      {monthlyPkg?.product.priceString ?? strings.subscription.monthlyPrice}
+                    </Text>
+                    <Text style={styles.pricingPeriod}>/mes</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Free trial badge */}
+                <View style={styles.trialBadge}>
+                  <Ionicons name="gift-outline" size={16} color={colors.primary[500]} />
+                  <Text style={styles.trialBadgeText}>{strings.subscription.freeTrial}</Text>
+                </View>
+
+                {/* Subscribe button */}
+                <Button
+                  title={purchasing ? strings.subscription.subscribing : strings.subscription.subscribe}
+                  onPress={handlePurchase}
+                  loading={purchasing}
+                  disabled={purchasing || !selectedPkg}
+                  style={styles.subscribeButton}
+                />
+
+                {/* Fine print */}
+                <Text style={styles.finePrint}>{strings.subscription.finePrint}</Text>
+
+                {/* Restore */}
+                <TouchableOpacity onPress={handleRestore} disabled={restoring} style={styles.restoreButton}>
+                  <Text style={styles.restoreText}>
+                    {restoring ? strings.subscription.restoring : strings.subscription.restore}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </Animated.View>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>o</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Gift code section */}
+          <Animated.View entering={FadeInDown.delay(750).duration(500)} style={styles.redeemSection}>
             <Text style={styles.redeemLabel}>¿Tienes un código de regalo?</Text>
             <View style={styles.redeemRow}>
               <TextInput
@@ -278,9 +443,129 @@ const styles = StyleSheet.create({
     color: colors.neutral[400],
     lineHeight: 18,
   },
+  // Pricing
+  pricingSection: {
+    marginTop: spacing.lg,
+  },
+  pricingRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  pricingCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.xl,
+    padding: spacing.md,
+    paddingTop: spacing.lg + 4,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.neutral[200],
+    position: 'relative',
+    overflow: 'visible',
+  },
+  pricingCardSelected: {
+    borderColor: colors.primary[500],
+    backgroundColor: colors.primary[50],
+  },
+  popularBadge: {
+    position: 'absolute',
+    top: -10,
+    alignSelf: 'center',
+    backgroundColor: colors.primary[500],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+  },
+  popularBadgeText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 10,
+    color: '#fff',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  pricingPlanName: {
+    fontFamily: fonts.sansBold,
+    fontSize: 14,
+    color: colors.neutral[600],
+    marginBottom: spacing.xs,
+  },
+  pricingPrice: {
+    fontFamily: fonts.sansBold,
+    fontSize: 22,
+    color: colors.neutral[800],
+  },
+  pricingPeriod: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.neutral[400],
+    marginBottom: spacing.xs,
+  },
+  saveBadge: {
+    backgroundColor: colors.success + '20',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+    marginTop: spacing.xs,
+  },
+  saveBadgeText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 11,
+    color: colors.success,
+  },
+  trialBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  trialBadgeText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 14,
+    color: colors.primary[500],
+  },
+  subscribeButton: {
+    marginTop: spacing.xs,
+  },
+  finePrint: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.neutral[400],
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    lineHeight: 16,
+  },
+  restoreButton: {
+    alignSelf: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  restoreText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.neutral[500],
+    textDecorationLine: 'underline',
+  },
+  // Divider
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.lg,
+    gap: spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.neutral[200],
+  },
+  dividerText: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.neutral[400],
+  },
   // Redeem
   redeemSection: {
-    marginTop: spacing.lg,
     backgroundColor: colors.accent[50],
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
@@ -332,6 +617,14 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.neutral[500],
     marginBottom: spacing.lg,
+  },
+  managedNote: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.neutral[400],
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   featureList: {
     alignSelf: 'stretch',

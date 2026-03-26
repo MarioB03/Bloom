@@ -14,6 +14,7 @@ import { CycleTracker } from '@/components/checkin/CycleTracker';
 import { EventInput } from '@/components/checkin/EventInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { createCheckin, getCheckinById, updateCheckin } from '@/lib/firestore';
+import { checkAndUnlockAchievements } from '@/lib/achievements';
 import {
   EmotionId,
   IntensityLevel,
@@ -80,6 +81,8 @@ export default function NuevoCheckinScreen() {
       } else {
         await createCheckin(user.uid, formData);
       }
+      // Fire-and-forget achievement check
+      checkAndUnlockAchievements(user.uid).catch(() => {});
       Alert.alert(strings.checkin.saved, 'Tu registro ha sido guardado', [
         { text: 'OK', onPress: () => router.back() },
       ]);

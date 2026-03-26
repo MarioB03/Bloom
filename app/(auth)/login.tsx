@@ -15,6 +15,7 @@ import Animated, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { SocialSignInButtons } from '@/components/auth/SocialSignInButtons';
 import { loginUser } from '@/lib/auth';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts, spacing, borderRadius, shadows } from '@/constants/theme';
@@ -93,19 +94,15 @@ export default function LoginScreen() {
 
   // --- Auth logic ---
   const handleLogin = async () => {
-    console.log('[LOGIN] Attempting login with:', email.trim());
     if (!email.trim() || !password.trim()) {
       Alert.alert('', 'Rellena todos los campos');
       return;
     }
     setLoading(true);
     try {
-      console.log('[LOGIN] Calling loginUser...');
       await loginUser(email.trim(), password);
-      console.log('[LOGIN] Success! Navigating to tabs...');
       router.replace('/(tabs)');
     } catch (error: any) {
-      console.log('[LOGIN] Error:', error.code, error.message);
       const message =
         error.code === 'auth/invalid-credential'
           ? 'Email o contraseña incorrectos'
@@ -172,6 +169,12 @@ export default function LoginScreen() {
             </View>
           </Animated.View>
 
+          {/* --- Social sign-in --- */}
+          <SocialSignInButtons
+            onSuccess={() => router.replace('/(tabs)')}
+            onError={(msg) => Alert.alert('Error', msg)}
+          />
+
           {/* --- Links --- */}
           <Animated.View style={[styles.links, linksStyle]}>
             <Link href="/(auth)/forgot-password" style={styles.link}>
@@ -183,6 +186,9 @@ export default function LoginScreen() {
                 {strings.auth.register}
               </Link>
             </View>
+            <Link href="/politica-privacidad" style={styles.privacyLink}>
+              {strings.privacyPolicy.link}
+            </Link>
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -254,5 +260,9 @@ const styles = StyleSheet.create({
   linkBold: {
     ...typography.bodyBold,
     color: colors.primary[400],
+  },
+  privacyLink: {
+    ...typography.small,
+    color: colors.neutral[400],
   },
 });

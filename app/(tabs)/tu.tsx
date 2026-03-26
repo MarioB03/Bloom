@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSharing } from '@/contexts/SharingContext';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useGender } from '@/contexts/GenderContext';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -38,6 +39,7 @@ export default function TuScreen() {
   const { user } = useAuth();
   const { viewer, sharedAccount } = useSharing();
   const { isPremium } = usePremium();
+  const { gender, setGender, g } = useGender();
   const [totalCheckins, setTotalCheckins] = useState(0);
   const [uniqueDays, setUniqueDays] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -115,10 +117,21 @@ export default function TuScreen() {
     doExport('pdf');
   };
 
+  const handleGenderSetting = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const options = [
+      { text: strings.auth.genderFeminine, onPress: () => setGender('f') },
+      { text: strings.auth.genderMasculine, onPress: () => setGender('m') },
+      { text: strings.auth.genderNeutral, onPress: () => setGender('n') },
+      { text: strings.common.cancel, style: 'cancel' as const },
+    ];
+    Alert.alert(strings.auth.genderLabel, '', options);
+  };
+
   const handleLogout = () => {
     Alert.alert(
       strings.auth.logout,
-      '¿Estás segura de que quieres cerrar sesión?',
+      g({ f: '¿Estás segura de que quieres cerrar sesión?', m: '¿Estás seguro de que quieres cerrar sesión?', n: '¿Seguro/a de que quieres cerrar sesión?' }),
       [
         { text: strings.common.cancel, style: 'cancel' },
         {
@@ -151,20 +164,24 @@ export default function TuScreen() {
       description: strings.tu.insightsDesc,
       route: '/insights',
     },
+    {
+      icon: 'trophy-outline',
+      label: strings.achievements.title,
+      description: strings.achievements.subtitle,
+      route: '/logros',
+    },
+    {
+      icon: 'shield-outline',
+      label: strings.tu.planSeguridad,
+      description: strings.tu.planSeguridadDesc,
+      route: '/plan-seguridad',
+    },
     ...(sharedAccount ? [{
       icon: 'people-outline',
       label: strings.tu.compartido,
       description: strings.tu.compartidoDesc,
       route: '/compartido-view',
     }] : []),
-    {
-      icon: 'bulb-outline',
-      label: strings.tu.habilidades,
-      description: strings.tu.habilidadesDesc,
-      route: '/habilidades-view',
-      badge: 'Pronto',
-      badgeColor: colors.accent[400],
-    },
     {
       icon: 'link-outline',
       label: strings.tu.compartirDatos,
@@ -312,6 +329,46 @@ export default function TuScreen() {
             </View>
             <Text style={styles.settingsValue}>Activo</Text>
           </View>
+
+          <View style={styles.divider} />
+
+          <TouchableOpacity
+            style={styles.settingsItem}
+            activeOpacity={0.6}
+            onPress={handleGenderSetting}
+          >
+            <View style={styles.settingsLeft}>
+              <View style={[styles.navIcon, { backgroundColor: colors.secondary[50] }]}>
+                <Ionicons name="text-outline" size={18} color={colors.secondary[500]} />
+              </View>
+              <View>
+                <Text style={styles.navLabel}>{strings.auth.genderLabel}</Text>
+                <Text style={styles.navDesc}>
+                  {gender === 'f' ? strings.auth.genderFeminine : gender === 'm' ? strings.auth.genderMasculine : strings.auth.genderNeutral}
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          <TouchableOpacity
+            style={styles.settingsItem}
+            activeOpacity={0.6}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/eliminar-cuenta');
+            }}
+          >
+            <View style={styles.settingsLeft}>
+              <View style={[styles.navIcon, { backgroundColor: colors.error + '15' }]}>
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
+              </View>
+              <Text style={[styles.navLabel, { color: colors.error }]}>{strings.deleteAccount.title}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
+          </TouchableOpacity>
         </Card>
       </Animated.View>
 
@@ -324,10 +381,24 @@ export default function TuScreen() {
             <Text style={styles.aboutValue}>1.0.0</Text>
           </View>
           <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.aboutRow}
+            activeOpacity={0.6}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/politica-privacidad');
+            }}
+          >
+            <Text style={styles.aboutLabel}>{strings.privacyPolicy.link}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
+          </TouchableOpacity>
+          <View style={styles.divider} />
           <View style={styles.aboutRow}>
             <Text style={styles.aboutLabel}>Hecho con</Text>
             <Text style={styles.aboutValue}>🌿 y React Native</Text>
           </View>
+          <View style={styles.divider} />
+          <Text style={styles.disclaimerText}>{strings.disclaimer.text}</Text>
         </Card>
       </Animated.View>
 
@@ -450,6 +521,12 @@ const styles = StyleSheet.create({
   },
   aboutLabel: { ...typography.body, color: colors.neutral[600] },
   aboutValue: { ...typography.body, color: colors.neutral[400] },
+  disclaimerText: {
+    ...typography.small,
+    color: colors.neutral[400],
+    marginTop: spacing.sm,
+    lineHeight: 18,
+  },
   // Logout
   logoutButton: { marginTop: spacing.sm, marginBottom: spacing.xl, borderColor: colors.error + '30' },
 });

@@ -5,12 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGender } from '@/contexts/GenderContext';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getCheckinById, deleteCheckin, compostCheckin } from '@/lib/firestore';
+import { checkAndUnlockAchievements } from '@/lib/achievements';
 import { addSeeds, EARNING_RATES } from '@/components/garden/gardenEconomy';
 import { CheckinEntry } from '@/types/checkin';
 import { emotionMap } from '@/constants/emotions';
@@ -21,6 +23,7 @@ import { colors, typography, fonts, spacing, borderRadius, shadows } from '@/con
 export default function CheckinDetailScreen() {
   const { id, owner } = useLocalSearchParams<{ id: string; owner?: string }>();
   const { user } = useAuth();
+  const { g } = useGender();
   const [checkin, setCheckin] = useState<CheckinEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [compostOpen, setCompostOpen] = useState(false);
@@ -45,7 +48,7 @@ export default function CheckinDetailScreen() {
   const handleDelete = () => {
     Alert.alert(
       'Eliminar registro',
-      '¿Estás segura de que quieres eliminar este registro?',
+      g({ f: '¿Estás segura de que quieres eliminar este registro?', m: '¿Estás seguro de que quieres eliminar este registro?', n: '¿Seguro/a de que quieres eliminar este registro?' }),
       [
         { text: strings.common.cancel, style: 'cancel' },
         {
@@ -72,6 +75,8 @@ export default function CheckinDetailScreen() {
       await compostCheckin(user.uid, id, reflection);
       await addSeeds(EARNING_RATES.compostReflection);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Fire-and-forget achievement check
+      checkAndUnlockAchievements(user.uid).catch(() => {});
       setCheckin((prev) => prev ? { ...prev, composted: true, compostReflection: reflection } : prev);
       setCompostOpen(false);
       Alert.alert(strings.compostar.success);

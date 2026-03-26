@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,7 +23,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { SocialSignInButtons } from '@/components/auth/SocialSignInButtons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerUser } from '@/lib/auth';
+import { GenderForm } from '@/types/user';
 import { strings } from '@/constants/strings';
 import { colors, typography, fonts, spacing, borderRadius, shadows } from '@/constants/theme';
 
@@ -31,6 +35,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [genderForm, setGenderForm] = useState<GenderForm>('n');
   const [loading, setLoading] = useState(false);
 
   // --- Stagger animations ---
@@ -102,7 +107,8 @@ export default function RegisterScreen() {
     }
     setLoading(true);
     try {
-      await registerUser(email.trim(), password, displayName.trim());
+      await registerUser(email.trim(), password, displayName.trim(), genderForm);
+      await AsyncStorage.setItem('@bloom_gender', genderForm);
       router.replace('/(tabs)');
     } catch (error: any) {
       const message =
@@ -157,6 +163,38 @@ export default function RegisterScreen() {
                   onChangeText={setDisplayName}
                   autoCapitalize="words"
                 />
+
+                {/* Gender form selector */}
+                <View style={styles.genderSection}>
+                  <Text style={styles.genderLabel}>{strings.auth.genderLabel}</Text>
+                  <View style={styles.genderRow}>
+                    {([
+                      { value: 'f' as GenderForm, label: strings.auth.genderFeminine },
+                      { value: 'm' as GenderForm, label: strings.auth.genderMasculine },
+                      { value: 'n' as GenderForm, label: strings.auth.genderNeutral },
+                    ]).map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.genderChip,
+                          genderForm === option.value && styles.genderChipSelected,
+                        ]}
+                        onPress={() => setGenderForm(option.value)}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.genderChipText,
+                            genderForm === option.value && styles.genderChipTextSelected,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
                 <Input
                   label={strings.auth.email}
                   placeholder="tu@email.com"
@@ -190,6 +228,12 @@ export default function RegisterScreen() {
               </View>
             </Animated.View>
 
+            {/* --- Social sign-in --- */}
+            <SocialSignInButtons
+              onSuccess={() => router.replace('/(tabs)')}
+              onError={(msg) => Alert.alert('Error', msg)}
+            />
+
             {/* --- Links --- */}
             <Animated.View style={[styles.links, linksStyle]}>
               <View style={styles.loginRow}>
@@ -198,6 +242,9 @@ export default function RegisterScreen() {
                   {strings.auth.login}
                 </Link>
               </View>
+              <Link href="/politica-privacidad" style={styles.privacyLink}>
+                {strings.privacyPolicy.link}
+              </Link>
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -252,6 +299,40 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // Gender
+  genderSection: { marginBottom: spacing.sm },
+  genderLabel: {
+    ...typography.caption,
+    color: colors.neutral[500],
+    marginBottom: spacing.xs,
+    fontFamily: fonts.sansMedium,
+  },
+  genderRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  genderChip: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1.5,
+    borderColor: colors.neutral[200],
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+  },
+  genderChipSelected: {
+    borderColor: colors.primary[400],
+    backgroundColor: colors.primary[50],
+  },
+  genderChipText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.neutral[400],
+  },
+  genderChipTextSelected: {
+    color: colors.primary[500],
+  },
+
   // Form
   formWrapper: { marginBottom: spacing.lg },
   formCard: {
@@ -272,5 +353,9 @@ const styles = StyleSheet.create({
   linkBold: {
     ...typography.bodyBold,
     color: colors.primary[400],
+  },
+  privacyLink: {
+    ...typography.small,
+    color: colors.neutral[400],
   },
 });

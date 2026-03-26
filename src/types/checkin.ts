@@ -97,3 +97,18 @@ export interface EmotionalRegisterFormData {
   emotionFunction: string;
   sharedVisible: boolean;
 }
+
+// --- Gratitude Diary ---
+
+export interface GratitudeEntry {
+  id: string;
+  userId: string;
+  date: string; // "YYYY-MM-DD"
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  items: string[]; // up to 3 items, encrypted
+}
+
+export interface GratitudeFormData {
+  items: string[];
+}

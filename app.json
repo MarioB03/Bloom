@@ -14,14 +14,15 @@
       "backgroundColor": "#FAF6F0"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
+      "buildNumber": "7",
+      "jsEngine": "jsc",
       "bundleIdentifier": "com.akemi01.bloom",
       "appleTeamId": "LLU2292H63",
-      "entitlements": {
-        "com.apple.security.application-groups": ["group.com.akemi01.bloom"]
-      },
+      "usesAppleSignIn": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserNotificationsUsageDescription": "Bloom usa notificaciones para enviarte recordatorios diarios de bienestar emocional."
       }
     },
     "android": {
@@ -39,6 +40,13 @@
     "plugins": [
       "expo-router",
       "expo-font",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.873083945404-32291l9qg9lp7fkrufp34mb2e39fiale"
+        }
+      ],
       "@bacons/apple-targets",
       "./plugins/withWidgetReload"
     ],
@@ -52,12 +60,7 @@
               "appExtensions": [
                 {
                   "targetName": "BloomWidget",
-                  "bundleIdentifier": "com.akemi01.bloom.BloomWidget",
-                  "entitlements": {
-                    "com.apple.security.application-groups": [
-                      "group.com.akemi01.bloom"
-                    ]
-                  }
+                  "bundleIdentifier": "com.akemi01.bloom.BloomWidget"
                 }
               ]
             }

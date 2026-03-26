@@ -13,6 +13,7 @@ export interface PremiumCode {
 
 export interface PremiumStatus {
   isActive: boolean;
+  source: 'gift_code' | 'subscription' | null;
   expiresAt: Timestamp | null;
   giftCode: string | null;
   activatedAt: Timestamp | null;
