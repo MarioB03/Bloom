@@ -7,8 +7,8 @@ import Purchases, {
 } from 'react-native-purchases';
 
 const API_KEY = Platform.select({
-  ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY,
-  android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
+  ios: 'appl_fzgSKrPIpEavNCnJpZlLDulBVFN',
+  android: 'goog_xxxxx',
 }) ?? '';
 
 let isConfigured = false;

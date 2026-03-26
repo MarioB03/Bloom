@@ -16,7 +16,7 @@ if (!globalThis.crypto.getRandomValues) {
   (globalThis.crypto as any).getRandomValues = getRandomValues;
 }
 
-const KEY = process.env.EXPO_PUBLIC_ENCRYPTION_KEY || '';
+const KEY = '70b2bec4f217fd190c7b6e43c2fab69de2bc11a7587c10bc1bf45d8aa403f038';
 
 // Lazy-load crypto-js to avoid interfering with Skia's JSI initialization
 type CryptoJSLib = typeof import('crypto-js');

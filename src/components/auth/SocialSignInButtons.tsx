@@ -15,8 +15,8 @@ import { colors, typography, spacing, borderRadius, shadows, fonts } from '@/con
 
 // Configure Google Sign-In on module load
 GoogleSignin.configure({
-  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  iosClientId: '873083945404-32291l9qg9lp7fkrufp34mb2e39fiale.apps.googleusercontent.com',
+  webClientId: '873083945404-aqr5c7rrmrlftntqjq7q1h5o9t4e9lmg.apps.googleusercontent.com',
 });
 
 interface SocialSignInButtonsProps {
