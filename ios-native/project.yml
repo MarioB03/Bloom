@@ -20,6 +20,9 @@ packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
     from: "11.0.0"
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "8.0.0"
 
 targets:
   Bloom:
@@ -40,3 +43,5 @@ targets:
         product: FirebaseAuth
       - package: Firebase
         product: FirebaseFirestore
+      - package: GoogleSignIn
+        product: GoogleSignIn

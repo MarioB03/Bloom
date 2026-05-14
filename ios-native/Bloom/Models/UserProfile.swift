@@ -33,4 +33,22 @@ struct UserProfile: Codable, Identifiable {
     var updatedAt: Date
     var preferences: UserPreferences
     var authProvider: AuthProvider?
+
+    init(
+        id: String? = nil,
+        email: String,
+        displayName: String,
+        createdAt: Date,
+        updatedAt: Date,
+        preferences: UserPreferences,
+        authProvider: AuthProvider? = nil
+    ) {
+        self.id = id
+        self.email = email
+        self.displayName = displayName
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.preferences = preferences
+        self.authProvider = authProvider
+    }
 }

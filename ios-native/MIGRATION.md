@@ -5,8 +5,9 @@ Contexto de arquitectura y stack: ver `README.md`.
 
 **Leyenda:** ✅ portado y verificado · 🚧 en progreso · ⬜ pendiente · ❓ por decidir
 
-> Verificación: el scaffold **compila** (`BUILD SUCCEEDED`). Falta confirmar que
-> **arranca sin crashear** en simulador (Firebase configure, carga de fuentes).
+> Verificación: la app **compila** (`BUILD SUCCEEDED`) y **arranca en
+> simulador** sin crashear. La pantalla de login renderiza correctamente
+> (fuentes, fondo, botones sociales).
 
 ---
 
@@ -14,17 +15,18 @@ Contexto de arquitectura y stack: ver `README.md`.
 
 | Pieza | Estado | Notas |
 |---|---|---|
-| Proyecto XcodeGen + SPM Firebase | ✅ | `project.yml`, iOS 17+, Swift 6 estricto |
+| Proyecto XcodeGen + SPM Firebase + GoogleSignIn | ✅ | `project.yml`, iOS 17+, Swift 6 estricto |
 | Design System (Theme, Typography, fuentes) | ✅ | Portado de `src/constants/theme.ts` |
 | Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos — ver "Modelos pendientes" |
-| `AuthService` / `FirestoreService` | 🚧 | Esqueleto; `FirestoreService` solo cubre check-ins |
+| `AuthService` | ✅ | Email/password, social (Apple/Google), creación de perfil Firestore |
+| `FirestoreService` | 🚧 | Esqueleto; solo cubre check-ins |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
-| **Componentes UI base** | ⬜ | `src/components/ui/`: Button, Card, Input, Badge, EmptyState, LoadingSpinner, Skeleton, AnimatedPressable, FadeIn, ScreenWrapper, 2× AchievementToast. **Bloquea todas las features** |
+| **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold` (modificadores `authFormCard`/`errorAlert`). Pendientes: Card, Badge, EmptyState, LoadingSpinner, Skeleton, FadeIn, ScreenWrapper, 2× AchievementToast |
 | **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
-| **Lenguaje con género** (cross-cutting) | ⬜ | `src/contexts/GenderContext.tsx`, usado en 8 pantallas; afecta a los textos |
+| **Lenguaje con género** (cross-cutting) | ⬜ | `src/contexts/GenderContext.tsx`, usado en 8 pantallas; afecta a los textos. El registro ya guarda `genderForm` en el perfil; falta persistencia local |
 | **Lógica de racha / streak** (cross-cutting) | ⬜ | `src/utils/streak.ts`, usado en home, jardín, insights, perfil |
 | Cifrado de campos sensibles (CryptoJS → CryptoKit) | ⬜ | RN: `src/lib/crypto.ts`. Decidir esquema compatible ❓ |
-| `strings.ts` → catálogo de textos | ⬜ | Todo en español. ¿`String(localized:)` o enum? ❓ |
+| `strings.ts` → catálogo de textos | 🚧 | `Strings.swift` con namespace `Auth`/`SocialAuth`/`App`. Se completa feature a feature. Estrategia definitiva (`String(localized:)` vs enum) ❓ |
 | Notificaciones (recordatorios diarios) | ⬜ | RN: `src/lib/notifications.ts` |
 | Export PDF | ⬜ | RN: `src/lib/export-pdf.ts`, `src/lib/export.ts` |
 | Widget iOS | ⬜ | RN ya tiene uno vía `@bacons/apple-targets` + `widget-sync.ts` |
@@ -38,15 +40,19 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
 
 ## Features
 
-### Auth — ⬜ (siguiente)
-- [ ] Login email/password
-- [ ] Registro
-- [ ] Recuperar contraseña
-- [ ] Sign in with Apple
-- [ ] Google Sign-In
+### Auth — ✅
+- [x] Login email/password
+- [x] Registro (con selector de género)
+- [x] Recuperar contraseña
+- [x] Sign in with Apple
+- [x] Google Sign-In
+- Nativo: `Features/Auth/` (`AuthView` NavigationStack, `LoginView`,
+  `RegisterView`, `ForgotPasswordView`, `SocialSignInButtons`, `AuthScaffold`),
+  `Services/AuthService.swift`. No navega tras login: el listener de
+  `AuthService` actualiza `RootView`.
 - RN: `app/(auth)/`, `src/components/auth/SocialSignInButtons.tsx`, `src/lib/auth.ts`
 
-### Check-in diario — ⬜
+### Check-in diario — ⬜ (siguiente)
 - [ ] Home / "jardín de hoy" (`app/(tabs)/index.tsx`), incluye racha
 - [ ] Crear check-in (modal) — emoción, intensidad, sueño, hambre, ciclo, eventos, notas
 - [ ] Ver/editar check-in (`checkin/[id]`)
