@@ -409,6 +409,68 @@ enum Strings {
         static let breathe = "Respira"
     }
 
+    enum Achievements {
+        static let title = "Logros"
+        static let subtitle = "Tu progreso en Bloom"
+        static let sectionApp = "Logros de bienestar"
+        static let sectionGarden = "Logros del jardín"
+
+        // Check-ins
+        static let firstCheckin = "Primer paso"
+        static let firstCheckinDesc = "Haz tu primer registro"
+        static let fiveCheckins = "Constancia"
+        static let fiveCheckinsDesc = "Completa 5 registros"
+        static let twentyFiveCheckins = "Hábito formado"
+        static let twentyFiveCheckinsDesc = "Completa 25 registros"
+        static let fiftyCheckins = "Medio centenar"
+        static let fiftyCheckinsDesc = "Completa 50 registros"
+        static let hundredCheckins = "Cien registros"
+        static let hundredCheckinsDesc = "Completa 100 registros"
+
+        // Rachas
+        static let streak3 = "Tres al hilo"
+        static let streak3Desc = "3 días consecutivos"
+        static let streak7 = "Una semana"
+        static let streak7Desc = "7 días consecutivos"
+        static let streak14 = "Dos semanas"
+        static let streak14Desc = "14 días consecutivos"
+        static let streak30 = "Un mes"
+        static let streak30Desc = "30 días consecutivos"
+        static let streak60 = "Dos meses"
+        static let streak60Desc = "60 días consecutivos"
+
+        // Gratitud
+        static let firstGratitude = "Gratitud"
+        static let firstGratitudeDesc = "Escribe tu primera gratitud"
+        static let sevenGratitudes = "Semana de gratitud"
+        static let sevenGratitudesDesc = "Escribe 7 entradas de gratitud"
+
+        // Emociones
+        static let allEmotions = "Arcoíris emocional"
+        static let allEmotionsDesc = "Usa las 12 emociones"
+
+        // Compostaje
+        static let firstCompost = "Primera reflexión"
+        static let firstCompostDesc = "Composta tu primer registro"
+        static let fiveComposts = "Transformación"
+        static let fiveCompostsDesc = "Composta 5 registros"
+
+        // Habilidades
+        static let firstPractice = "Primera práctica"
+        static let firstPracticeDesc = "Completa tu primer ejercicio"
+        static let fivePractices = "Practicante"
+        static let fivePracticesDesc = "Completa 5 ejercicios"
+        static let fifteenPractices = "Gran habilidad"
+        static let fifteenPracticesDesc = "Completa 15 ejercicios"
+        static let allCategories = "Exploración total"
+        static let allCategoriesDesc = "Practica en las 5 categorías"
+
+        /// "3 / 31" — logros desbloqueados sobre el total.
+        static func summaryCount(unlocked: Int, total: Int) -> String {
+            "\(unlocked) / \(total)"
+        }
+    }
+
     enum SafetyPlan {
         // Cabecera
         static let title = "Plan de seguridad"

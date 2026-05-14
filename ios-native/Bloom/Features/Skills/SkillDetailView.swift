@@ -402,6 +402,9 @@ struct SkillDetailView: View {
             durationSeconds: skill.totalDurationSeconds
         )
         try? firestore.createSkillPractice(draft, userID: userID)
+        // Comprueba los logros en segundo plano: los toasts resultantes se
+        // persisten y los muestra el home en su siguiente recarga.
+        Task { await AppAchievements.checkAndUnlock(userID: userID, firestore: firestore) }
     }
 }
 

@@ -249,9 +249,21 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   como brotes pequeños (fiel a los datos); efectos animados de decoración
   (fuente, farol, pozo…) de `GardenCanvas.tsx` no portados
 
-### Logros de app — ⬜
-- [ ] 15 logros + cola de toasts
+### Logros de app — ✅
+- [x] 19 logros de app (check-ins, rachas, gratitud, emociones, compostaje,
+  habilidades) con catálogo, comprobación y persistencia en `UserDefaults`
+- [x] Pantalla de logros: resumen + rejillas de logros de app y de jardín
+- [x] Cola de toasts: se comprueba tras guardar y se muestra en el home
+- Nativo: `Models/AppAchievement.swift`,
+  `Features/Achievements/{AppAchievementCatalog,AppAchievementPersistence,AppAchievements,AchievementsView}.swift`,
+  `Strings.Achievements`. `AchievementToastView` ahora es reutilizable
+  (jardín + app)
 - RN: `app/logros.tsx`, `src/lib/achievements.ts`
+- **Punto de entrada**: en RN vive en la pestaña de perfil (aún no portada);
+  aquí se accede desde el botón 🏆 de la cabecera del home
+- **Divergencia de RN**: los títulos con género (`{ f, m, n }`) usan la forma
+  neutra hasta que se porte el lenguaje con género. El compostaje aún no es una
+  acción nativa, así que sus logros solo se desbloquean con datos de la app RN
 
 ### Diario de gratitud — ✅
 - [x] Modelo `GratitudeEntry` + colección `users/{uid}/gratitude` con `items[]`
@@ -266,9 +278,8 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - RN: `app/gratitud/nuevo.tsx`, colección `users/{uid}/gratitude`
 - **Divergencia de RN**: solo se edita la gratitud de **hoy**. La app RN admite
   un modo de solo lectura para días pasados (al abrirlo desde la agenda o el
-  calendario); llegará con esas features. La comprobación de logros
-  (`checkAndUnlockAchievements`) se omite porque los logros de app no están
-  portados
+  calendario); llegará con esas features. La comprobación de logros la dispara
+  el home al recargarse tras guardar (ver "Logros de app")
 
 ### Plan de seguridad — ✅
 - [x] Editor de plan: 5 secciones plegables (señales de alerta, estrategias de

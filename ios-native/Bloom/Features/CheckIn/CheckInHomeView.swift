@@ -4,6 +4,7 @@ import SwiftUI
 enum CheckInRoute: Hashable {
     case detail(id: String)
     case garden
+    case achievements
 }
 
 /// Pantalla principal: saludo, racha y check-ins del día de hoy.
@@ -27,6 +28,10 @@ struct CheckInHomeView: View {
     /// Marco del mini-libro en coordenadas globales — origen de la animación
     /// de apertura del diario.
     @State private var miniBookFrame: CGRect = .zero
+    /// Cola de logros de app pendientes de mostrar como toast, y el que se está
+    /// mostrando ahora mismo.
+    @State private var toastQueue: [AppAchievement] = []
+    @State private var currentToast: AppAchievement?
 
     var body: some View {
         NavigationStack {
@@ -42,6 +47,9 @@ struct CheckInHomeView: View {
             .overlay(alignment: .bottomTrailing) {
                 miniDiaryBook
             }
+            .overlay(alignment: .top) {
+                achievementToast
+            }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: CheckInRoute.self) { route in
                 switch route {
@@ -51,23 +59,25 @@ struct CheckInHomeView: View {
                     })
                 case .garden:
                     GardenView()
+                case .achievements:
+                    AchievementsView()
                 }
             }
         }
         .sheet(isPresented: $showingForm) {
             CheckInFormView {
-                Task { await load() }
+                Task { await reload() }
             }
         }
         .sheet(isPresented: $showingGratitude) {
             GratitudeView {
-                Task { await load() }
+                Task { await reload() }
             }
         }
         .fullScreenCover(isPresented: $showingDiary) {
             DiaryBookView(isPresented: $showingDiary, originFrame: miniBookFrame)
         }
-        .task { await load() }
+        .task { await reload() }
     }
 
     /// Presenta el diario sin la animación por defecto del `fullScreenCover`:
@@ -107,13 +117,25 @@ struct CheckInHomeView: View {
     // MARK: - Cabecera
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(BloomDate.greeting())
-                .font(.bodyText)
-                .foregroundStyle(Theme.Palette.neutral400)
-            Text(auth.currentDisplayName ?? "")
-                .font(.displaySmall)
-                .foregroundStyle(Theme.Palette.neutral800)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(BloomDate.greeting())
+                    .font(.bodyText)
+                    .foregroundStyle(Theme.Palette.neutral400)
+                Text(auth.currentDisplayName ?? "")
+                    .font(.displaySmall)
+                    .foregroundStyle(Theme.Palette.neutral800)
+            }
+            Spacer()
+            NavigationLink(value: CheckInRoute.achievements) {
+                Image(systemName: "trophy")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Theme.Palette.neutral600)
+                    .frame(width: 40, height: 40)
+                    .background(Theme.Palette.neutral100)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -248,7 +270,44 @@ struct CheckInHomeView: View {
         .padding(.top, Theme.Spacing.sm)
     }
 
+    // MARK: - Toast de logros
+
+    /// Toast del logro de app que se está mostrando. Se superpone solo a la raíz
+    /// del home, igual que el mini-libro.
+    @ViewBuilder
+    private var achievementToast: some View {
+        if let currentToast {
+            AchievementToastView(
+                emoji: currentToast.emoji,
+                title: currentToast.title,
+                description: currentToast.description
+            ) {
+                self.currentToast = nil
+                // Breve pausa antes de encadenar el siguiente de la cola.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showNextToast()
+                }
+            }
+            .id(currentToast.id)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.top, Theme.Spacing.sm)
+        }
+    }
+
+    /// Pasa el siguiente logro de la cola a `currentToast`, si no hay ya uno visible.
+    private func showNextToast() {
+        guard currentToast == nil, !toastQueue.isEmpty else { return }
+        currentToast = toastQueue.removeFirst()
+    }
+
     // MARK: - Datos
+
+    /// Recarga el home y, a continuación, comprueba los logros de app. Se llama
+    /// al aparecer y tras guardar un check-in o una gratitud.
+    private func reload() async {
+        await load()
+        await checkAchievements()
+    }
 
     private func load() async {
         guard let userID = auth.currentUserID else {
@@ -265,5 +324,17 @@ struct CheckInHomeView: View {
             // Se conserva el último estado conocido ante un fallo de red.
         }
         isLoading = false
+    }
+
+    /// Desbloquea los logros que correspondan y encola sus toasts. Recoge además
+    /// los toasts pendientes de otras pantallas (p. ej. tras practicar una
+    /// habilidad), que se persisten y se muestran en la siguiente recarga.
+    private func checkAchievements() async {
+        guard let userID = auth.currentUserID else { return }
+        await AppAchievements.checkAndUnlock(userID: userID, firestore: firestore)
+        let pending = AppAchievements.consumePendingToasts()
+        guard !pending.isEmpty else { return }
+        toastQueue.append(contentsOf: pending)
+        showNextToast()
     }
 }

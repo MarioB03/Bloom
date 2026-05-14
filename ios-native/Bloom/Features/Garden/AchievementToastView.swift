@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// Toast efímero que anuncia un logro del jardín recién desbloqueado: entra
-/// deslizándose desde arriba con un rebote, se mantiene unos segundos y sale.
-/// Se autodescarta llamando a `onDismiss`. Equivalente nativo de
-/// `AchievementToast.tsx`.
+/// Toast efímero que anuncia un logro recién desbloqueado: entra deslizándose
+/// desde arriba con un rebote, se mantiene unos segundos y sale. Se autodescarta
+/// llamando a `onDismiss`. Lo usan tanto los logros del jardín como los de app,
+/// por eso recibe los campos sueltos en lugar de un modelo concreto.
+/// Equivalente nativo de `AchievementToast.tsx`.
 struct AchievementToastView: View {
-    let achievement: GardenAchievement
+    let emoji: String
+    let title: String
+    let description: String
     let onDismiss: () -> Void
 
     @State private var offsetY: CGFloat = -140
@@ -14,13 +17,13 @@ struct AchievementToastView: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(achievement.emoji)
+            Text(emoji)
                 .font(.system(size: 28))
             VStack(alignment: .leading, spacing: 1) {
-                Text(achievement.title)
+                Text(title)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.Palette.neutral700)
-                Text(achievement.description)
+                Text(description)
                     .font(.system(size: 12, design: .rounded))
                     .foregroundStyle(Theme.Palette.neutral500)
             }

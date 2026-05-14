@@ -101,7 +101,11 @@ struct GardenView: View {
         }
         .overlay(alignment: .top) {
             if let toast = currentToast {
-                AchievementToastView(achievement: toast) {
+                AchievementToastView(
+                    emoji: toast.emoji,
+                    title: toast.title,
+                    description: toast.description
+                ) {
                     currentToast = nil
                     // Breve pausa antes de encadenar el siguiente de la cola.
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
