@@ -108,12 +108,35 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
 - [ ] Historial de práctica
 - RN: `app/(tabs)/habilidades.tsx`, `app/habilidad/`, `app/habilidades/`, `src/components/skills/`, `src/constants/skills.ts`
 
-### Jardín de bienestar — ⬜ (el más grande)
-- [ ] Canvas/escena del jardín, plantas, mascota
-- [ ] Tienda, economía, cosméticos, decoraciones, estaciones
-- [ ] Efectos visuales (Skia: pétalos, sparkles) — replantear con SwiftUI/Canvas/SpriteKit ❓
-- [ ] 12 logros de jardín
+### Jardín de bienestar — 🚧 (el más grande, por fases)
+Motor de render decidido: **`SwiftUI Canvas` + `TimelineView(.animation)`** (no
+SpriteKit). Mapea 1:1 con el Skia de RN. Se accede desde la **tarjeta de racha
+del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
+- [x] **Fase 1 — Cimientos**: modelos (`GardenModels`, `GardenGrid`,
+  `DecorationType`, `PlantMorphology`, `SeasonalTheme`, `GardenAchievement`,
+  `GardenCosmetics`, `GardenEconomy`), iso math (`GardenIso`), persistencia
+  (`GardenPersistence`, `UserDefaults`), `GardenStore` (`@Observable @MainActor`:
+  carga de check-ins, auto-placement espiral, economía de semillas, compras,
+  logros)
+- [x] **Fase 2 — Escena estática**: `GardenScene` (Canvas: cielo, rejilla
+  isométrica, plantas con 12 morfologías × 6 etapas, decoraciones como emoji),
+  `GardenRenderer`, `GardenView` (cabecera + tarjeta de progreso + escena que
+  llena la pantalla, jardín escalado y centrado sin scroll)
+- [ ] **Fase 3 — Animación**: `TimelineView`, vaivén de plantas, atmósfera
+  (nubes/mariposas/luciérnagas/estrellas), partículas estacionales
+- [ ] **Fase 4 — Interacción**: gestos tap/long-press, modos
+  (ver/regar/decorar), splash de agua, modal de planta
+- [ ] **Fase 5 — Economía + tienda**: `GardenShop`, picker de decoraciones
+  (la lógica de economía ya está en `GardenStore`)
+- [ ] **Fase 6 — Mascotas**: las 5 con su movimiento propio
+- [ ] **Fase 7 — Logros + celebraciones**: toasts, modal de hito con confeti
+- [ ] **Fase 8 — Cosméticos + pulido**: overrides cosméticos, `GardenStats`
+- Nativo: `Features/Garden/` (`GardenView`, `GardenScene`, `GardenStore`,
+  `GardenIso`, `GardenPersistence`, `Models/`, `Rendering/GardenRenderer`)
 - RN: `app/jardin.tsx`, `src/components/garden/` (20+ archivos)
+- **Pendiente conocido**: decoraciones se dibujan con su emoji (las formas Skia
+  personalizadas de RN se portarán en una fase de pulido); plantas en `growthStage`
+  bajo se ven como brotes pequeños (fiel a los datos)
 
 ### Logros de app — ⬜
 - [ ] 15 logros + cola de toasts
@@ -165,7 +188,8 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
 ## Decisiones pendientes (❓)
 
 - Estrategia de textos: `String(localized:)` vs enum de strings
-- Jardín: ¿SwiftUI Canvas, SpriteKit, o repensar los efectos de Skia?
+- ~~Jardín: ¿SwiftUI Canvas, SpriteKit, o repensar los efectos de Skia?~~ →
+  **resuelto**: `SwiftUI Canvas` + `TimelineView(.animation)`
 - Bundle ID: hoy comparte `com.akemi01.bloom` con la app RN (mismo `GoogleService-Info`)
 - `firestore.rules` / `firestore.indexes.json`: se reutilizan tal cual (mismo proyecto);
   revisar solo si una feature añade colecciones nuevas

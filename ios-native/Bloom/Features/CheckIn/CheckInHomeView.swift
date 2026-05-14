@@ -3,6 +3,7 @@ import SwiftUI
 /// Rutas de navegación del módulo de check-in.
 enum CheckInRoute: Hashable {
     case detail(id: String)
+    case garden
 }
 
 /// Pantalla principal: saludo, racha y check-ins del día de hoy.
@@ -36,6 +37,8 @@ struct CheckInHomeView: View {
                     CheckInDetailView(id: id, onChanged: {
                         Task { await load() }
                     })
+                case .garden:
+                    GardenView()
                 }
             }
         }
@@ -63,28 +66,36 @@ struct CheckInHomeView: View {
 
     // MARK: - Racha
 
+    /// La tarjeta de racha es la puerta al jardín: tocarla lo abre, igual que
+    /// en la app RN (el jardín se abre desde el home, no es una pestaña).
     private var streakCard: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            Text(Streak.emoji(streak))
-                .font(.system(size: 28))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(Streak.countLabel(streak))
-                    .font(.bodyBold)
-                    .foregroundStyle(Theme.Palette.neutral700)
-                Text(Streak.message(streak))
-                    .font(.caption)
-                    .foregroundStyle(Theme.Palette.neutral500)
+        NavigationLink(value: CheckInRoute.garden) {
+            HStack(spacing: Theme.Spacing.sm) {
+                Text(Streak.emoji(streak))
+                    .font(.system(size: 28))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(Streak.countLabel(streak))
+                        .font(.bodyBold)
+                        .foregroundStyle(Theme.Palette.neutral700)
+                    Text(Streak.message(streak))
+                        .font(.caption)
+                        .foregroundStyle(Theme.Palette.neutral500)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Theme.Palette.accent400)
             }
-            Spacer()
+            .padding(.vertical, Theme.Spacing.sm + 4)
+            .padding(.horizontal, Theme.Spacing.md)
+            .background(Theme.Palette.accent50)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.lg)
+                    .strokeBorder(Theme.Palette.accent100, lineWidth: 1)
+            )
         }
-        .padding(.vertical, Theme.Spacing.sm + 4)
-        .padding(.horizontal, Theme.Spacing.md)
-        .background(Theme.Palette.accent50)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.lg)
-                .strokeBorder(Theme.Palette.accent100, lineWidth: 1)
-        )
+        .buttonStyle(.plain)
     }
 
     // MARK: - CTA de nuevo check-in

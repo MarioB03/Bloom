@@ -138,6 +138,21 @@ enum Strings {
             "\(count) \(count == 1 ? "registro" : "registros")"
         }
     }
+
+    enum Garden {
+        static let title = "Tu jardín"
+        static let subtitle = "Cada registro florece aquí"
+        static let emptyTitle = "Tu jardín está por brotar"
+        static let emptyMessage = "Haz tu primer registro diario\npara plantar tu primera flor"
+        static let seedsLabel = "Semillas"
+        static let streakLabel = "Racha"
+        static let levelLabel = "Nivel"
+
+        /// "1 planta" / "N plantas".
+        static func plantCount(_ count: Int) -> String {
+            "\(count) \(count == 1 ? "planta" : "plantas")"
+        }
+    }
 }
 
 private extension Array {
