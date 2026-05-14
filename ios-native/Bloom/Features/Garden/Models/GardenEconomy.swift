@@ -84,7 +84,6 @@ enum GardenEconomy {
         .init(id: "statue",        name: "Estatua",          emoji: "🗿", category: .decorations, cost: 50, description: "Una elegante estatua de piedra"),
         .init(id: "swing",         name: "Columpio",         emoji: "🎪", category: .decorations, cost: 40, description: "Un columpio de madera"),
         .init(id: "magic_lantern", name: "Farol mágico",     emoji: "✨", category: .decorations, cost: 35, description: "Un farol con luz encantada"),
-        .init(id: "windmill",      name: "Molino",           emoji: "🏗️", category: .decorations, cost: 60, description: "Un molino con aspas que giran"),
         .init(id: "wishing_well",  name: "Pozo de deseos",   emoji: "🪨", category: .decorations, cost: 75, description: "Pide un deseo y lanza una moneda"),
         // Mascotas
         .init(id: "bunny",            name: "Conejo",          emoji: "🐰", category: .pets, cost: 30, description: "Un conejo que salta por el jardín"),

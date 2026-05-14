@@ -23,7 +23,6 @@ enum DecorationType: String, Codable, CaseIterable, Sendable {
     case statue
     case swing
     case magicLantern = "magic_lantern"
-    case windmill
     case wishingWell = "wishing_well"
 
     var config: DecorationConfig { DecorationConfig.all[self]! }
@@ -61,7 +60,6 @@ struct DecorationConfig: Sendable {
         .statue:         .init(type: .statue,         label: "Estatua",           emoji: "🗿", unlockStreak: 0,  cost: 50),
         .swing:          .init(type: .swing,          label: "Columpio",          emoji: "🎪", unlockStreak: 0,  cost: 40),
         .magicLantern:   .init(type: .magicLantern,   label: "Farol mágico",      emoji: "✨", unlockStreak: 0,  cost: 35),
-        .windmill:       .init(type: .windmill,       label: "Molino",            emoji: "🏗️", unlockStreak: 0,  cost: 60),
         .wishingWell:    .init(type: .wishingWell,    label: "Pozo de deseos",    emoji: "🪨", unlockStreak: 0,  cost: 75),
     ]
 
