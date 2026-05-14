@@ -20,6 +20,10 @@ final class FirestoreService {
         db.collection("users").document(userID).collection("checkins")
     }
 
+    private func registersCollection(for userID: String) -> CollectionReference {
+        db.collection("users").document(userID).collection("registers")
+    }
+
     // MARK: - Lectura
 
     /// Check-ins de un día concreto (`"YYYY-MM-DD"`), del más reciente al más antiguo.
@@ -119,6 +123,68 @@ final class FirestoreService {
         try await checkinsCollection(for: userID).document(checkinID).delete()
     }
 
+    // MARK: - Registros emocionales (Observar y describir)
+
+    /// Todos los registros emocionales del usuario, del más reciente al más antiguo.
+    func allEmotionalRegisters(userID: String) async throws -> [EmotionalRegisterEntry] {
+        let snapshot = try await registersCollection(for: userID)
+            .order(by: "createdAt", descending: true)
+            .getDocuments()
+        return try snapshot.documents
+            .map { try $0.data(as: EmotionalRegisterEntry.self) }
+            .map(decrypted)
+    }
+
+    /// Un registro emocional por su id, o `nil` si no existe.
+    func emotionalRegister(id: String, userID: String) async throws -> EmotionalRegisterEntry? {
+        let document = try await registersCollection(for: userID).document(id).getDocument()
+        guard document.exists else { return nil }
+        return decrypted(try document.data(as: EmotionalRegisterEntry.self))
+    }
+
+    /// Crea un registro emocional nuevo con la fecha de hoy.
+    func createEmotionalRegister(_ draft: EmotionalRegisterDraft, userID: String) throws {
+        let now = Date()
+        let entry = EmotionalRegisterEntry(
+            id: nil,
+            userId: userID,
+            date: BloomDate.dateKey(now),
+            createdAt: now,
+            updatedAt: now,
+            emotion: draft.emotion,
+            emotionCustom: draft.emotionCustom,
+            intensity: draft.intensity,
+            vulnerability: draft.vulnerability,
+            trigger: draft.trigger,
+            interpretations: draft.interpretations,
+            internalSensations: draft.internalSensations,
+            externalLanguage: draft.externalLanguage,
+            impulses: draft.impulses,
+            behavior: draft.behavior,
+            consequences: draft.consequences,
+            emotionFunction: draft.emotionFunction,
+            sharedVisible: draft.sharedVisible
+        )
+        _ = try registersCollection(for: userID).addDocument(from: encrypted(entry))
+    }
+
+    /// Actualiza un registro emocional existente. Conserva `date` y `createdAt`
+    /// del `entry` recibido (que viene de una lectura previa) y refresca `updatedAt`.
+    func updateEmotionalRegister(_ entry: EmotionalRegisterEntry) throws {
+        guard let id = entry.id else {
+            throw FirestoreServiceError.missingID
+        }
+        var updated = entry
+        updated.updatedAt = Date()
+        try registersCollection(for: entry.userId)
+            .document(id)
+            .setData(from: encrypted(updated), merge: true)
+    }
+
+    func delete(registerID: String, userID: String) async throws {
+        try await registersCollection(for: userID).document(registerID).delete()
+    }
+
     // MARK: - Cifrado de campos sensibles
 
     /// Copia del check-in con `notes` y los eventos cifrados, lista para escribir.
@@ -150,6 +216,41 @@ final class FirestoreService {
         if let reflection = entry.compostReflection {
             result.compostReflection = BloomCrypto.decrypt(reflection)
         }
+        return result
+    }
+
+    /// Copia del registro emocional con los campos de texto libre cifrados,
+    /// lista para escribir. La emoción, la intensidad, la fecha y la
+    /// visibilidad compartida no se cifran (igual que en la app RN).
+    private func encrypted(_ entry: EmotionalRegisterEntry) -> EmotionalRegisterEntry {
+        var result = entry
+        result.emotionCustom = BloomCrypto.encrypt(entry.emotionCustom)
+        result.vulnerability = BloomCrypto.encrypt(entry.vulnerability)
+        result.trigger = BloomCrypto.encrypt(entry.trigger)
+        result.interpretations = BloomCrypto.encrypt(entry.interpretations)
+        result.internalSensations = BloomCrypto.encrypt(entry.internalSensations)
+        result.externalLanguage = BloomCrypto.encrypt(entry.externalLanguage)
+        result.impulses = BloomCrypto.encrypt(entry.impulses)
+        result.behavior = BloomCrypto.encrypt(entry.behavior)
+        result.consequences = BloomCrypto.encrypt(entry.consequences)
+        result.emotionFunction = BloomCrypto.encrypt(entry.emotionFunction)
+        return result
+    }
+
+    /// Copia del registro emocional con los campos de texto libre descifrados,
+    /// lista para la UI.
+    private func decrypted(_ entry: EmotionalRegisterEntry) -> EmotionalRegisterEntry {
+        var result = entry
+        result.emotionCustom = BloomCrypto.decrypt(entry.emotionCustom)
+        result.vulnerability = BloomCrypto.decrypt(entry.vulnerability)
+        result.trigger = BloomCrypto.decrypt(entry.trigger)
+        result.interpretations = BloomCrypto.decrypt(entry.interpretations)
+        result.internalSensations = BloomCrypto.decrypt(entry.internalSensations)
+        result.externalLanguage = BloomCrypto.decrypt(entry.externalLanguage)
+        result.impulses = BloomCrypto.decrypt(entry.impulses)
+        result.behavior = BloomCrypto.decrypt(entry.behavior)
+        result.consequences = BloomCrypto.decrypt(entry.consequences)
+        result.emotionFunction = BloomCrypto.decrypt(entry.emotionFunction)
         return result
     }
 }

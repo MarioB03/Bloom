@@ -19,7 +19,7 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Design System (Theme, Typography, fuentes) | ✅ | Portado de `src/constants/theme.ts` |
 | Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos (+ `CheckinDraft`) — ver "Modelos pendientes" |
 | `AuthService` | ✅ | Email/password, social (Apple/Google), creación de perfil Firestore |
-| `FirestoreService` | 🚧 | CRUD de check-ins completo y cifrado (rango de fechas + lectura de todos para insights); resto de colecciones pendiente |
+| `FirestoreService` | 🚧 | CRUD cifrado de check-ins y de registros emocionales (colección `registers`); resto de colecciones pendiente |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
 | **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
 | **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
@@ -33,9 +33,9 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Widget iOS | ⬜ | RN ya tiene uno vía `@bacons/apple-targets` + `widget-sync.ts` |
 
 ### Modelos pendientes de portar (se harán con cada feature)
-`EmotionalRegisterEntry` · `GratitudeEntry` · `Skill` · `Template` + `TemplateField` +
+`GratitudeEntry` · `Skill` · `Template` + `TemplateField` +
 `RegisterEntry` · `PremiumStatus` · tipos de `SafetyPlan` · tipos de `Sharing`.
-Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
+Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`.
 
 ---
 
@@ -96,11 +96,29 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
   criterio que la tienda del jardín). El botón "Volver" del RN se omite: en
   nativo Insights es una pestaña, no una pantalla apilada
 
-### Notas y registros emocionales — ⬜
-- [ ] Lista de notas (`app/(tabs)/notas.tsx`)
-- [ ] Registro emocional "Observar y Describir" — crear/editar (`registro-emocional/`)
-- [ ] Componente `EmotionalRegisterCard`
-- RN: `app/(tabs)/notas.tsx`, `app/registro-emocional/`
+### Notas y registros emocionales — ✅
+- [x] Pestaña "Registros" — listado de registros emocionales (`NotesView`)
+- [x] Registro emocional "Observar y describir" — crear/editar
+  (`EmotionalRegisterFormView`, intensidad 1–10 con `Slider`)
+- [x] Detalle del registro — campos rellenados, editar y eliminar
+  (`EmotionalRegisterDetailView`)
+- [x] Componente `EmotionalRegisterCard`
+- [x] Modelo `EmotionalRegisterEntry` + `EmotionalRegisterDraft`; colección
+  `users/{uid}/registers` con cifrado de los 10 campos de texto libre en
+  `FirestoreService`
+- Nativo: `Features/Notes/` (`NotesView`, `EmotionalRegisterFormView`,
+  `EmotionalRegisterDetailView`, `Components/EmotionalRegisterCard`),
+  `Models/EmotionalRegisterEntry.swift`, `Strings.EmotionalRegister`
+- RN: `app/(tabs)/notas.tsx`, `app/registro-emocional/`,
+  `src/components/checkin/EmotionalRegisterCard.tsx`
+- **Divergencia de RN**: en RN los registros se crean desde un CTA del home y
+  se listan mezclados con los check-ins en un buscador con filtros
+  (`app/(tabs)/registros.tsx`). Aquí la pestaña es autónoma: lista solo
+  registros emocionales y tiene su propio CTA. El buscador combinado llegará
+  con la feature "Agenda y búsqueda". El interruptor "visible al compartir"
+  se omite porque la feature de compartir no está portada (mismo criterio que
+  Premium); el campo `sharedVisible` se conserva en `false` para el round-trip
+  con la app RN
 
 ### Plantillas y registros dinámicos — ⬜
 - [ ] Pestaña "Registros" (`app/(tabs)/registros.tsx`)

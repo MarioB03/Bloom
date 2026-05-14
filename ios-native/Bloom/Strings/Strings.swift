@@ -249,6 +249,57 @@ enum Strings {
         }
     }
 
+    enum EmotionalRegister {
+        // Pestaña / listado
+        static let listTitle = "Registros emocionales"
+        static let listSubtitle = "Observa y describe lo que sientes"
+        static let recentTitle = "Registros recientes"
+        static let newRegister = "Nuevo registro"
+        static let newRegisterSubtitle = "Describe una emoción en detalle"
+        static let empty = "Aún no has descrito ninguna emoción.\nObservar y describir lo que sientes ayuda a entenderlo."
+
+        // Formulario
+        static let formTitle = "Observar y describir"
+        static let formSubtitle = "Observa lo que sientes sin juzgar"
+        static let editTitle = "Editar registro"
+        static let emotion = "Nombre de la emoción"
+        static let emotionCustomPlaceholder = "O escribe el nombre de la emoción..."
+        static let intensity = "Intensidad (1-10)"
+        static let vulnerability = "Vulnerabilidad"
+        static let vulnerabilityPlaceholder = "¿Qué factores te hacían vulnerable?"
+        static let trigger = "Detonante"
+        static let triggerPlaceholder = "¿Qué desencadenó la emoción?"
+        static let interpretations = "Interpretaciones"
+        static let interpretationsPlaceholder = "¿Qué pensamientos o interpretaciones tuviste?"
+        static let internalSensations = "Sensaciones internas"
+        static let internalSensationsPlaceholder = "¿Qué sentiste en tu cuerpo?"
+        static let externalLanguage = "Lenguaje externo"
+        static let externalLanguagePlaceholder = "¿Qué expresaste con tu cara, postura o voz?"
+        static let impulses = "Impulsos"
+        static let impulsesPlaceholder = "¿Qué tuviste ganas de hacer?"
+        static let behavior = "Conducta"
+        static let behaviorPlaceholder = "¿Qué hiciste realmente?"
+        static let consequences = "Consecuencias"
+        static let consequencesPlaceholder = "¿Qué consecuencias tuvo tu conducta?"
+        static let emotionFunction = "Función de la emoción"
+        static let emotionFunctionPlaceholder = "¿Para qué sirvió esta emoción?"
+        static let save = "Guardar registro"
+        static let saveChanges = "Guardar cambios"
+        static let selectEmotion = "Selecciona o escribe una emoción"
+        static let saveError = "No se pudo guardar el registro"
+
+        // Detalle
+        static let detailTitle = "Detalle"
+        static let intensityShort = "Intensidad"
+        static let deleteTitle = "Eliminar registro"
+        static let deleteMessage = "¿Seguro que quieres eliminar este registro?"
+        static let notFound = "Registro no encontrado"
+        static let typeLabel = "Observar y describir"
+
+        /// Intensidad mostrada como "7/10".
+        static func intensityValue(_ value: Int) -> String { "\(value)/10" }
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.

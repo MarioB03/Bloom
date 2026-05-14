@@ -15,7 +15,7 @@ struct MainTabView: View {
                 .tabItem { Label("Insights", systemImage: "chart.line.uptrend.xyaxis") }
 
             NotesView()
-                .tabItem { Label("Notas", systemImage: "note.text") }
+                .tabItem { Label("Registros", systemImage: "note.text") }
 
             SkillsView()
                 .tabItem { Label("Habilidades", systemImage: "sparkles") }
