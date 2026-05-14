@@ -24,6 +24,9 @@ struct CheckInHomeView: View {
     @State private var showingForm = false
     @State private var showingGratitude = false
     @State private var showingDiary = false
+    /// Marco del mini-libro en coordenadas globales — origen de la animación
+    /// de apertura del diario.
+    @State private var miniBookFrame: CGRect = .zero
 
     var body: some View {
         NavigationStack {
@@ -51,6 +54,15 @@ struct CheckInHomeView: View {
                 presentDiary()
             } label: {
                 MiniDiaryBook()
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear { miniBookFrame = proxy.frame(in: .global) }
+                                .onChange(of: proxy.frame(in: .global)) { _, newValue in
+                                    miniBookFrame = newValue
+                                }
+                        }
+                    }
             }
             .buttonStyle(.plain)
             .opacity(showingDiary ? 0 : 1)
@@ -69,7 +81,7 @@ struct CheckInHomeView: View {
             }
         }
         .fullScreenCover(isPresented: $showingDiary) {
-            DiaryBookView(isPresented: $showingDiary)
+            DiaryBookView(isPresented: $showingDiary, originFrame: miniBookFrame)
         }
         .task { await load() }
     }

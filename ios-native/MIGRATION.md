@@ -149,8 +149,9 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
   (pantalla apilada) en una sola vista, accesible tanto desde la pestaña
   "Registros" como desde el mini-libro del home. La animación del "libro que
   se abre" se recrea con SwiftUI (`rotation3DEffect` sobre el lomo a partir de
-  un único `progress` 0→1), pero el libro crece centrado en vez de medir la
-  posición exacta del mini-libro. Las tarjetas de gratitud muestran sus
+  un único `progress` 0→1): el libro se desplaza y crece desde el marco real
+  del mini-libro (medido con `GeometryReader` en coordenadas `.global`) y
+  vuelve ahí al cerrarse. Las tarjetas de gratitud muestran sus
   motivos en línea y no navegan (editar la gratitud de hoy se hace desde el
   CTA del home; el modo solo-lectura de días pasados de RN no se porta). El
   `DatePickerField` hecho a mano de RN se sustituye por el `DatePicker` nativo
