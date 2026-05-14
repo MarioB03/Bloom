@@ -9,9 +9,9 @@ enum CheckInRoute: Hashable {
 /// Pantalla principal: saludo, racha y check-ins del día de hoy.
 /// Equivalente a `app/(tabs)/index.tsx`.
 ///
-/// La versión RN incluye además promo premium, CTA de registro emocional,
-/// gratitud, toasts de logros y el diario flotante; esas piezas llegarán
-/// con sus respectivas features. Aquí se porta solo lo propio del check-in.
+/// La versión RN incluye además promo premium, toasts de logros y el diario
+/// flotante; esas piezas llegarán con sus respectivas features. Aquí se portan
+/// el check-in diario y el CTA del diario de gratitud.
 struct CheckInHomeView: View {
 
     @Environment(AuthService.self) private var auth
@@ -19,8 +19,10 @@ struct CheckInHomeView: View {
 
     @State private var checkins: [CheckinEntry] = []
     @State private var streak = 0
+    @State private var gratitudeDoneToday = false
     @State private var isLoading = true
     @State private var showingForm = false
+    @State private var showingGratitude = false
 
     var body: some View {
         NavigationStack {
@@ -28,6 +30,7 @@ struct CheckInHomeView: View {
                 header
                 streakCard
                 newCheckinCard
+                gratitudeCard
                 recordsSection
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -44,6 +47,11 @@ struct CheckInHomeView: View {
         }
         .sheet(isPresented: $showingForm) {
             CheckInFormView {
+                Task { await load() }
+            }
+        }
+        .sheet(isPresented: $showingGratitude) {
+            GratitudeView {
                 Task { await load() }
             }
         }
@@ -132,6 +140,40 @@ struct CheckInHomeView: View {
         .sensoryFeedback(.impact(weight: .medium), trigger: showingForm)
     }
 
+    // MARK: - CTA del diario de gratitud
+
+    private var gratitudeCard: some View {
+        Button {
+            showingGratitude = true
+        } label: {
+            HStack(spacing: Theme.Spacing.md) {
+                Text("🙏")
+                    .font(.system(size: 22))
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Circle())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(gratitudeDoneToday ? Strings.Gratitude.ctaDone : Strings.Gratitude.ctaTitle)
+                        .font(.bodyBold)
+                        .foregroundStyle(.white)
+                    Text(gratitudeDoneToday ? Strings.Gratitude.ctaDoneSubtitle : Strings.Gratitude.ctaSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.85))
+                }
+                Spacer()
+                Image(systemName: gratitudeDoneToday ? "checkmark.circle.fill" : "chevron.right")
+                    .font(.system(size: gratitudeDoneToday ? 18 : 14, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.85))
+            }
+            .padding(Theme.Spacing.md)
+            .background(Theme.Palette.accent400)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.xl))
+            .bloomShadow(.md)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .medium), trigger: showingGratitude)
+    }
+
     // MARK: - Registros de hoy
 
     @ViewBuilder
@@ -172,6 +214,7 @@ struct CheckInHomeView: View {
             checkins = try await firestore.checkins(byDate: today, userID: userID)
             let dates = try await firestore.checkinDates(lastDays: 30, userID: userID)
             streak = Streak.current(from: dates)
+            gratitudeDoneToday = try await firestore.gratitude(byDate: today, userID: userID) != nil
         } catch {
             // Se conserva el último estado conocido ante un fallo de red.
         }

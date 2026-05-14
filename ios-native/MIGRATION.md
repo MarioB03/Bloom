@@ -19,7 +19,7 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Design System (Theme, Typography, fuentes) | ✅ | Portado de `src/constants/theme.ts` |
 | Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos (+ `CheckinDraft`) — ver "Modelos pendientes" |
 | `AuthService` | ✅ | Email/password, social (Apple/Google), creación de perfil Firestore |
-| `FirestoreService` | 🚧 | CRUD cifrado de check-ins y de registros emocionales (colección `registers`); resto de colecciones pendiente |
+| `FirestoreService` | 🚧 | CRUD cifrado de check-ins, registros emocionales (`registers`) y diario de gratitud (`gratitude`); resto de colecciones pendiente |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
 | **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
 | **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
@@ -33,9 +33,10 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Widget iOS | ⬜ | RN ya tiene uno vía `@bacons/apple-targets` + `widget-sync.ts` |
 
 ### Modelos pendientes de portar (se harán con cada feature)
-`GratitudeEntry` · `Skill` · `Template` + `TemplateField` +
-`RegisterEntry` · `PremiumStatus` · tipos de `SafetyPlan` · tipos de `Sharing`.
-Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`.
+`Skill` · `Template` + `TemplateField` + `RegisterEntry` · `PremiumStatus` ·
+tipos de `SafetyPlan` · tipos de `Sharing`.
+Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
+`GratitudeEntry`.
 
 ---
 
@@ -62,8 +63,10 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`.
 - [x] Componentes: `EmotionPicker`, `IntensitySelector`, `CycleTracker`, `EventInput`, `CheckinCard`
 - Nativo: `Features/CheckIn/` + `Features/CheckIn/Components/`, `FirestoreService` (CRUD cifrado)
 - RN: `app/checkin/`, `src/components/checkin/`, `app/(tabs)/index.tsx`
-- **Pendiente del home RN** (llega con sus features): promo premium, CTA de registro
-  emocional, gratitud, toasts de logros, diario flotante (agenda)
+- **Pendiente del home RN** (llega con sus features): promo premium, toasts de
+  logros, diario flotante (agenda). El CTA de gratitud ya está (ver Diario de
+  gratitud); el de registro emocional se sustituye por el CTA propio de la
+  pestaña Registros
 - **Compostar**: omitido en el detalle — depende de la economía del jardín (no portada).
   El detalle sí muestra `compostReflection` si ya existe
 
@@ -205,9 +208,22 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - [ ] 15 logros + cola de toasts
 - RN: `app/logros.tsx`, `src/lib/achievements.ts`
 
-### Diario de gratitud — ⬜
-- [ ] Crear/listar entradas (items cifrados)
+### Diario de gratitud — ✅
+- [x] Modelo `GratitudeEntry` + colección `users/{uid}/gratitude` con `items[]`
+  cifrados en `FirestoreService` (`gratitude(byDate:)`, `allGratitude`,
+  `createGratitude`, `updateGratitude`)
+- [x] Editor de la gratitud de hoy — 3 motivos, crea o edita la entrada del día
+  (`GratitudeView`, hoja modal)
+- [x] CTA del diario de gratitud en el home (`CheckInHomeView`), con estado
+  "Gratitud de hoy" cuando ya está registrada
+- Nativo: `Features/Gratitude/GratitudeView.swift`,
+  `Models/GratitudeEntry.swift`, `Strings.Gratitude`
 - RN: `app/gratitud/nuevo.tsx`, colección `users/{uid}/gratitude`
+- **Divergencia de RN**: solo se edita la gratitud de **hoy**. La app RN admite
+  un modo de solo lectura para días pasados (al abrirlo desde la agenda o el
+  calendario); llegará con esas features. La comprobación de logros
+  (`checkAndUnlockAchievements`) se omite porque los logros de app no están
+  portados
 
 ### Plan de seguridad — ⬜
 - [ ] Editor de plan + contactos + líneas de crisis

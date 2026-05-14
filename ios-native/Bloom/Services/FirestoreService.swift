@@ -24,6 +24,10 @@ final class FirestoreService {
         db.collection("users").document(userID).collection("registers")
     }
 
+    private func gratitudeCollection(for userID: String) -> CollectionReference {
+        db.collection("users").document(userID).collection("gratitude")
+    }
+
     // MARK: - Lectura
 
     /// Check-ins de un día concreto (`"YYYY-MM-DD"`), del más reciente al más antiguo.
@@ -185,6 +189,55 @@ final class FirestoreService {
         try await registersCollection(for: userID).document(registerID).delete()
     }
 
+    // MARK: - Diario de gratitud
+
+    /// Entrada de gratitud de un día concreto (`"YYYY-MM-DD"`), o `nil` si no
+    /// hay ninguna. Solo existe una entrada por día.
+    func gratitude(byDate date: String, userID: String) async throws -> GratitudeEntry? {
+        let snapshot = try await gratitudeCollection(for: userID)
+            .whereField("date", isEqualTo: date)
+            .getDocuments()
+        guard let document = snapshot.documents.first else { return nil }
+        return decrypted(try document.data(as: GratitudeEntry.self))
+    }
+
+    /// Todas las entradas de gratitud del usuario, de la más reciente a la más antigua.
+    func allGratitude(userID: String) async throws -> [GratitudeEntry] {
+        let snapshot = try await gratitudeCollection(for: userID)
+            .order(by: "createdAt", descending: true)
+            .getDocuments()
+        return try snapshot.documents
+            .map { try $0.data(as: GratitudeEntry.self) }
+            .map(decrypted)
+    }
+
+    /// Crea la entrada de gratitud de hoy con los motivos indicados.
+    func createGratitude(items: [String], userID: String) throws {
+        let now = Date()
+        let entry = GratitudeEntry(
+            id: nil,
+            userId: userID,
+            date: BloomDate.dateKey(now),
+            createdAt: now,
+            updatedAt: now,
+            items: items
+        )
+        _ = try gratitudeCollection(for: userID).addDocument(from: encrypted(entry))
+    }
+
+    /// Actualiza una entrada de gratitud existente. Conserva `date` y
+    /// `createdAt` del `entry` recibido y refresca `updatedAt`.
+    func updateGratitude(_ entry: GratitudeEntry) throws {
+        guard let id = entry.id else {
+            throw FirestoreServiceError.missingID
+        }
+        var updated = entry
+        updated.updatedAt = Date()
+        try gratitudeCollection(for: entry.userId)
+            .document(id)
+            .setData(from: encrypted(updated), merge: true)
+    }
+
     // MARK: - Cifrado de campos sensibles
 
     /// Copia del check-in con `notes` y los eventos cifrados, lista para escribir.
@@ -251,6 +304,20 @@ final class FirestoreService {
         result.behavior = BloomCrypto.decrypt(entry.behavior)
         result.consequences = BloomCrypto.decrypt(entry.consequences)
         result.emotionFunction = BloomCrypto.decrypt(entry.emotionFunction)
+        return result
+    }
+
+    /// Copia de la entrada de gratitud con los motivos cifrados, lista para escribir.
+    private func encrypted(_ entry: GratitudeEntry) -> GratitudeEntry {
+        var result = entry
+        result.items = entry.items.map(BloomCrypto.encrypt)
+        return result
+    }
+
+    /// Copia de la entrada de gratitud con los motivos descifrados, lista para la UI.
+    private func decrypted(_ entry: GratitudeEntry) -> GratitudeEntry {
+        var result = entry
+        result.items = entry.items.map(BloomCrypto.decrypt)
         return result
     }
 }

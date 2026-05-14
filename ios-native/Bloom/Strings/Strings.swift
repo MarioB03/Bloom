@@ -300,6 +300,27 @@ enum Strings {
         static func intensityValue(_ value: Int) -> String { "\(value)/10" }
     }
 
+    enum Gratitude {
+        // CTA del home
+        static let ctaTitle = "Diario de gratitud"
+        static let ctaSubtitle = "Tres cosas buenas de hoy"
+        static let ctaDone = "Gratitud de hoy"
+        static let ctaDoneSubtitle = "Toca para ver o editar"
+
+        // Editor
+        static let title = "Diario de gratitud"
+        static let editTitle = "Editar gratitud"
+        static let subtitle = "Tres cosas buenas de hoy"
+        static let prompt = "Escribe tres cosas por las que sientas gratitud hoy"
+        static let emptyError = "Escribe al menos una cosa por la que sientas gratitud"
+        static let saveError = "No se pudo guardar la gratitud"
+
+        /// Placeholder del motivo de gratitud número `index + 1`.
+        static func placeholder(_ index: Int) -> String {
+            "\(index + 1). Agradezco..."
+        }
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.
