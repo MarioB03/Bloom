@@ -37,6 +37,11 @@ struct CheckInHomeView: View {
                 gratitudeCard
                 recordsSection
             }
+            // El mini-libro se superpone solo a la raíz del home, no a los
+            // destinos apilados (jardín, detalle de check-in).
+            .overlay(alignment: .bottomTrailing) {
+                miniDiaryBook
+            }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: CheckInRoute.self) { route in
                 switch route {
@@ -48,27 +53,6 @@ struct CheckInHomeView: View {
                     GardenView()
                 }
             }
-        }
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                presentDiary()
-            } label: {
-                MiniDiaryBook()
-                    .background {
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear { miniBookFrame = proxy.frame(in: .global) }
-                                .onChange(of: proxy.frame(in: .global)) { _, newValue in
-                                    miniBookFrame = newValue
-                                }
-                        }
-                    }
-            }
-            .buttonStyle(.plain)
-            .opacity(showingDiary ? 0 : 1)
-            .padding(.trailing, Theme.Spacing.md + 4)
-            .padding(.bottom, Theme.Spacing.md)
-            .sensoryFeedback(.impact(weight: .medium), trigger: showingDiary)
         }
         .sheet(isPresented: $showingForm) {
             CheckInFormView {
@@ -92,6 +76,32 @@ struct CheckInHomeView: View {
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) { showingDiary = true }
+    }
+
+    // MARK: - Mini-libro del diario
+
+    /// Mini-libro flotante que abre el diario. Mide su propio marco en
+    /// coordenadas globales para que `DiaryBookView` anime desde y hacia él.
+    private var miniDiaryBook: some View {
+        Button {
+            presentDiary()
+        } label: {
+            MiniDiaryBook()
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear { miniBookFrame = proxy.frame(in: .global) }
+                            .onChange(of: proxy.frame(in: .global)) { _, newValue in
+                                miniBookFrame = newValue
+                            }
+                    }
+                }
+        }
+        .buttonStyle(.plain)
+        .opacity(showingDiary ? 0 : 1)
+        .padding(.trailing, Theme.Spacing.md + 4)
+        .padding(.bottom, Theme.Spacing.md)
+        .sensoryFeedback(.impact(weight: .medium), trigger: showingDiary)
     }
 
     // MARK: - Cabecera
