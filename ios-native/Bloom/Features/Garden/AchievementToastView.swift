@@ -1,0 +1,64 @@
+import SwiftUI
+
+/// Toast efímero que anuncia un logro del jardín recién desbloqueado: entra
+/// deslizándose desde arriba con un rebote, se mantiene unos segundos y sale.
+/// Se autodescarta llamando a `onDismiss`. Equivalente nativo de
+/// `AchievementToast.tsx`.
+struct AchievementToastView: View {
+    let achievement: GardenAchievement
+    let onDismiss: () -> Void
+
+    @State private var offsetY: CGFloat = -140
+    @State private var scale: CGFloat = 0.8
+    @State private var opacity: CGFloat = 0
+
+    var body: some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            Text(achievement.emoji)
+                .font(.system(size: 28))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(achievement.title)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.Palette.neutral700)
+                Text(achievement.description)
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundStyle(Theme.Palette.neutral500)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.vertical, Theme.Spacing.sm + 2)
+        .padding(.horizontal, Theme.Spacing.md)
+        .background(Theme.Palette.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.lg)
+                .strokeBorder(Theme.Palette.accent200, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))
+        .bloomShadow(.md)
+        .scaleEffect(scale)
+        .opacity(opacity)
+        .offset(y: offsetY)
+        .onAppear(perform: animate)
+    }
+
+    private func animate() {
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.62)) {
+            offsetY = 0
+            scale = 1
+            opacity = 1
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) {
+            withAnimation(.easeIn(duration: 0.4)) {
+                offsetY = -140
+                scale = 0.8
+                opacity = 0
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.4) {
+            onDismiss()
+        }
+    }
+}

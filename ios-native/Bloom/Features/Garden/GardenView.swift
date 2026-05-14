@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Pantalla del jardín de bienestar: cabecera, tarjeta de progreso (racha,
 /// plantas, semillas) y la escena isométrica con las plantas que han brotado
@@ -16,10 +17,17 @@ struct GardenView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
+    @Environment(\.displayScale) private var displayScale
 
     @State private var store = GardenStore()
     @State private var shopPresented = false
     @State private var decorationPickerPresented = false
+    /// Logro que se está mostrando ahora mismo como toast (la cola vive en el
+    /// store). `nil` cuando no hay ninguno visible.
+    @State private var currentToast: GardenAchievement?
+    /// Imagen del jardín lista para compartir; al asignarse abre la hoja del
+    /// sistema. `nil` cuando no hay nada que compartir.
+    @State private var shareItem: ShareableImage?
 
     var body: some View {
         @Bindable var store = store
@@ -42,6 +50,7 @@ struct GardenView: View {
                         }
                         modeHint
                         scene
+                        GardenStatsView(plants: store.layout.plants)
                     }
                 }
             }
@@ -55,6 +64,15 @@ struct GardenView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
+                    shareGarden()
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .accessibilityLabel(Strings.Garden.shareButton)
+                .disabled(store.loading || store.layout.plants.isEmpty)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
                     shopPresented = true
                 } label: {
                     Image(systemName: "bag")
@@ -63,7 +81,13 @@ struct GardenView: View {
                 .disabled(store.loading)
             }
         }
-        .task { await load() }
+        .task {
+            await load()
+            showNextToast()
+        }
+        .onChange(of: store.pendingAchievements.count) {
+            showNextToast()
+        }
         .sheet(item: $store.selectedPlant) { plant in
             PlantInfoView(plant: plant) {
                 store.waterPlant(gx: plant.gx, gy: plant.gy)
@@ -71,6 +95,68 @@ struct GardenView: View {
         }
         .sheet(isPresented: $shopPresented) {
             GardenShop(store: store)
+        }
+        .sheet(item: $shareItem) { item in
+            ShareSheet(items: [item.image])
+        }
+        .overlay(alignment: .top) {
+            if let toast = currentToast {
+                AchievementToastView(achievement: toast) {
+                    currentToast = nil
+                    // Breve pausa antes de encadenar el siguiente de la cola.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showNextToast()
+                    }
+                }
+                .id(toast.id)
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.top, Theme.Spacing.sm)
+            }
+        }
+        .overlay {
+            if let pending = store.pendingMilestone {
+                StreakCelebrationView(
+                    milestone: pending.milestone,
+                    seedsEarned: pending.seeds
+                ) {
+                    store.celebrateMilestone(pending.milestone.streak)
+                }
+                .id(pending.milestone.streak)
+            }
+        }
+    }
+
+    /// Pasa el siguiente logro de la cola del store a `currentToast`, si no hay
+    /// ya uno visible. Equivalente a `showNextToast` de `app/jardin.tsx`.
+    private func showNextToast() {
+        guard currentToast == nil else { return }
+        currentToast = store.consumeNextAchievement()
+    }
+
+    /// Rasteriza la escena del jardín a una imagen y abre la hoja de compartir
+    /// del sistema. Equivalente a `handleShareGarden` de `app/jardin.tsx`, que
+    /// captura la vista del lienzo. La instantánea se dibuja en modo "mirar",
+    /// sin efectos de riego.
+    @MainActor
+    private func shareGarden() {
+        let snapshot = GardenScene(
+            layout: store.layout,
+            gridSize: store.gridSize,
+            season: store.season,
+            cosmetics: store.cosmetics,
+            streak: store.streak,
+            mode: .view,
+            activePets: store.activePets,
+            waterEffects: [],
+            onTapCell: { _, _ in }
+        )
+        .frame(width: 390, height: 390)
+        .background(Theme.Palette.background)
+
+        let renderer = ImageRenderer(content: snapshot)
+        renderer.scale = displayScale
+        if let image = renderer.uiImage {
+            shareItem = ShareableImage(image: image)
         }
     }
 
@@ -279,4 +365,22 @@ struct GardenView: View {
         guard let userID = auth.currentUserID else { return }
         await store.load(firestore: firestore, userID: userID)
     }
+}
+
+/// Imagen del jardín envuelta para usarse como `item` de un `.sheet`.
+private struct ShareableImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
+/// Envoltorio de `UIActivityViewController` para presentar la hoja de
+/// compartir del sistema desde SwiftUI.
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }

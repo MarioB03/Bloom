@@ -307,6 +307,21 @@ final class GardenStore {
         pendingAchievements.isEmpty ? nil : pendingAchievements.removeFirst()
     }
 
+    /// Primer hito de racha alcanzado y aún sin celebrar, con las semillas de
+    /// bono que otorga (0 si el hito no tiene bono asociado). `nil` si no hay
+    /// ninguno pendiente. Equivalente al barrido de `CELEBRATION_MILESTONES` en
+    /// `app/jardin.tsx`: se muestra uno a uno y, al celebrarlo, este derivado
+    /// pasa al siguiente.
+    var pendingMilestone: (milestone: StreakMilestone, seeds: Int)? {
+        for milestone in StreakMilestone.all
+        where streak >= milestone.streak && !celebratedMilestones.contains(milestone.streak) {
+            let seeds = GardenEconomy.streakBonusThresholds
+                .first { $0.streak == milestone.streak }?.seeds ?? 0
+            return (milestone, seeds)
+        }
+        return nil
+    }
+
     /// Marca un hito de racha como ya celebrado para no repetir la animación.
     func celebrateMilestone(_ milestone: Int) {
         guard !celebratedMilestones.contains(milestone) else { return }
