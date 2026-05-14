@@ -55,6 +55,17 @@ final class FirestoreService {
             }
     }
 
+    /// Todos los check-ins del usuario, del más reciente al más antiguo.
+    /// Alimenta la pantalla de insights y sus correlaciones.
+    func allCheckins(userID: String) async throws -> [CheckinEntry] {
+        let snapshot = try await checkinsCollection(for: userID)
+            .order(by: "date", descending: true)
+            .getDocuments()
+        return try snapshot.documents
+            .map { try $0.data(as: CheckinEntry.self) }
+            .map(decrypted)
+    }
+
     /// Fechas (`"YYYY-MM-DD"`) con al menos un check-in en los últimos 30 días.
     /// Alimenta el cálculo de la racha.
     func checkinDates(lastDays days: Int, userID: String) async throws -> [String] {

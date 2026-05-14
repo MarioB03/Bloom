@@ -19,7 +19,7 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Design System (Theme, Typography, fuentes) | ✅ | Portado de `src/constants/theme.ts` |
 | Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos (+ `CheckinDraft`) — ver "Modelos pendientes" |
 | `AuthService` | ✅ | Email/password, social (Apple/Google), creación de perfil Firestore |
-| `FirestoreService` | 🚧 | CRUD de check-ins completo y cifrado (incluye consulta por rango de fechas); resto de colecciones pendiente |
+| `FirestoreService` | 🚧 | CRUD de check-ins completo y cifrado (rango de fechas + lectura de todos para insights); resto de colecciones pendiente |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
 | **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
 | **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
@@ -81,9 +81,20 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
 - **Pendiente del detalle de día RN** (llega con sus features): registros
   emocionales y gratitud del día. Nativo muestra solo check-ins por ahora
 
-### Insights — ⬜
-- [ ] Pantalla de insights y correlaciones
+### Insights — ✅
+- [x] Resumen emocional (check-ins, días activos, racha)
+- [x] Actividad semanal (gráfico de barras de la semana en curso, lunes a domingo)
+- [x] Emociones más frecuentes (top 5 con barra de porcentaje)
+- [x] Medias de intensidad y calidad de sueño + banner de consejo
+- [x] Correlaciones (≥ 7 registros): sueño, hambre, ciclo, día de la semana,
+  tendencia semanal — `Correlations.swift` portado de `correlations.ts`
+- Nativo: `Features/Insights/` (`InsightsView`, `Correlations`),
+  `FirestoreService.allCheckins(userID:)`
 - RN: `app/insights.tsx`, `src/lib/correlations.ts`
+- **Divergencia de RN**: en RN las medias y correlaciones van detrás del muro
+  de Premium; aquí se muestran siempre porque Premium no está portado (mismo
+  criterio que la tienda del jardín). El botón "Volver" del RN se omite: en
+  nativo Insights es una pestaña, no una pantalla apilada
 
 ### Notas y registros emocionales — ⬜
 - [ ] Lista de notas (`app/(tabs)/notas.tsx`)

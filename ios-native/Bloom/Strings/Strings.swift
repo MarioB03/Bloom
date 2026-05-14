@@ -209,6 +209,46 @@ enum Strings {
         static let shareError = "No se pudo compartir la imagen"
     }
 
+    enum Insights {
+        static let title = "Insights"
+        static let subtitle = "Tu resumen emocional"
+        static let checkinsLabel = "Check-ins"
+        static let activeDaysLabel = "Días activos"
+        static let streakLabel = "Racha"
+        static let weeklyActivity = "Actividad semanal"
+        static let topEmotions = "Emociones más frecuentes"
+        static let avgIntensity = "Intensidad media"
+        static let avgSleep = "Calidad de sueño"
+        static let correlations = "Correlaciones"
+        static let sleepCorrelation = "Sueño y emociones"
+        static let whenSleepBad = "Cuando duermes mal"
+        static let whenSleepGood = "Cuando duermes bien"
+        static let hungerCorrelation = "Hambre y emociones"
+        static let whenHungry = "Con hambre alta"
+        static let whenFed = "Sin hambre"
+        static let cyclePatterns = "Ciclo y emociones"
+        static let dayOfWeek = "Patrones por día"
+        static let bestDay = "Mejor día"
+        static let hardestDay = "Día más difícil"
+        static let weeklyTrend = "Tendencia semanal"
+        static let moreOf = "Más"
+        static let lessOf = "Menos"
+        static let vsLastWeek = "vs semana anterior"
+        static let needMoreData = "Necesitas al menos 7 registros para ver correlaciones"
+        static let emptyMessage = "Haz algunos check-ins para ver tus estadísticas"
+        static let tipDefault = "Sigue registrando para descubrir patrones en tu bienestar."
+
+        /// Consejo cuando hay una emoción dominante y el sueño es bajo.
+        static func tipLowSleep(_ emotionLabel: String) -> String {
+            "Tu emoción más frecuente es \(emotionLabel) y tu sueño es bajo. Intenta mejorar tu descanso."
+        }
+
+        /// Consejo cuando hay una emoción dominante.
+        static func tipFrequentEmotion(_ emotionLabel: String) -> String {
+            "Tu emoción más frecuente es \(emotionLabel). ¡Sigue registrando para descubrir más patrones!"
+        }
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.
