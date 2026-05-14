@@ -28,6 +28,10 @@ final class FirestoreService {
         db.collection("users").document(userID).collection("gratitude")
     }
 
+    private func skillPracticeCollection(for userID: String) -> CollectionReference {
+        db.collection("users").document(userID).collection("skillPractice")
+    }
+
     // MARK: - Lectura
 
     /// Check-ins de un día concreto (`"YYYY-MM-DD"`), del más reciente al más antiguo.
@@ -236,6 +240,42 @@ final class FirestoreService {
         try gratitudeCollection(for: entry.userId)
             .document(id)
             .setData(from: encrypted(updated), merge: true)
+    }
+
+    // MARK: - Prácticas de habilidades
+
+    /// Historial de prácticas del usuario, de la más reciente a la más antigua.
+    func skillPracticeHistory(userID: String) async throws -> [SkillPractice] {
+        let snapshot = try await skillPracticeCollection(for: userID)
+            .order(by: "completedAt", descending: true)
+            .getDocuments()
+        return try snapshot.documents.map { try $0.data(as: SkillPractice.self) }
+    }
+
+    /// Ids de las habilidades distintas que el usuario ha practicado al menos
+    /// una vez. Alimenta el contador "Habilidades diferentes" del historial.
+    func uniquePracticedSkillIDs(userID: String) async throws -> Set<String> {
+        let snapshot = try await skillPracticeCollection(for: userID).getDocuments()
+        return Set(snapshot.documents.compactMap { $0.data()["skillId"] as? String })
+    }
+
+    /// Registra una práctica de habilidad completada, con la fecha de ahora.
+    ///
+    /// Divergencia de RN: en la app React Native `createSkillPractice` existe
+    /// pero no se llama desde ninguna pantalla, así que el historial siempre
+    /// queda vacío. Aquí sí se invoca (al terminar un ejercicio o al marcar un
+    /// artículo como practicado), de modo que el historial es funcional.
+    func createSkillPractice(_ draft: SkillPracticeDraft, userID: String) throws {
+        let practice = SkillPractice(
+            id: nil,
+            userId: userID,
+            skillId: draft.skillId,
+            skillTitle: draft.skillTitle,
+            category: draft.category,
+            completedAt: Date(),
+            durationSeconds: draft.durationSeconds
+        )
+        _ = try skillPracticeCollection(for: userID).addDocument(from: practice)
     }
 
     // MARK: - Cifrado de campos sensibles

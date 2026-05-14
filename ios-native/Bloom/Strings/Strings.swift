@@ -354,6 +354,61 @@ enum Strings {
         }
     }
 
+    enum Skills {
+        // Pestaña / listado
+        static let title = "Habilidades"
+        static let subtitle = "Técnicas y ejercicios basados en DBT"
+        static let filterByEmotion = "Filtrar por emoción"
+        static let suggestedForYou = "Sugerido para ti"
+
+        // Categoría
+        static let allTypes = "Todas"
+        static let exercises = "Ejercicios"
+        static let articles = "Artículos"
+
+        // Detalle de habilidad
+        static let exercise = "Ejercicio"
+        static let article = "Artículo"
+        static let steps = "Pasos"
+        static let tips = "Consejos"
+        static let startExercise = "Comenzar ejercicio"
+        static let practiceArticle = "He practicado esto"
+
+        // Ejercicio en curso
+        static let nextStep = "Siguiente"
+        static let finish = "Finalizar"
+        static let congratulations = "¡Bien hecho!"
+        static let keepPracticing = "Cada vez que practiques, será más fácil"
+        static let practiceAgain = "Practicar de nuevo"
+        static let backToSkills = "Volver a habilidades"
+
+        // Historial de práctica
+        static let practiceHistory = "Historial"
+        static let totalPractices = "Prácticas totales"
+        static let uniqueSkills = "Habilidades diferentes"
+        static let totalTime = "Tiempo total"
+        static let minutes = "min"
+        static let noPractices = "Aún no has practicado ninguna habilidad"
+        static let noSkills = "Próximamente habrá habilidades disponibles"
+
+        /// "Paso 2 de 6".
+        static func stepOf(_ current: Int, _ total: Int) -> String {
+            "Paso \(current) de \(total)"
+        }
+
+        /// "1 paso" / "N pasos" — subtítulo de la previsualización del ejercicio.
+        static func stepCount(_ count: Int) -> String {
+            "\(count) \(count == 1 ? "paso" : "pasos")"
+        }
+    }
+
+    enum Breathing {
+        static let inhale = "Inhala"
+        static let hold = "Retén"
+        static let exhale = "Exhala"
+        static let breathe = "Respira"
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.

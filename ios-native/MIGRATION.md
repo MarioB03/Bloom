@@ -121,11 +121,13 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
   RN. El listado combinado con búsqueda y filtros se porta en "Agenda y
   búsqueda" (ver abajo) — es la misma pestaña
 
-### Plantillas y registros dinámicos — ⬜
-- [ ] Pestaña "Registros" (`app/(tabs)/registros.tsx`)
-- [ ] Motor de formularios dinámicos: `Template` + `TemplateField` (tipos text/number/slider/select/multiselect/toggle/date) → `RegisterEntry`
-- [ ] Colección `templates/` read-only en Firestore
-- RN: `src/types/template.ts`
+### Plantillas y registros dinámicos — ⏭️ pospuesta (sin UI en RN)
+La app RN **nunca implementó esta feature**: solo existe `src/types/template.ts`
+con los modelos (`Template` + `TemplateField` + `RegisterEntry`) y la regla
+read-only `match /templates/{templateId}` en `firestore.rules`. Ninguna pantalla
+usa esos tipos y la string `registers.noTemplates` ("Próximamente habrá
+plantillas disponibles") está muerta. No hay UI que portar → se pospone; cuando
+se aborde será desarrollo nuevo, no migración.
 
 ### Agenda y búsqueda — ✅
 - [x] Diario combinado en la pestaña "Registros" (`NotesView`): check-ins,
@@ -156,11 +158,32 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
   CTA del home; el modo solo-lectura de días pasados de RN no se porta). El
   `DatePickerField` hecho a mano de RN se sustituye por el `DatePicker` nativo
 
-### Habilidades — ⬜
-- [ ] Listado por categorías + detalle de habilidad
-- [ ] Ejercicios: respiración (BreathingCircle), timers, indicador de pasos
-- [ ] Historial de práctica
-- RN: `app/(tabs)/habilidades.tsx`, `app/habilidad/`, `app/habilidades/`, `src/components/skills/`, `src/constants/skills.ts`
+### Habilidades — ✅
+- [x] Listado por categorías + filtro por emoción + habilidades sugeridas
+- [x] Detalle de habilidad: héroe, pasos (artículo) o previsualización
+  (ejercicio), consejos y botón de acción
+- [x] Ejercicios paso a paso: indicador de pasos, timer con barra de progreso,
+  círculo de respiración animado (`BreathingCircle`) y pantalla de "completado"
+- [x] Detalle de categoría con filtro por tipo (todas / ejercicios / artículos)
+- [x] Historial de práctica con tarjetas de resumen, agrupado por día
+- Nativo: `Models/Skill.swift` (modelos + `SkillPractice`),
+  `Features/Skills/SkillCatalog.swift` (las 18 habilidades + helpers),
+  `Features/Skills/` (`SkillsView` con `SkillsDestination`,
+  `SkillCategoryDetailView`, `SkillDetailView`, `PracticeHistoryView`),
+  `Features/Skills/Components/` (`SkillCard`, `CategoryCard`, `SkillTypeBadge`,
+  `StepIndicator`, `ExerciseTimer`, `BreathingCircle`, `PracticeHistoryCard`),
+  CRUD de `skillPractice` en `FirestoreService`, `Strings.Skills` /
+  `Strings.Breathing`
+- RN: `app/(tabs)/habilidades.tsx`, `app/habilidad/`, `app/habilidades/`,
+  `src/components/skills/`, `src/constants/skills.ts`
+- **Divergencia de RN**: el catálogo de 18 habilidades es estático (no se lee
+  de Firestore), igual que en RN. El `setInterval` del timer se recrea con un
+  `Timer.publish`; el ciclo de `setTimeout` anidados del círculo de respiración
+  se recrea con una tarea `async` que se cancela al pausar. En RN
+  `createSkillPractice` y la pantalla de historial existen pero **no se conectan
+  a ninguna UI** (el historial nunca recibe datos): en nativo sí se registra una
+  `SkillPractice` al completar un ejercicio o marcar un artículo como practicado,
+  y el historial es accesible desde un botón en la cabecera de la pestaña
 
 ### Jardín de bienestar — ✅ (el más grande, portado por fases)
 Motor de render decidido: **`SwiftUI Canvas` + `TimelineView(.animation)`** (no
