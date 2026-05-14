@@ -21,6 +21,8 @@ final class GardenStore {
     private(set) var layout = GardenLayout()
     var mode: InteractionMode = .view
     var selectedPlant: PlantPlacement?
+    /// Decoración elegida en el picker, lista para colocarse al tocar una celda.
+    var selectedDecorationType: DecorationType?
     private(set) var loading = true
     private(set) var waterEffects: [WaterEffect] = []
 
@@ -39,11 +41,20 @@ final class GardenStore {
     private(set) var pendingDailyReward: DailyRewardResult?
 
     private var hasLoadedPersisted = false
+    /// Últimos check-ins cargados de Firestore, para poder recolocar las
+    /// plantas sin volver a la red (p. ej. al comprar la expansión de terreno).
+    private var lastCheckins: [CheckinEntry] = []
 
     // MARK: - Derivados
 
-    /// Lado de la rejilla activa según la racha.
-    var gridSize: Int { GardenGrid.activeSize(streak: streak) }
+    /// Lado de la rejilla activa: el que otorga la racha más, si se compró la
+    /// expansión de terreno en la tienda, un nivel permanente extra. Topado en
+    /// `GardenGrid.maxSize`.
+    var gridSize: Int {
+        let base = GardenGrid.activeSize(streak: streak)
+        let bonus = purchasedIDs.contains(GardenEconomy.terrainExpansionID) ? 1 : 0
+        return min(GardenGrid.maxSize, base + bonus)
+    }
 
     /// Nivel actual del jardín.
     var level: GardenLevel { GardenLevel.current(streak: streak) }
@@ -94,9 +105,17 @@ final class GardenStore {
     /// Recalcula la racha y las plantas a partir de los check-ins, conservando
     /// el estado de riego de la sesión, y aplica recompensa diaria y logros.
     private func apply(checkins: [CheckinEntry]) {
+        lastCheckins = checkins
         streak = Streak.current(from: checkins.map(\.date))
+        replacePlants()
+        awardDailyReward()
+        checkAchievements()
+    }
 
-        let placed = Self.autoPlacePlants(checkins: checkins, streak: streak)
+    /// Recoloca las plantas a partir de los últimos check-ins cargados y del
+    /// `gridSize` actual, conservando el riego de las que no cambian de celda.
+    private func replacePlants() {
+        let placed = Self.autoPlacePlants(checkins: lastCheckins, streak: streak, gridSize: gridSize)
         let wateredKeys = Set(layout.plants.filter(\.wateredToday).map { GridPosition(gx: $0.gx, gy: $0.gy) })
         layout.plants = placed.map { plant in
             guard wateredKeys.contains(GridPosition(gx: plant.gx, gy: plant.gy)) else { return plant }
@@ -105,26 +124,33 @@ final class GardenStore {
             watered.growthStage = min(5, plant.growthStage + 1)
             return watered
         }
-
-        awardDailyReward()
-        checkAchievements()
     }
 
     // MARK: - Interacción
 
     /// Procesa un toque sobre una celda según el modo activo: en `view` abre el
-    /// detalle de la planta, en `water` la riega. Las celdas sin planta se
-    /// ignoran. Equivalente a `handleTapCell` de `app/jardin.tsx`.
+    /// detalle de la planta, en `water` la riega, en `decorate` coloca la
+    /// decoración seleccionada en una celda libre o quita la que ya hubiera.
+    /// Equivalente a `handleTapCell` de `app/jardin.tsx`.
     func handleCellTap(gx: Int, gy: Int) {
-        guard let plant = layout.plants.first(where: { $0.gx == gx && $0.gy == gy }) else { return }
         switch mode {
         case .view:
-            selectedPlant = plant
+            if let plant = plant(at: gx, gy: gy) { selectedPlant = plant }
         case .water:
-            waterPlant(gx: gx, gy: gy)
-        case .move, .decorate:
+            if plant(at: gx, gy: gy) != nil { waterPlant(gx: gx, gy: gy) }
+        case .decorate:
+            if layout.decorations.contains(where: { $0.gx == gx && $0.gy == gy }) {
+                removeDecoration(gx: gx, gy: gy)
+            } else if let type = selectedDecorationType {
+                addDecoration(gx: gx, gy: gy, type: type)
+            }
+        case .move:
             break
         }
+    }
+
+    private func plant(at gx: Int, gy: Int) -> PlantPlacement? {
+        layout.plants.first { $0.gx == gx && $0.gy == gy }
     }
 
     /// Coloca una decoración en una celda vacía y la persiste.
@@ -197,7 +223,30 @@ final class GardenStore {
             activeCosmeticIDs.append(itemID)
             GardenPersistence.saveActiveCosmetics(activeCosmeticIDs)
         }
+        // La expansión de terreno agranda la rejilla al instante; hay que
+        // recolocar las plantas para que queden centradas en la nueva.
+        if itemID == GardenEconomy.terrainExpansionID {
+            replacePlants()
+        }
         return true
+    }
+
+    /// Compra una decoración premium con semillas y la deja seleccionada para
+    /// colocarla. Devuelve `true` si la compra se completó. Las decoraciones
+    /// premium usan su `rawValue` como id de artículo en el catálogo.
+    @discardableResult
+    func purchaseDecoration(_ type: DecorationType) -> Bool {
+        guard purchase(itemID: type.rawValue) else { return false }
+        selectedDecorationType = type
+        return true
+    }
+
+    /// `true` si la decoración está disponible para colocar: las gratuitas se
+    /// desbloquean por racha, las premium por compra.
+    func isDecorationUnlocked(_ config: DecorationConfig) -> Bool {
+        config.isPremium
+            ? purchasedIDs.contains(config.type.rawValue)
+            : streak >= config.unlockStreak
     }
 
     /// Suma semillas al saldo y lo persiste.
@@ -269,12 +318,13 @@ final class GardenStore {
     // MARK: - Colocación automática de plantas
 
     /// Coloca las plantas de los días de racha en espiral desde el centro de
-    /// la rejilla. Las más antiguas quedan más crecidas y hacia afuera.
+    /// la rejilla. Las más antiguas quedan más crecidas y hacia afuera. El
+    /// `gridSize` se recibe ya resuelto (racha + expansión comprada) para que
+    /// las plantas queden centradas en la rejilla que realmente se dibuja.
     /// Portado de `autoPlacePlants` en `gardenState.ts`.
-    static func autoPlacePlants(checkins: [CheckinEntry], streak: Int) -> [PlantPlacement] {
+    static func autoPlacePlants(checkins: [CheckinEntry], streak: Int, gridSize: Int) -> [PlantPlacement] {
         guard streak > 0 else { return [] }
 
-        let gridSize = GardenGrid.activeSize(streak: streak)
         let uniqueDates = Set(checkins.map(\.date)).sorted()
         let streakDates = Set(uniqueDates.suffix(streak))
 

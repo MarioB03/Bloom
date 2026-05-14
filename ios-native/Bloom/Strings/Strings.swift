@@ -49,6 +49,8 @@ enum Strings {
         static let delete = "Eliminar"
         static let edit = "Editar"
         static let back = "Volver"
+        static let close = "Cerrar"
+        static let done = "Listo"
         static let loading = "Cargando..."
         static let error = "Ha ocurrido un error"
         static let retry = "Reintentar"
@@ -156,8 +158,23 @@ enum Strings {
         // Modos de interacción
         static let modeView = "Mirar"
         static let modeWater = "Regar"
+        static let modeDecorate = "Decorar"
         static let modeViewHint = "Toca una planta para ver su detalle"
         static let modeWaterHint = "Toca una planta para regarla y acelerar su crecimiento"
+        static let modeDecorateHint = "Elige una decoración y toca una celda. Toca una decoración para quitarla."
+
+        // Decoración
+        static let decorationsTitle = "Decoraciones"
+        static let decoratePickPrompt = "Elige una decoración"
+        static let decorationsStreakSection = "Se desbloquean con tu racha"
+        static let decorationsPremiumSection = "Premium"
+        static let decorationOwned = "Comprada"
+        static let shopButton = "Tienda"
+
+        /// Requisito de racha de una decoración aún bloqueada.
+        static func decorationStreakNeeded(_ days: Int) -> String {
+            "Racha de \(days) días"
+        }
 
         // Detalle de planta
         static let plantPlanted = "Plantada"
@@ -171,6 +188,18 @@ enum Strings {
         static func growthLabel(_ stage: Int) -> String {
             ["Semilla", "Brote", "Creciendo", "Floreciendo", "Casi lista", "Flor completa"][safe: stage] ?? "Semilla"
         }
+    }
+
+    enum Shop {
+        static let title = "Tienda"
+        /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.
+        static let seedUnit = "🌱"
+        static let confirmTitle = "Comprar"
+        static let buyButton = "Comprar"
+        static let insufficientTitle = "Semillas insuficientes"
+        static let insufficientMessage = "Necesitas más semillas. Haz registros y riega tus plantas para ganar más."
+        static let purchased = "Comprado"
+        static let emptyCategory = "Nada por aquí todavía"
     }
 }
 

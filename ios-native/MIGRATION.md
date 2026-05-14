@@ -134,9 +134,15 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   splash de agua (`drawWaterEffect`: gotas, anillos, salpicaduras) y anillo
   pulsante bajo las plantas regables. El modo Decorar y el long-press (que en
   RN solo quita decoraciones) van a Fase 5 con el picker
-- [ ] **Fase 5 — Economía + tienda**: `GardenShop`, picker de decoraciones +
-  modo Decorar + long-press para quitar (la lógica de economía ya está en
-  `GardenStore`)
+- [x] **Fase 5 — Economía + tienda**: `GardenShop` (hoja con `List` de
+  secciones —una por categoría— y filas con descripción + botón de precio;
+  saldo en el toolbar), `DecorationPicker` (hoja modal con `List` de dos
+  secciones —gratuitas por racha / premium—; *elegir* es modal, *colocar* usa
+  el jardín entero). Modo Decorar en la barra de modos con un chip que muestra
+  el "pincel" activo y abre la paleta; botón de tienda en el toolbar. Quitar
+  una decoración = tocarla en modo Decorar (sin long-press ni confirmación:
+  acción reversible dentro de su modo). La tienda no se restringe a Premium
+  (esa función no está portada)
 - [ ] **Fase 6 — Mascotas**: las 5 con su movimiento propio
 - [ ] **Fase 7 — Logros + celebraciones**: toasts, modal de hito con confeti
 - [ ] **Fase 8 — Cosméticos + pulido**: overrides cosméticos, `GardenStats`

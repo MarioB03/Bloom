@@ -65,11 +65,17 @@ struct GardenScene: View {
             }
             .contentShape(Rectangle())
             .onTapGesture(coordinateSpace: .local) { location in
-                let cell = GardenIso.toGrid(scenePoint(location, geometry), offset: geometry.offset)
-                if GardenIso.inBounds(gx: cell.gx, gy: cell.gy, gridSize: gridSize) {
-                    onTapCell(cell.gx, cell.gy)
-                }
+                notify(at: location, geometry: geometry, action: onTapCell)
             }
+        }
+    }
+
+    /// Convierte un punto de pantalla en celda y, si cae dentro de la rejilla,
+    /// invoca `action` con sus coordenadas.
+    private func notify(at location: CGPoint, geometry: SceneGeometry, action: (Int, Int) -> Void) {
+        let cell = GardenIso.toGrid(scenePoint(location, geometry), offset: geometry.offset)
+        if GardenIso.inBounds(gx: cell.gx, gy: cell.gy, gridSize: gridSize) {
+            action(cell.gx, cell.gy)
         }
     }
 

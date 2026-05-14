@@ -74,6 +74,10 @@ enum GardenEconomy {
 
     // MARK: - Catálogo de la tienda
 
+    /// Id del artículo de expansión de terreno. Comprarlo añade un nivel de
+    /// rejilla permanente por encima del que otorga la racha.
+    static let terrainExpansionID = "expand_level"
+
     static let catalog: [ShopItem] = [
         // Decoraciones premium
         .init(id: "arch",          name: "Arco de flores",   emoji: "🌸", category: .decorations, cost: 30, description: "Un arco cubierto de flores"),
