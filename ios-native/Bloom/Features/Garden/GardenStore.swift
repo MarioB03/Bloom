@@ -12,8 +12,9 @@ import SwiftUI
 @MainActor
 final class GardenStore {
 
-    /// Duración de la animación de riego sobre una celda.
-    static let waterEffectDuration: TimeInterval = 3.5
+    /// Duración de la animación de riego sobre una celda. `nonisolated` para
+    /// que el renderer (fuera de `MainActor`) pueda leerla.
+    nonisolated static let waterEffectDuration: TimeInterval = 3.5
 
     // MARK: - Estado del jardín
 
@@ -110,6 +111,21 @@ final class GardenStore {
     }
 
     // MARK: - Interacción
+
+    /// Procesa un toque sobre una celda según el modo activo: en `view` abre el
+    /// detalle de la planta, en `water` la riega. Las celdas sin planta se
+    /// ignoran. Equivalente a `handleTapCell` de `app/jardin.tsx`.
+    func handleCellTap(gx: Int, gy: Int) {
+        guard let plant = layout.plants.first(where: { $0.gx == gx && $0.gy == gy }) else { return }
+        switch mode {
+        case .view:
+            selectedPlant = plant
+        case .water:
+            waterPlant(gx: gx, gy: gy)
+        case .move, .decorate:
+            break
+        }
+    }
 
     /// Coloca una decoración en una celda vacía y la persiste.
     func addDecoration(gx: Int, gy: Int, type: DecorationType) {

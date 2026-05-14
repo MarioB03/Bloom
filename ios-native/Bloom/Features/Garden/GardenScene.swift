@@ -10,7 +10,11 @@ import SwiftUI
 /// El `Canvas` va dentro de un `TimelineView(.animation)`: en cada frame se
 /// pasa el tiempo absoluto al renderer, que anima el vaivén de las plantas, la
 /// atmósfera (sol/luna, estrellas, nubes, mariposas, luciérnagas) y las
-/// partículas estacionales. La interacción (regar, decorar) llega en otra fase.
+/// partículas estacionales.
+///
+/// Un toque sobre el lienzo se convierte en celda de rejilla invirtiendo la
+/// transformada de escala/centrado que aplica la escena (ver `sceneGeometry`),
+/// y se notifica vía `onTapCell` solo si cae dentro de la rejilla.
 struct GardenScene: View {
 
     let layout: GardenLayout
@@ -19,6 +23,13 @@ struct GardenScene: View {
     let cosmetics: CosmeticOverrides
     /// Racha actual: condiciona cuántos elementos de atmósfera aparecen.
     let streak: Int
+    /// Modo de interacción activo: condiciona las ayudas visuales del lienzo.
+    let mode: InteractionMode
+    /// Animaciones de riego en curso, una por celda regada hace poco.
+    let waterEffects: [WaterEffect]
+    /// Se invoca al tocar una celda dentro de la rejilla, ya en coordenadas
+    /// de rejilla.
+    let onTapCell: (Int, Int) -> Void
 
     /// Ampliación máxima: el jardín se dibuja a tamaño natural y solo se amplía
     /// hasta este factor si hay sitio de sobra. El espacio restante es cielo.
@@ -30,50 +41,107 @@ struct GardenScene: View {
     /// de plantas más crecidas y altas.
     private var headroom: CGFloat { CGFloat(gridSize) * 9 }
 
+    /// Escala, origen y desplazamiento isométrico de la escena para un tamaño
+    /// de lienzo dado. Se calcula una vez por `GeometryReader` y lo comparten
+    /// el dibujo y la conversión toque → celda.
+    private struct SceneGeometry {
+        let scale: CGFloat
+        let origin: CGPoint
+        let offset: CGPoint
+    }
+
     var body: some View {
-        TimelineView(.animation) { timeline in
-            Canvas { context, size in
-                let time = timeline.date.timeIntervalSinceReferenceDate
-                let natural = naturalSize
-                let scale = min(
-                    size.width / natural.width,
-                    size.height / natural.height,
-                    Self.maxScale
-                )
-                let originX = (size.width - natural.width * scale) / 2
-                let originY = (size.height - natural.height * scale) / 2
-
-                // El cielo cubre todo el marco; el jardín escalado va centrado.
-                GardenRenderer.drawSky(in: context, size: size, season: season, cosmetics: cosmetics)
-
-                // Atmósfera de fondo, en coordenadas de pantalla (sin escalar).
-                GardenRenderer.drawStars(in: context, size: size, streak: streak, time: time)
-                GardenRenderer.drawCelestial(in: context, size: size, streak: streak, time: time)
-                GardenRenderer.drawClouds(in: context, size: size, streak: streak, time: time)
-
-                var scene = context
-                scene.translateBy(x: originX, y: originY)
-                scene.scaleBy(x: scale, y: scale)
-
-                let offset = CGPoint(x: natural.width / 2, y: headroom + GardenGrid.tileH)
-                GardenRenderer.drawTiles(in: scene, offset: offset, gridSize: gridSize, season: season)
-
-                // Plantas y decoraciones se dibujan juntas en orden isométrico
-                // (algoritmo del pintor): las celdas "de atrás" primero.
-                for drawable in sortedDrawables {
-                    switch drawable {
-                    case .plant(let plant):
-                        GardenRenderer.drawPlant(plant, in: scene, offset: offset, season: season, time: time)
-                    case .decoration(let decoration):
-                        GardenRenderer.drawDecoration(decoration, in: scene, offset: offset)
-                    }
+        GeometryReader { geo in
+            let geometry = sceneGeometry(for: geo.size)
+            TimelineView(.animation) { timeline in
+                Canvas { context, size in
+                    draw(
+                        in: context,
+                        size: size,
+                        geometry: geometry,
+                        time: timeline.date.timeIntervalSinceReferenceDate
+                    )
                 }
-
-                // Visitantes y partículas estacionales: primer plano, sin escalar.
-                GardenRenderer.drawCreatures(in: context, size: size, streak: streak, time: time)
-                GardenRenderer.drawSeasonalParticles(in: context, size: size, season: season, time: time)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(coordinateSpace: .local) { location in
+                let cell = GardenIso.toGrid(scenePoint(location, geometry), offset: geometry.offset)
+                if GardenIso.inBounds(gx: cell.gx, gy: cell.gy, gridSize: gridSize) {
+                    onTapCell(cell.gx, cell.gy)
+                }
             }
         }
+    }
+
+    // MARK: - Dibujo
+
+    private func draw(in context: GraphicsContext, size: CGSize, geometry: SceneGeometry, time: Double) {
+        // El cielo cubre todo el marco; el jardín escalado va centrado.
+        GardenRenderer.drawSky(in: context, size: size, season: season, cosmetics: cosmetics)
+
+        // Atmósfera de fondo, en coordenadas de pantalla (sin escalar).
+        GardenRenderer.drawStars(in: context, size: size, streak: streak, time: time)
+        GardenRenderer.drawCelestial(in: context, size: size, streak: streak, time: time)
+        GardenRenderer.drawClouds(in: context, size: size, streak: streak, time: time)
+
+        var scene = context
+        scene.translateBy(x: geometry.origin.x, y: geometry.origin.y)
+        scene.scaleBy(x: geometry.scale, y: geometry.scale)
+
+        let offset = geometry.offset
+        GardenRenderer.drawTiles(in: scene, offset: offset, gridSize: gridSize, season: season)
+
+        // En modo regar, señala las plantas aún sin regar.
+        if mode == .water {
+            GardenRenderer.drawWaterTargets(plants: layout.plants, in: scene, offset: offset, time: time)
+        }
+
+        // Plantas y decoraciones se dibujan juntas en orden isométrico
+        // (algoritmo del pintor): las celdas "de atrás" primero.
+        for drawable in sortedDrawables {
+            switch drawable {
+            case .plant(let plant):
+                GardenRenderer.drawPlant(plant, in: scene, offset: offset, season: season, time: time)
+            case .decoration(let decoration):
+                GardenRenderer.drawDecoration(decoration, in: scene, offset: offset)
+            }
+        }
+
+        // Animaciones de riego sobre las plantas recién regadas.
+        for effect in waterEffects {
+            GardenRenderer.drawWaterEffect(effect, in: scene, offset: offset, time: time)
+        }
+
+        // Visitantes y partículas estacionales: primer plano, sin escalar.
+        GardenRenderer.drawCreatures(in: context, size: size, streak: streak, time: time)
+        GardenRenderer.drawSeasonalParticles(in: context, size: size, season: season, time: time)
+    }
+
+    // MARK: - Geometría e interacción
+
+    /// Calcula escala, origen y desplazamiento de la escena para un tamaño dado.
+    private func sceneGeometry(for size: CGSize) -> SceneGeometry {
+        let natural = naturalSize
+        let scale = min(
+            size.width / natural.width,
+            size.height / natural.height,
+            Self.maxScale
+        )
+        let origin = CGPoint(
+            x: (size.width - natural.width * scale) / 2,
+            y: (size.height - natural.height * scale) / 2
+        )
+        let offset = CGPoint(x: natural.width / 2, y: headroom + GardenGrid.tileH)
+        return SceneGeometry(scale: scale, origin: origin, offset: offset)
+    }
+
+    /// Invierte la transformada de centrado y escala: punto de pantalla →
+    /// punto en el espacio sin escalar del jardín.
+    private func scenePoint(_ location: CGPoint, _ geometry: SceneGeometry) -> CGPoint {
+        CGPoint(
+            x: (location.x - geometry.origin.x) / geometry.scale,
+            y: (location.y - geometry.origin.y) / geometry.scale
+        )
     }
 
     /// Tamaño "natural" del dibujo del jardín antes de escalar: ancho de la

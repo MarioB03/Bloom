@@ -441,6 +441,114 @@ enum GardenRenderer {
         }
     }
 
+    // MARK: - Interacción
+
+    /// Anillo azul pulsante bajo cada planta sin regar — solo en modo regar,
+    /// para señalar qué celdas responden al toque.
+    static func drawWaterTargets(
+        plants: [PlantPlacement],
+        in context: GraphicsContext,
+        offset: CGPoint,
+        time: Double
+    ) {
+        let pulse = 0.5 + sin(time * 2.5) * 0.5
+        for plant in plants where !plant.wateredToday {
+            let base = GardenIso.toScreen(gx: plant.gx, gy: plant.gy, offset: offset)
+            let r = 13.0 + pulse * 3
+            let ring = Path(ellipseIn: CGRect(
+                x: Double(base.x) - r, y: Double(base.y) - r * 0.5,
+                width: r * 2, height: r
+            ))
+            context.stroke(
+                ring,
+                with: .color(Color(.sRGB, red: 100 / 255, green: 170 / 255, blue: 220 / 255,
+                                   opacity: 0.35 + pulse * 0.35)),
+                lineWidth: 1.5
+            )
+        }
+    }
+
+    /// Animación de riego sobre una celda: gotas que caen, anillos de
+    /// salpicadura en la base y partículas que saltan. Portado de `WaterSplash`
+    /// (`FallingDrop` / `SplashRing` / `SprayDrop`) de `GardenCanvas.tsx`.
+    ///
+    /// El ciclo de cada partícula usa `time` monótono (como nubes y partículas
+    /// estacionales); una envolvente entra y desvanece el efecto completo
+    /// dentro de su ventana de `GardenStore.waterEffectDuration` segundos.
+    static func drawWaterEffect(
+        _ effect: WaterEffect,
+        in context: GraphicsContext,
+        offset: CGPoint,
+        time: Double
+    ) {
+        let duration = GardenStore.waterEffectDuration
+        let elapsed = time - effect.startTime.timeIntervalSinceReferenceDate
+        guard elapsed >= 0, elapsed <= duration else { return }
+
+        let envelope: Double
+        if elapsed < 0.2 {
+            envelope = elapsed / 0.2
+        } else if elapsed > duration - 0.6 {
+            envelope = (duration - elapsed) / 0.6
+        } else {
+            envelope = 1
+        }
+
+        let base = GardenIso.toScreen(gx: effect.gx, gy: effect.gy, offset: offset)
+        let bx = Double(base.x)
+        let by = Double(base.y)
+        let p = time / 10
+
+        // Gotas de lluvia que caen sobre la planta, escalonadas.
+        let rainPhases: [Double] = [0, 0.2, 0.4, 0.6, 0.8]
+        let rainOffsets: [Double] = [-4, 2, -1, 3, 0]
+        let topY = by - 55
+        let fallDist = by - topY + 25
+        for i in rainPhases.indices {
+            let t = (p * 6 + rainPhases[i]).truncatingRemainder(dividingBy: 1)
+            let cy = topY - 25 + t * fallDist
+            let fade = t < 0.1 ? t * 10 : (t > 0.85 ? (1 - t) * 6.5 : 0.85)
+            fillCircle(
+                in: context,
+                center: CGPoint(x: bx + rainOffsets[i], y: cy),
+                radius: 1.8,
+                color: Color(.sRGB, red: 90 / 255, green: 170 / 255, blue: 230 / 255,
+                             opacity: 0.9 * fade * envelope)
+            )
+        }
+
+        // Anillos de salpicadura que se expanden en la base.
+        let ringPhases: [Double] = [0, 0.33, 0.66]
+        for phase in ringPhases {
+            let t = (p * 3 + phase).truncatingRemainder(dividingBy: 1)
+            let r = t * 16
+            let ring = Path(ellipseIn: CGRect(
+                x: bx - r, y: by - r * 0.45, width: r * 2, height: r * 0.9
+            ))
+            context.stroke(
+                ring,
+                with: .color(Color(.sRGB, red: 90 / 255, green: 170 / 255, blue: 230 / 255,
+                                   opacity: (1 - t) * 0.45 * envelope)),
+                lineWidth: 1.5
+            )
+        }
+
+        // Partículas que saltan en arco hacia arriba y vuelven a caer.
+        let sprayAngles: [Double] = [0.3, 1.2, 2.1, 3.0, 3.9, 4.8]
+        for angle in sprayAngles {
+            let t = (p * 5 + angle * 0.15).truncatingRemainder(dividingBy: 1)
+            let cx = bx + cos(angle) * t * 14
+            let cy = by - t * 18 + t * t * 24
+            fillCircle(
+                in: context,
+                center: CGPoint(x: cx, y: cy),
+                radius: 1.3,
+                color: Color(.sRGB, red: 120 / 255, green: 190 / 255, blue: 240 / 255,
+                             opacity: (1 - t) * 0.75 * envelope)
+            )
+        }
+    }
+
     /// Atajo para rellenar un círculo centrado en un punto.
     private static func fillCircle(
         in context: GraphicsContext,

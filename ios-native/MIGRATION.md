@@ -128,10 +128,15 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   luna, estrellas titilantes de noche, nubes con desplazamiento continuo,
   mariposas de día, luciérnagas de noche) y partículas estacionales
   (pétalos/hojas/nieve). Cantidades escaladas con la racha, igual que en RN
-- [ ] **Fase 4 — Interacción**: gestos tap/long-press, modos
-  (ver/regar/decorar), splash de agua, modal de planta
-- [ ] **Fase 5 — Economía + tienda**: `GardenShop`, picker de decoraciones
-  (la lógica de economía ya está en `GardenStore`)
+- [x] **Fase 4 — Interacción**: toque sobre el `Canvas` → celda (invirtiendo la
+  transformada de escala/centrado de `GardenScene`), modos Mirar y Regar con
+  barra de modos y ayuda contextual, `PlantInfoView` (hoja nativa con detente),
+  splash de agua (`drawWaterEffect`: gotas, anillos, salpicaduras) y anillo
+  pulsante bajo las plantas regables. El modo Decorar y el long-press (que en
+  RN solo quita decoraciones) van a Fase 5 con el picker
+- [ ] **Fase 5 — Economía + tienda**: `GardenShop`, picker de decoraciones +
+  modo Decorar + long-press para quitar (la lógica de economía ya está en
+  `GardenStore`)
 - [ ] **Fase 6 — Mascotas**: las 5 con su movimiento propio
 - [ ] **Fase 7 — Logros + celebraciones**: toasts, modal de hito con confeti
 - [ ] **Fase 8 — Cosméticos + pulido**: overrides cosméticos, `GardenStats`

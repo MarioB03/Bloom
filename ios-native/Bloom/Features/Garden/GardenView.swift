@@ -4,8 +4,9 @@ import SwiftUI
 /// plantas, semillas) y la escena isométrica con las plantas que han brotado
 /// de los check-ins. Equivalente a `app/jardin.tsx` en la app React Native.
 ///
-/// De momento la escena es estática y solo se muestra: la interacción (regar,
-/// decorar, tienda) y la animación llegan en fases posteriores.
+/// La escena está animada y es interactiva: en modo "mirar" un toque sobre una
+/// planta abre su detalle; en modo "regar", la riega. El modo "decorar" y la
+/// tienda llegan en una fase posterior.
 struct GardenView: View {
 
     @Environment(AuthService.self) private var auth
@@ -14,7 +15,8 @@ struct GardenView: View {
     @State private var store = GardenStore()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+        @Bindable var store = store
+        return VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             header
             statsCard
 
@@ -26,7 +28,11 @@ struct GardenView: View {
                     EmptyState(emoji: "🌱", message: Strings.Garden.emptyMessage)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    scene
+                    VStack(spacing: Theme.Spacing.sm) {
+                        modeToolbar
+                        modeHint
+                        scene
+                    }
                 }
             }
         }
@@ -37,6 +43,61 @@ struct GardenView: View {
         .background(Theme.Palette.background)
         .navigationBarTitleDisplayMode(.inline)
         .task { await load() }
+        .sheet(item: $store.selectedPlant) { plant in
+            PlantInfoView(plant: plant) {
+                store.waterPlant(gx: plant.gx, gy: plant.gy)
+            }
+        }
+    }
+
+    // MARK: - Barra de modos
+
+    private var modeToolbar: some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            modeButton(.view, icon: "eye", label: Strings.Garden.modeView)
+            modeButton(.water, icon: "drop", label: Strings.Garden.modeWater)
+        }
+    }
+
+    private func modeButton(_ mode: InteractionMode, icon: String, label: String) -> some View {
+        let isActive = store.mode == mode
+        return Button {
+            store.mode = mode
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                Text(label)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                if mode == .water {
+                    let watered = store.layout.plants.filter(\.wateredToday).count
+                    Text("\(watered)/\(store.layout.plants.count)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(isActive ? Theme.Palette.surface : Theme.Palette.neutral400)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1)
+                        .background(isActive ? Color.white.opacity(0.2) : Theme.Palette.neutral100)
+                        .clipShape(Capsule())
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Theme.Spacing.sm)
+            .foregroundStyle(isActive ? Theme.Palette.surface : Theme.Palette.neutral500)
+            .background(isActive ? Theme.Palette.primary400 : Theme.Palette.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.md)
+                    .strokeBorder(isActive ? .clear : Theme.Palette.neutral200, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var modeHint: some View {
+        Text(store.mode == .water ? Strings.Garden.modeWaterHint : Strings.Garden.modeViewHint)
+            .font(.smallText)
+            .foregroundStyle(Theme.Palette.neutral400)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 
     // MARK: - Cabecera
@@ -114,7 +175,10 @@ struct GardenView: View {
             gridSize: store.gridSize,
             season: store.season,
             cosmetics: store.cosmetics,
-            streak: store.streak
+            streak: store.streak,
+            mode: store.mode,
+            waterEffects: store.waterEffects,
+            onTapCell: { gx, gy in store.handleCellTap(gx: gx, gy: gy) }
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))

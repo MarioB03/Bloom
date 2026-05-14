@@ -152,6 +152,25 @@ enum Strings {
         static func plantCount(_ count: Int) -> String {
             "\(count) \(count == 1 ? "planta" : "plantas")"
         }
+
+        // Modos de interacción
+        static let modeView = "Mirar"
+        static let modeWater = "Regar"
+        static let modeViewHint = "Toca una planta para ver su detalle"
+        static let modeWaterHint = "Toca una planta para regarla y acelerar su crecimiento"
+
+        // Detalle de planta
+        static let plantPlanted = "Plantada"
+        static let plantIntensity = "Intensidad"
+        static let plantGrowth = "Crecimiento"
+        static let plantWater = "Regar planta"
+        static let plantWaterHint = "+1 nivel de crecimiento"
+        static let plantWateredToday = "Regada hoy"
+
+        /// Etiqueta de la etapa de crecimiento de una planta (0–5).
+        static func growthLabel(_ stage: Int) -> String {
+            ["Semilla", "Brote", "Creciendo", "Floreciendo", "Casi lista", "Flor completa"][safe: stage] ?? "Semilla"
+        }
     }
 }
 
