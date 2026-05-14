@@ -23,6 +23,7 @@ struct CheckInHomeView: View {
     @State private var isLoading = true
     @State private var showingForm = false
     @State private var showingGratitude = false
+    @State private var showingDiary = false
 
     var body: some View {
         NavigationStack {
@@ -45,6 +46,18 @@ struct CheckInHomeView: View {
                 }
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                presentDiary()
+            } label: {
+                MiniDiaryBook()
+            }
+            .buttonStyle(.plain)
+            .opacity(showingDiary ? 0 : 1)
+            .padding(.trailing, Theme.Spacing.md + 4)
+            .padding(.bottom, Theme.Spacing.md)
+            .sensoryFeedback(.impact(weight: .medium), trigger: showingDiary)
+        }
         .sheet(isPresented: $showingForm) {
             CheckInFormView {
                 Task { await load() }
@@ -55,7 +68,18 @@ struct CheckInHomeView: View {
                 Task { await load() }
             }
         }
+        .fullScreenCover(isPresented: $showingDiary) {
+            DiaryBookView(isPresented: $showingDiary)
+        }
         .task { await load() }
+    }
+
+    /// Presenta el diario sin la animación por defecto del `fullScreenCover`:
+    /// la animación de "libro que se abre" la conduce `DiaryBookView`.
+    private func presentDiary() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { showingDiary = true }
     }
 
     // MARK: - Cabecera

@@ -91,6 +91,22 @@ enum AgendaDestination: Hashable {
 /// porta). Crear un registro emocional se hace desde el CTA propio de esta
 /// pestaña.
 struct NotesView: View {
+    var body: some View {
+        NavigationStack {
+            DiaryView()
+                .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+}
+
+/// Contenido del diario combinado: cabecera, CTA, búsqueda, segmentos, filtros
+/// y el listado agrupado por día. Se usa tal cual en la pestaña "Registros"
+/// (`NotesView`) y dentro de la animación de libro (`DiaryBookView`).
+struct DiaryView: View {
+
+    /// Si no es `nil`, se muestra un botón de cerrar sobre la cabecera (modo
+    /// libro, abierto desde el home). En la pestaña Registros es `nil`.
+    var onClose: (() -> Void)? = nil
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
@@ -107,33 +123,30 @@ struct NotesView: View {
     @State private var showingFilters = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    header
-                    newRegisterCard
-                    searchBar
-                    segmentPicker
-                    if showingFilters {
-                        filtersBlock
-                    }
-                    resultsBlock
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                header
+                newRegisterCard
+                searchBar
+                segmentPicker
+                if showingFilters {
+                    filtersBlock
                 }
-                .padding(.horizontal, Theme.Spacing.md)
-                .padding(.top, Theme.Spacing.md)
-                .padding(.bottom, Theme.Spacing.xl)
+                resultsBlock
             }
-            .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.interactively)
-            .background(Theme.Palette.background)
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: AgendaDestination.self) { destination in
-                switch destination {
-                case .checkin(let id):
-                    CheckInDetailView(id: id) { Task { await load() } }
-                case .register(let id):
-                    EmotionalRegisterDetailView(id: id) { Task { await load() } }
-                }
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.top, Theme.Spacing.md)
+            .padding(.bottom, Theme.Spacing.xl)
+        }
+        .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+        .background(Theme.Palette.background)
+        .navigationDestination(for: AgendaDestination.self) { destination in
+            switch destination {
+            case .checkin(let id):
+                CheckInDetailView(id: id) { Task { await load() } }
+            case .register(let id):
+                EmotionalRegisterDetailView(id: id) { Task { await load() } }
             }
         }
         .sheet(isPresented: $showingForm) {
@@ -147,13 +160,26 @@ struct NotesView: View {
     // MARK: - Cabecera y CTA
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(Strings.Agenda.title)
-                .font(.displaySmall)
-                .foregroundStyle(Theme.Palette.neutral800)
-            Text(Strings.Agenda.subtitle)
-                .font(.bodyText)
-                .foregroundStyle(Theme.Palette.neutral500)
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            if let onClose {
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.neutral500)
+                        .frame(width: 40, height: 40)
+                        .background(Theme.Palette.neutral100)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Strings.Agenda.title)
+                    .font(.displaySmall)
+                    .foregroundStyle(Theme.Palette.neutral800)
+                Text(Strings.Agenda.subtitle)
+                    .font(.bodyText)
+                    .foregroundStyle(Theme.Palette.neutral500)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

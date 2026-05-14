@@ -64,9 +64,9 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
 - Nativo: `Features/CheckIn/` + `Features/CheckIn/Components/`, `FirestoreService` (CRUD cifrado)
 - RN: `app/checkin/`, `src/components/checkin/`, `app/(tabs)/index.tsx`
 - **Pendiente del home RN** (llega con sus features): promo premium, toasts de
-  logros, diario flotante (agenda). El CTA de gratitud ya está (ver Diario de
-  gratitud); el de registro emocional se sustituye por el CTA propio de la
-  pestaña Registros
+  logros. El CTA de gratitud y el mini-libro flotante del diario ya están (ver
+  Diario de gratitud y Agenda); el CTA de registro emocional se sustituye por
+  el CTA propio de la pestaña Registros
 - **Compostar**: omitido en el detalle — depende de la economía del jardín (no portada).
   El detalle sí muestra `compostReflection` si ya existe
 
@@ -135,19 +135,25 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
 - [x] Filtros por emoción (`EmotionChipsRow`) y por rango de fechas
   (`DateFilterField`, con el `DatePicker` gráfico del sistema)
 - [x] Tarjeta de gratitud para el listado (`Components/GratitudeCard`)
+- [x] Mini-libro flotante en el home + animación de "libro que se abre"
+  (`MiniDiaryBook`, `DiaryBookView`): el contenido del diario vive en
+  `DiaryView`, reutilizado tal cual por la pestaña y por la animación
 - Nativo: `Features/Notes/NotesView.swift` (tipos `AgendaItem` /
-  `AgendaSegment` / `AgendaDestination` + la vista),
+  `AgendaSegment` / `AgendaDestination`, `NotesView` y `DiaryView`),
+  `Features/Notes/DiaryBookView.swift`, `Features/Notes/BookCoverView.swift`,
   `Features/Notes/Components/` (`GratitudeCard`, `AgendaFilters`),
-  `Strings.Agenda`
-- RN: `app/agenda.tsx`, `app/(tabs)/registros.tsx`, `src/components/search/`
-- **Divergencia de RN**: se omite la animación del "libro que se abre" de
-  `agenda.tsx` (artificio propio de RN); el diario **es** la pestaña, no una
-  pantalla apilada sobre un mini-libro del home. Se unifican `registros.tsx`
-  (pestaña) y `agenda.tsx` (pantalla apilada) en una sola vista. Las tarjetas
-  de gratitud muestran sus motivos en línea y no navegan (editar la gratitud
-  de hoy se hace desde el CTA del home; el modo solo-lectura de días pasados
-  de RN no se porta). El `DatePickerField` hecho a mano de RN se sustituye por
-  el `DatePicker` nativo
+  `Strings.Agenda`. CTA del mini-libro en `CheckInHomeView`
+- RN: `app/agenda.tsx`, `app/(tabs)/registros.tsx`, `src/components/search/`,
+  `app/(tabs)/index.tsx` (mini-libro)
+- **Divergencia de RN**: se unifican `registros.tsx` (pestaña) y `agenda.tsx`
+  (pantalla apilada) en una sola vista, accesible tanto desde la pestaña
+  "Registros" como desde el mini-libro del home. La animación del "libro que
+  se abre" se recrea con SwiftUI (`rotation3DEffect` sobre el lomo a partir de
+  un único `progress` 0→1), pero el libro crece centrado en vez de medir la
+  posición exacta del mini-libro. Las tarjetas de gratitud muestran sus
+  motivos en línea y no navegan (editar la gratitud de hoy se hace desde el
+  CTA del home; el modo solo-lectura de días pasados de RN no se porta). El
+  `DatePickerField` hecho a mano de RN se sustituye por el `DatePicker` nativo
 
 ### Habilidades — ⬜
 - [ ] Listado por categorías + detalle de habilidad
