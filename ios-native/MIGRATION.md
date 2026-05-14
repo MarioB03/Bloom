@@ -314,10 +314,17 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - [ ] Eliminar cuenta (`app/eliminar-cuenta.tsx`)
 - [ ] Política de privacidad (`app/politica-privacidad.tsx`)
 
-### Onboarding — ⬜
-- [ ] Flujo de onboarding inicial (`app/onboarding.tsx`)
-- [ ] Walkthrough/coach marks sobre la UI
-- RN: `src/contexts/WalkthroughContext.tsx`, `src/components/ui/WalkthroughOverlay.tsx`, `src/constants/walkthrough.ts`
+### Onboarding — ✅
+- [x] Flujo de onboarding inicial (`app/onboarding.tsx`) → `Features/Onboarding/OnboardingView.swift`
+- [x] ~~Walkthrough/coach marks sobre la UI~~ — **no se porta**: estaba
+  desactivado en RN ("Walkthrough disabled for now" en `app/_layout.tsx`),
+  nunca llegó a producción
+- **Punto de entrada**: `RootView` muestra `OnboardingView` cuando hay sesión
+  cerrada y `bloom.onboardingComplete` (`@AppStorage`) es `false`. En RN el
+  login redirige a `/onboarding`; en nativo es el `RootView` quien decide,
+  antes de `AuthView`
+- **Carrusel**: `TabView` con `.page` style; 3 diapositivas con emoji
+  flotante, degradado por slide, dots animados y botón Siguiente/Comenzar
 
 ---
 

@@ -509,6 +509,21 @@ enum Strings {
         }
     }
 
+    enum Onboarding {
+        static let skip = "Omitir"
+        static let next = "Siguiente"
+        static let start = "Comenzar"
+
+        static let slide1Title = "Bienvenida a Bloom"
+        static let slide1Subtitle = "Tu jardín personal de bienestar emocional. Un espacio seguro para cultivar tu mundo interior."
+
+        static let slide2Title = "Registra cómo te sientes"
+        static let slide2Subtitle = "Haz check-ins diarios de tus emociones, sueño y energía. Observa tus patrones y crece con cada registro."
+
+        static let slide3Title = "Observa tu crecimiento"
+        static let slide3Subtitle = "Visualiza tu calendario emocional, descubre insights y aprende habilidades para tu bienestar."
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.

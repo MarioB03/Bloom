@@ -5,12 +5,20 @@ import SwiftUI
 struct RootView: View {
     @Environment(AuthService.self) private var authService
 
+    /// Onboarding visto. Mientras sea `false` y no haya sesión, se muestra el
+    /// carrusel de bienvenida antes del flujo de autenticación.
+    @AppStorage("bloom.onboardingComplete") private var onboardingComplete = false
+
     var body: some View {
         switch authService.state {
         case .loading:
             LoadingScreen()
         case .signedOut:
-            AuthView()
+            if onboardingComplete {
+                AuthView()
+            } else {
+                OnboardingView()
+            }
         case .signedIn:
             MainTabView()
         }
