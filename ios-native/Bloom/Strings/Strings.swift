@@ -409,6 +409,44 @@ enum Strings {
         static let breathe = "Respira"
     }
 
+    enum SafetyPlan {
+        // Cabecera
+        static let title = "Plan de seguridad"
+        static let subtitle = "Tu red de apoyo personal"
+
+        // Secciones
+        static let warningSigns = "Señales de alerta"
+        static let warningSignsDesc = "Pensamientos, emociones o situaciones que indican que necesitas apoyo"
+        static let warningSignPlaceholder = "Ej: No puedo dejar de llorar..."
+
+        static let copingStrategies = "Estrategias de afrontamiento"
+        static let copingStrategiesDesc = "Cosas que puedes hacer por ti misma para sentirte mejor"
+        static let copingStrategyPlaceholder = "Ej: Salir a caminar..."
+
+        static let trustedContacts = "Contactos de confianza"
+        static let trustedContactsDesc = "Personas a las que puedes llamar cuando necesites apoyo"
+        static let contactNamePlaceholder = "Nombre"
+        static let contactPhonePlaceholder = "Teléfono"
+
+        static let personalSteps = "Mis pasos personales"
+        static let personalStepsDesc = "Acciones concretas que puedes seguir en un momento difícil"
+        static let personalStepPlaceholder = "Ej: Respirar 5 veces profundamente..."
+
+        static let crisisHotlines = "Líneas de crisis"
+        static let crisisHotlinesDesc = "Servicios profesionales disponibles 24/7"
+
+        // Llamadas
+        static let call = "Llamar"
+        static let callConfirmTitle = "Llamar"
+
+        static let disclaimer = "Este plan es una herramienta personal de apoyo. En caso de emergencia, llama al servicio de emergencias de tu país o acude al centro de salud más cercano."
+
+        /// "¿Quieres llamar a {name}?"
+        static func callConfirmMessage(_ name: String) -> String {
+            "¿Quieres llamar a \(name)?"
+        }
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.

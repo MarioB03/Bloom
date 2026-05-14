@@ -5,6 +5,7 @@ enum SkillsDestination: Hashable {
     case category(SkillCategory)
     case skill(id: String)
     case history
+    case safetyPlan
 }
 
 /// Pestaña "Habilidades": catálogo de técnicas DBT agrupadas por categoría,
@@ -14,6 +15,10 @@ enum SkillsDestination: Hashable {
 /// Divergencia de RN: en la app React Native el historial de práctica
 /// (`app/habilidades/historial.tsx`) existe pero ninguna pantalla navega a él.
 /// Aquí se añade un acceso desde la cabecera para que la feature sea usable.
+///
+/// La cabecera incluye además el acceso al plan de seguridad: en la app RN vive
+/// en la pestaña de perfil (aún no portada) y aquí se acomoda junto al resto de
+/// herramientas de bienestar.
 struct SkillsView: View {
     var body: some View {
         NavigationStack {
@@ -26,6 +31,8 @@ struct SkillsView: View {
                         SkillDetailView(skillID: id)
                     case .history:
                         PracticeHistoryView()
+                    case .safetyPlan:
+                        SafetyPlanView()
                     }
                 }
         }
@@ -71,15 +78,27 @@ private struct SkillsCatalogView: View {
                     .foregroundStyle(Theme.Palette.neutral500)
             }
             Spacer()
-            NavigationLink(value: SkillsDestination.history) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Theme.Palette.neutral600)
-                    .frame(width: 40, height: 40)
-                    .background(Theme.Palette.neutral100)
-                    .clipShape(Circle())
+            HStack(spacing: Theme.Spacing.xs) {
+                NavigationLink(value: SkillsDestination.safetyPlan) {
+                    Image(systemName: "shield")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.neutral600)
+                        .frame(width: 40, height: 40)
+                        .background(Theme.Palette.neutral100)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink(value: SkillsDestination.history) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.neutral600)
+                        .frame(width: 40, height: 40)
+                        .background(Theme.Palette.neutral100)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

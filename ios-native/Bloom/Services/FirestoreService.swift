@@ -32,6 +32,11 @@ final class FirestoreService {
         db.collection("users").document(userID).collection("skillPractice")
     }
 
+    /// El plan de seguridad es un documento único con id fijo (`plan`).
+    private func safetyPlanDocument(for userID: String) -> DocumentReference {
+        db.collection("users").document(userID).collection("safetyPlan").document("plan")
+    }
+
     // MARK: - Lectura
 
     /// Check-ins de un día concreto (`"YYYY-MM-DD"`), del más reciente al más antiguo.
@@ -278,6 +283,23 @@ final class FirestoreService {
         _ = try skillPracticeCollection(for: userID).addDocument(from: practice)
     }
 
+    // MARK: - Plan de seguridad
+
+    /// El plan de seguridad del usuario, o `nil` si todavía no ha creado ninguno.
+    func safetyPlan(userID: String) async throws -> SafetyPlan? {
+        let document = try await safetyPlanDocument(for: userID).getDocument()
+        guard document.exists else { return nil }
+        return decrypted(try document.data(as: SafetyPlan.self))
+    }
+
+    /// Guarda el plan de seguridad, sobrescribiendo el documento por completo y
+    /// refrescando `updatedAt` (mismo comportamiento que `setDoc` en la app RN).
+    func saveSafetyPlan(_ plan: SafetyPlan, userID: String) throws {
+        var updated = plan
+        updated.updatedAt = Date()
+        try safetyPlanDocument(for: userID).setData(from: encrypted(updated))
+    }
+
     // MARK: - Cifrado de campos sensibles
 
     /// Copia del check-in con `notes` y los eventos cifrados, lista para escribir.
@@ -358,6 +380,31 @@ final class FirestoreService {
     private func decrypted(_ entry: GratitudeEntry) -> GratitudeEntry {
         var result = entry
         result.items = entry.items.map(BloomCrypto.decrypt)
+        return result
+    }
+
+    /// Copia del plan de seguridad con todos los textos cifrados, lista para
+    /// escribir. `updatedAt` no se cifra (igual que en la app RN).
+    private func encrypted(_ plan: SafetyPlan) -> SafetyPlan {
+        var result = plan
+        result.warningSigns = plan.warningSigns.map(BloomCrypto.encrypt)
+        result.copingStrategies = plan.copingStrategies.map(BloomCrypto.encrypt)
+        result.trustedContacts = plan.trustedContacts.map {
+            TrustedContact(name: BloomCrypto.encrypt($0.name), phone: BloomCrypto.encrypt($0.phone))
+        }
+        result.personalSteps = plan.personalSteps.map(BloomCrypto.encrypt)
+        return result
+    }
+
+    /// Copia del plan de seguridad con todos los textos descifrados, lista para la UI.
+    private func decrypted(_ plan: SafetyPlan) -> SafetyPlan {
+        var result = plan
+        result.warningSigns = plan.warningSigns.map(BloomCrypto.decrypt)
+        result.copingStrategies = plan.copingStrategies.map(BloomCrypto.decrypt)
+        result.trustedContacts = plan.trustedContacts.map {
+            TrustedContact(name: BloomCrypto.decrypt($0.name), phone: BloomCrypto.decrypt($0.phone))
+        }
+        result.personalSteps = plan.personalSteps.map(BloomCrypto.decrypt)
         return result
     }
 }

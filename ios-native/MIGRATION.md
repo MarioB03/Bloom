@@ -270,9 +270,23 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   (`checkAndUnlockAchievements`) se omite porque los logros de app no están
   portados
 
-### Plan de seguridad — ⬜
-- [ ] Editor de plan + contactos + líneas de crisis
+### Plan de seguridad — ✅
+- [x] Editor de plan: 5 secciones plegables (señales de alerta, estrategias de
+  afrontamiento, contactos de confianza, pasos personales, líneas de crisis)
+- [x] Contactos de confianza editables y llamables (con confirmación)
+- [x] Líneas de crisis estáticas agrupadas por país, llamables
+- [x] Guardado automático con rebote de 1,5 s (sin botón de guardar)
+- Nativo: `Features/SafetyPlan/SafetyPlanView.swift`,
+  `Features/SafetyPlan/CrisisHotlineCatalog.swift`,
+  `Features/SafetyPlan/Components/{EditableListEditor,ContactListEditor,CrisisHotlineListView}.swift`,
+  `Models/SafetyPlan.swift`, `Strings.SafetyPlan`, CRUD en `FirestoreService`
+  (doc único `users/{uid}/safetyPlan/plan`, campos cifrados)
 - RN: `app/plan-seguridad.tsx`, `src/components/safetyPlan/`, `src/constants/crisisHotlines.ts`
+- **Punto de entrada**: en RN vive en la pestaña de perfil (aún no portada);
+  aquí se accede desde un botón 🛡️ en la cabecera de la pestaña Habilidades
+- **Divergencia de RN**: al salir de la pantalla se vuelca el guardado pendiente
+  en lugar de descartarlo (RN hace `clearTimeout` en el desmontaje y pierde el
+  último cambio si no han pasado los 1,5 s)
 
 ### Premium — ⬜
 - [ ] Paywall + gestión de suscripción (RevenueCat SDK nativo)
