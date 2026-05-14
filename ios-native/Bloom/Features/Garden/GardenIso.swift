@@ -23,6 +23,15 @@ enum GardenIso {
         )
     }
 
+    /// Coordenadas de rejilla fraccionarias → punto en pantalla. Útil para
+    /// elementos anclados a los bordes de la rejilla, como los postes de valla.
+    static func toScreen(gxf: CGFloat, gyf: CGFloat, offset: CGPoint = .zero) -> CGPoint {
+        CGPoint(
+            x: (gxf - gyf) * (GardenGrid.tileW / 2) + offset.x,
+            y: (gxf + gyf) * (GardenGrid.tileH / 2) + offset.y
+        )
+    }
+
     /// Coordenadas de pantalla → celda de rejilla más cercana.
     static func toGrid(_ point: CGPoint, offset: CGPoint = .zero) -> GridPosition {
         let sx = point.x - offset.x

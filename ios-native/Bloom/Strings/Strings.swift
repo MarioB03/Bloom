@@ -188,6 +188,25 @@ enum Strings {
         static func growthLabel(_ stage: Int) -> String {
             ["Semilla", "Brote", "Creciendo", "Floreciendo", "Casi lista", "Flor completa"][safe: stage] ?? "Semilla"
         }
+
+        // Celebración de hito de racha
+        static let celebrationButton = "¡Genial!"
+
+        /// Bono de semillas mostrado en la celebración de un hito.
+        static func celebrationSeeds(_ count: Int) -> String {
+            "+\(count) 🌱"
+        }
+
+        // Estadísticas del jardín
+        static let flowersPlanted = "flores plantadas"
+        static let vitalityFull = "¡Plena forma!"
+        static let vitalityHealthy = "Muy sano"
+        static let vitalityThirsty = "Necesita agua"
+        static let vitalityDry = "Sediento"
+
+        // Compartir
+        static let shareButton = "Compartir jardín"
+        static let shareError = "No se pudo compartir la imagen"
     }
 
     enum Shop {

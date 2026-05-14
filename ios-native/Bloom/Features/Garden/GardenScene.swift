@@ -97,7 +97,8 @@ struct GardenScene: View {
         scene.scaleBy(x: geometry.scale, y: geometry.scale)
 
         let offset = geometry.offset
-        GardenRenderer.drawTiles(in: scene, offset: offset, gridSize: gridSize, season: season)
+        GardenRenderer.drawTiles(in: scene, offset: offset, gridSize: gridSize, season: season, cosmetics: cosmetics)
+        GardenRenderer.drawFence(in: scene, offset: offset, gridSize: gridSize, streak: streak, cosmetics: cosmetics)
 
         // En modo regar, señala las plantas aún sin regar.
         if mode == .water {
@@ -121,7 +122,7 @@ struct GardenScene: View {
         }
 
         // Visitantes, mascotas y partículas estacionales: primer plano, sin escalar.
-        GardenRenderer.drawCreatures(in: context, size: size, streak: streak, time: time)
+        GardenRenderer.drawCreatures(in: context, size: size, streak: streak, cosmetics: cosmetics, time: time)
         GardenRenderer.drawPets(activePets, in: context, size: size, time: time)
         GardenRenderer.drawSeasonalParticles(in: context, size: size, season: season, time: time)
     }

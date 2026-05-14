@@ -44,14 +44,17 @@ enum GardenRenderer {
     // MARK: - Baldosas
 
     /// Dibuja la rejilla isométrica de baldosas-diamante, alternando dos tonos
-    /// como un tablero. Las celdas del anillo de vista previa van translúcidas.
+    /// como un tablero. Con el cosmético `stonePath`, las baldosas se tiñen de
+    /// gris piedra con guijarros.
     static func drawTiles(
         in context: GraphicsContext,
         offset: CGPoint,
         gridSize: Int,
-        season: Season
+        season: Season,
+        cosmetics: CosmeticOverrides
     ) {
         let theme = season.theme
+        let stoneColor = Color(hex: "9B958C")
 
         for gy in 0..<gridSize {
             for gx in 0..<gridSize {
@@ -65,7 +68,56 @@ enum GardenRenderer {
 
                 let base = (gx + gy).isMultiple(of: 2) ? theme.tileBase1 : theme.tileBase2
                 context.fill(path, with: .color(base))
+
+                // Cosmético: tiñe la rejilla como un camino de piedra.
+                if cosmetics.stonePath {
+                    context.fill(path, with: .color(stoneColor.opacity(0.45)))
+                    let center = GardenIso.toScreen(gx: gx, gy: gy, offset: offset)
+                    let pebbleDX: Double = (gx * 7 + gy * 3).isMultiple(of: 2) ? 4 : -5
+                    fillOval(
+                        in: context,
+                        x: Double(center.x) + pebbleDX - 2, y: Double(center.y) - 1,
+                        w: 4, h: 2.5,
+                        color: stoneColor.darkened(0.18)
+                    )
+                }
+
                 context.stroke(path, with: .color(theme.groundColor.darkened(0.08)), lineWidth: 0.5)
+            }
+        }
+    }
+
+    // MARK: - Valla
+
+    /// Postes de valla a lo largo de los dos bordes traseros de la rejilla
+    /// activa, a partir de una racha de 3 días. Con el cosmético `flowerFence`,
+    /// cada poste se corona con una florecita de color. Portado de los "Fence
+    /// posts" de `GardenCanvas.tsx`.
+    static func drawFence(
+        in context: GraphicsContext,
+        offset: CGPoint,
+        gridSize: Int,
+        streak: Int,
+        cosmetics: CosmeticOverrides
+    ) {
+        guard streak >= 3 else { return }
+        let postColor = Color(.sRGB, red: 160 / 255, green: 120 / 255, blue: 80 / 255, opacity: 0.3)
+        let fenceColors = CosmeticOverrides.flowerFenceColors
+        let edge = CGFloat(gridSize) - 0.5
+
+        for i in 0..<gridSize {
+            let right = GardenIso.toScreen(gxf: edge, gyf: CGFloat(i), offset: offset)
+            let bottom = GardenIso.toScreen(gxf: CGFloat(i), gyf: edge, offset: offset)
+            for (index, post) in [right, bottom].enumerated() {
+                context.fill(
+                    Path(CGRect(x: post.x - 1, y: post.y - 7, width: 2, height: 7)),
+                    with: .color(postColor)
+                )
+                if cosmetics.flowerFence {
+                    let color = fenceColors[(i * 2 + index) % fenceColors.count]
+                    fillCircle(in: context, center: CGPoint(x: post.x, y: post.y - 8),
+                               radius: 2.2, color: color)
+                }
             }
         }
     }
@@ -315,31 +367,26 @@ enum GardenRenderer {
         }
     }
 
-    /// Visitantes animados: mariposas de día, luciérnagas de noche.
+    /// Visitantes animados: mariposas de día, luciérnagas de noche. Con el
+    /// cosmético `firefliesAlways`, las luciérnagas también salen de día.
     static func drawCreatures(
         in context: GraphicsContext,
         size: CGSize,
         streak: Int,
+        cosmetics: CosmeticOverrides,
         time: Double,
         now: Date = Date()
     ) {
         if isNight(now) {
             guard streak >= 10 else { return }
             let count = streak >= 21 ? 8 : (streak >= 14 ? 5 : 3)
-            for i in 0..<count {
-                let phase = Double(i) * 1.7
-                let t = time * 0.08 + phase
-                let cx = (sin(t * 1.7 + phase * 3) * 0.4 + 0.5) * size.width
-                let cy = size.height * 0.35 + sin(t * 2.3 + phase) * size.height * 0.25
-                let glowR = 3 + sin(time * 0.8 + phase * 7) * 2
-                let opacity = 0.3 + sin(time * 0.6 + phase * 5) * 0.3
-                let center = CGPoint(x: cx, y: cy)
-                fillCircle(in: context, center: center, radius: glowR,
-                           color: Color(.sRGB, red: 240 / 255, green: 220 / 255, blue: 100 / 255, opacity: 0.15 * opacity))
-                fillCircle(in: context, center: center, radius: 1.5,
-                           color: Color(.sRGB, red: 240 / 255, green: 220 / 255, blue: 100 / 255, opacity: 0.8 * opacity))
-            }
+            drawFireflies(in: context, size: size, count: count, time: time)
             return
+        }
+
+        // Cosmético: las luciérnagas acompañan a las mariposas también de día.
+        if cosmetics.firefliesAlways {
+            drawFireflies(in: context, size: size, count: 5, time: time)
         }
 
         guard streak >= 2 else { return }
@@ -381,6 +428,29 @@ enum GardenRenderer {
                 Path(CGRect(x: cx - 0.5, y: cy - 2, width: 1, height: 4)),
                 with: .color(Color(.sRGB, red: 60 / 255, green: 50 / 255, blue: 40 / 255, opacity: 0.7))
             )
+        }
+    }
+
+    /// Luciérnagas que flotan con un brillo pulsante. Las usa `drawCreatures`
+    /// de noche y, con el cosmético `firefliesAlways`, también de día.
+    private static func drawFireflies(
+        in context: GraphicsContext,
+        size: CGSize,
+        count: Int,
+        time: Double
+    ) {
+        for i in 0..<count {
+            let phase = Double(i) * 1.7
+            let t = time * 0.08 + phase
+            let cx = (sin(t * 1.7 + phase * 3) * 0.4 + 0.5) * size.width
+            let cy = size.height * 0.35 + sin(t * 2.3 + phase) * size.height * 0.25
+            let glowR = 3 + sin(time * 0.8 + phase * 7) * 2
+            let opacity = 0.3 + sin(time * 0.6 + phase * 5) * 0.3
+            let center = CGPoint(x: cx, y: cy)
+            fillCircle(in: context, center: center, radius: glowR,
+                       color: Color(.sRGB, red: 240 / 255, green: 220 / 255, blue: 100 / 255, opacity: 0.15 * opacity))
+            fillCircle(in: context, center: center, radius: 1.5,
+                       color: Color(.sRGB, red: 240 / 255, green: 220 / 255, blue: 100 / 255, opacity: 0.8 * opacity))
         }
     }
 

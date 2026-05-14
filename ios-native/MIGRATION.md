@@ -108,7 +108,7 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
 - [ ] Historial de práctica
 - RN: `app/(tabs)/habilidades.tsx`, `app/habilidad/`, `app/habilidades/`, `src/components/skills/`, `src/constants/skills.ts`
 
-### Jardín de bienestar — 🚧 (el más grande, por fases)
+### Jardín de bienestar — ✅ (el más grande, portado por fases)
 Motor de render decidido: **`SwiftUI Canvas` + `TimelineView(.animation)`** (no
 SpriteKit). Mapea 1:1 con el Skia de RN. Se accede desde la **tarjeta de racha
 del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
@@ -149,14 +149,28 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   porta los 5 dibujos (gato, conejo, pájaro, mariposa dorada, erizo) con su
   recorrido y ritmo propios, en coordenadas de pantalla; se llaman desde
   `GardenScene` junto a los visitantes
-- [ ] **Fase 7 — Logros + celebraciones**: toasts, modal de hito con confeti
-- [ ] **Fase 8 — Cosméticos + pulido**: overrides cosméticos, `GardenStats`
+- [x] **Fase 7 — Logros + celebraciones**: `AchievementToastView` (toast
+  efímero que entra/sale desde arriba, con cola consumida desde
+  `GardenStore.pendingAchievements`) y `StreakCelebrationView` (modal a pantalla
+  completa con confeti, emoji rebotando y bono de semillas). Los hitos viven en
+  `StreakMilestone` (3/7/14/21/30) y `GardenStore.pendingMilestone` decide cuál
+  celebrar; `GardenView` los muestra como overlays
+- [x] **Fase 8 — Cosméticos + pulido**: los 4 cosméticos ahora hacen algo
+  visible (en RN estaban definidos pero sin usar). `sunsetSky` ya estaba;
+  añadidos `stonePath` (tiñe la rejilla de gris piedra con guijarros en
+  `drawTiles`), `flowerFence` (florecitas sobre los postes) y `firefliesAlways`
+  (luciérnagas también de día en `drawCreatures`). Portada la **valla**
+  (`drawFence`, postes en los bordes traseros con racha ≥ 3) que no existía.
+  `GardenStatsView` (flores plantadas, emoción/planta dominante, vitalidad +
+  barra) bajo la escena. Botón de **compartir** en el toolbar: rasteriza la
+  escena con `ImageRenderer` y abre la hoja del sistema (`UIActivityViewController`)
 - Nativo: `Features/Garden/` (`GardenView`, `GardenScene`, `GardenStore`,
   `GardenIso`, `GardenPersistence`, `Models/`, `Rendering/GardenRenderer`)
 - RN: `app/jardin.tsx`, `src/components/garden/` (20+ archivos)
 - **Pendiente conocido**: decoraciones se dibujan con su emoji (las formas Skia
-  personalizadas de RN se portarán en una fase de pulido); plantas en `growthStage`
-  bajo se ven como brotes pequeños (fiel a los datos)
+  personalizadas de RN no se portaron); plantas en `growthStage` bajo se ven
+  como brotes pequeños (fiel a los datos); efectos animados de decoración
+  (fuente, farol, pozo…) de `GardenCanvas.tsx` no portados
 
 ### Logros de app — ⬜
 - [ ] 15 logros + cola de toasts
