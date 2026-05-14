@@ -17,15 +17,16 @@ Contexto de arquitectura y stack: ver `README.md`.
 |---|---|---|
 | Proyecto XcodeGen + SPM Firebase + GoogleSignIn | ✅ | `project.yml`, iOS 17+, Swift 6 estricto |
 | Design System (Theme, Typography, fuentes) | ✅ | Portado de `src/constants/theme.ts` |
-| Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos — ver "Modelos pendientes" |
+| Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos (+ `CheckinDraft`) — ver "Modelos pendientes" |
 | `AuthService` | ✅ | Email/password, social (Apple/Google), creación de perfil Firestore |
-| `FirestoreService` | 🚧 | Esqueleto; solo cubre check-ins |
+| `FirestoreService` | 🚧 | CRUD de check-ins completo y cifrado (incluye consulta por rango de fechas); resto de colecciones pendiente |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
-| **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold` (modificadores `authFormCard`/`errorAlert`). Pendientes: Card, Badge, EmptyState, LoadingSpinner, Skeleton, FadeIn, ScreenWrapper, 2× AchievementToast |
+| **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
 | **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
 | **Lenguaje con género** (cross-cutting) | ⬜ | `src/contexts/GenderContext.tsx`, usado en 8 pantallas; afecta a los textos. El registro ya guarda `genderForm` en el perfil; falta persistencia local |
-| **Lógica de racha / streak** (cross-cutting) | ⬜ | `src/utils/streak.ts`, usado en home, jardín, insights, perfil |
-| Cifrado de campos sensibles (CryptoJS → CryptoKit) | ⬜ | RN: `src/lib/crypto.ts`. Decidir esquema compatible ❓ |
+| **Lógica de racha / streak** (cross-cutting) | 🚧 | `Utils/Streak.swift` portado y en uso en el home; falta integrarlo en jardín, insights y perfil cuando se porten |
+| Cifrado de campos sensibles (CryptoJS → CryptoKit) | ✅ | `Services/BloomCrypto.swift` — AES-256-CBC + `EVP_BytesToKey`/MD5, compatible byte a byte con `src/lib/crypto.ts`. Round-trip de notas/eventos con la app RN |
+| `Utils/BloomDate.swift` | ✅ | Portado de `src/utils/date.ts` (dateKey, time, displayDate, greeting) |
 | `strings.ts` → catálogo de textos | 🚧 | `Strings.swift` con namespace `Auth`/`SocialAuth`/`App`. Se completa feature a feature. Estrategia definitiva (`String(localized:)` vs enum) ❓ |
 | Notificaciones (recordatorios diarios) | ⬜ | RN: `src/lib/notifications.ts` |
 | Export PDF | ⬜ | RN: `src/lib/export-pdf.ts`, `src/lib/export.ts` |
@@ -52,17 +53,33 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
   `AuthService` actualiza `RootView`.
 - RN: `app/(auth)/`, `src/components/auth/SocialSignInButtons.tsx`, `src/lib/auth.ts`
 
-### Check-in diario — ⬜ (siguiente)
-- [ ] Home / "jardín de hoy" (`app/(tabs)/index.tsx`), incluye racha
-- [ ] Crear check-in (modal) — emoción, intensidad, sueño, hambre, ciclo, eventos, notas
-- [ ] Ver/editar check-in (`checkin/[id]`)
-- [ ] Componentes: EmotionPicker, IntensitySlider, CycleTracker, EventInput, CheckinCard
-- RN: `app/checkin/`, `src/components/checkin/`
+### Check-in diario — ✅
+- [x] Home — saludo, racha y check-ins de hoy (`CheckInHomeView`)
+- [x] Crear check-in (sheet modal) — emoción, intensidad, sueño, hambre, ciclo, eventos, notas
+- [x] Ver check-in — detalle (`CheckInDetailView`)
+- [x] Editar check-in — `CheckInFormView` con `entryToEdit`
+- [x] Eliminar check-in — `confirmationDialog` desde el detalle
+- [x] Componentes: `EmotionPicker`, `IntensitySelector`, `CycleTracker`, `EventInput`, `CheckinCard`
+- Nativo: `Features/CheckIn/` + `Features/CheckIn/Components/`, `FirestoreService` (CRUD cifrado)
+- RN: `app/checkin/`, `src/components/checkin/`, `app/(tabs)/index.tsx`
+- **Pendiente del home RN** (llega con sus features): promo premium, CTA de registro
+  emocional, gratitud, toasts de logros, diario flotante (agenda)
+- **Compostar**: omitido en el detalle — depende de la economía del jardín (no portada).
+  El detalle sí muestra `compostReflection` si ya existe
 
-### Calendario emocional — ⬜
-- [ ] Vista mensual + navegación de meses
-- [ ] Detalle de día (`dia/[fecha]`)
+### Calendario emocional — ✅
+- [x] Vista mensual con punto de la emoción predominante por día
+- [x] Navegación de meses (anterior/siguiente)
+- [x] Leyenda de emociones del mes
+- [x] Detalle de día (`DayDetailView`) — lista de check-ins, banner de fecha,
+  botón "Añadir registro" solo si es hoy
+- [x] Componentes: `MonthNavigator`, `MonthGrid` (+ `DayCell`)
+- [x] Util `FlowLayout` (Layout para `flexWrap`, reutilizable en badges/chips)
+- Nativo: `Features/Calendar/` + `Features/Calendar/Components/`, `Utils/FlowLayout.swift`,
+  `FirestoreService.checkins(byDateRange:to:userID:)`
 - RN: `app/(tabs)/calendario.tsx`, `app/dia/[fecha].tsx`, `src/components/calendar/`
+- **Pendiente del detalle de día RN** (llega con sus features): registros
+  emocionales y gratitud del día. Nativo muestra solo check-ins por ahora
 
 ### Insights — ⬜
 - [ ] Pantalla de insights y correlaciones
@@ -147,7 +164,6 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`.
 
 ## Decisiones pendientes (❓)
 
-- Esquema de cifrado nativo compatible con los datos ya cifrados en Firestore
 - Estrategia de textos: `String(localized:)` vs enum de strings
 - Jardín: ¿SwiftUI Canvas, SpriteKit, o repensar los efectos de Skia?
 - Bundle ID: hoy comparte `com.akemi01.bloom` con la app RN (mismo `GoogleService-Info`)

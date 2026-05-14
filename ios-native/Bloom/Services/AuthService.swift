@@ -40,6 +40,13 @@ final class AuthService {
         return nil
     }
 
+    /// Nombre visible del usuario actual. No es reactivo —rara vez cambia tras
+    /// el login—, pero el listener de sesión recrea la jerarquía de vistas al
+    /// entrar, así que la home siempre lo lee actualizado.
+    var currentDisplayName: String? {
+        Auth.auth().currentUser?.displayName
+    }
+
     // MARK: - Email / contraseña
 
     func signIn(email: String, password: String) async throws {

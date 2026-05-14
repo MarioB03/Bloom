@@ -1,13 +1,169 @@
 import SwiftUI
 
-/// Pantalla principal: check-in del día y "jardín de bienestar".
-/// Equivalente a `app/(tabs)/index.tsx` en la app React Native.
-struct CheckInHomeView: View {
-    var body: some View {
-        PlaceholderScreen(title: "Tu jardín de hoy", systemImage: "leaf.fill")
-    }
+/// Rutas de navegación del módulo de check-in.
+enum CheckInRoute: Hashable {
+    case detail(id: String)
 }
 
-#Preview {
-    CheckInHomeView()
+/// Pantalla principal: saludo, racha y check-ins del día de hoy.
+/// Equivalente a `app/(tabs)/index.tsx`.
+///
+/// La versión RN incluye además promo premium, CTA de registro emocional,
+/// gratitud, toasts de logros y el diario flotante; esas piezas llegarán
+/// con sus respectivas features. Aquí se porta solo lo propio del check-in.
+struct CheckInHomeView: View {
+
+    @Environment(AuthService.self) private var auth
+    @Environment(FirestoreService.self) private var firestore
+
+    @State private var checkins: [CheckinEntry] = []
+    @State private var streak = 0
+    @State private var isLoading = true
+    @State private var showingForm = false
+
+    var body: some View {
+        NavigationStack {
+            ScreenWrapper {
+                header
+                streakCard
+                newCheckinCard
+                recordsSection
+            }
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: CheckInRoute.self) { route in
+                switch route {
+                case .detail(let id):
+                    CheckInDetailView(id: id, onChanged: {
+                        Task { await load() }
+                    })
+                }
+            }
+        }
+        .sheet(isPresented: $showingForm) {
+            CheckInFormView {
+                Task { await load() }
+            }
+        }
+        .task { await load() }
+    }
+
+    // MARK: - Cabecera
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(BloomDate.greeting())
+                .font(.bodyText)
+                .foregroundStyle(Theme.Palette.neutral400)
+            Text(auth.currentDisplayName ?? "")
+                .font(.displaySmall)
+                .foregroundStyle(Theme.Palette.neutral800)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Racha
+
+    private var streakCard: some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            Text(Streak.emoji(streak))
+                .font(.system(size: 28))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(Streak.countLabel(streak))
+                    .font(.bodyBold)
+                    .foregroundStyle(Theme.Palette.neutral700)
+                Text(Streak.message(streak))
+                    .font(.caption)
+                    .foregroundStyle(Theme.Palette.neutral500)
+            }
+            Spacer()
+        }
+        .padding(.vertical, Theme.Spacing.sm + 4)
+        .padding(.horizontal, Theme.Spacing.md)
+        .background(Theme.Palette.accent50)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.lg)
+                .strokeBorder(Theme.Palette.accent100, lineWidth: 1)
+        )
+    }
+
+    // MARK: - CTA de nuevo check-in
+
+    private var newCheckinCard: some View {
+        Button {
+            showingForm = true
+        } label: {
+            HStack(spacing: Theme.Spacing.md) {
+                Text("🌿")
+                    .font(.system(size: 22))
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Circle())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(Strings.CheckIn.newCheckin)
+                        .font(.bodyBold)
+                        .foregroundStyle(.white)
+                    Text(Strings.CheckIn.newCheckinSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.85))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.85))
+            }
+            .padding(Theme.Spacing.md)
+            .background(Theme.Palette.secondary400)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.xl))
+            .bloomShadow(.md)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .medium), trigger: showingForm)
+    }
+
+    // MARK: - Registros de hoy
+
+    @ViewBuilder
+    private var recordsSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text(Strings.CheckIn.todayRecords)
+                .font(.heading3)
+                .foregroundStyle(Theme.Palette.neutral700)
+
+            if isLoading {
+                ProgressView()
+                    .tint(Theme.Palette.primary400)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Theme.Spacing.xl)
+            } else if checkins.isEmpty {
+                EmptyState(emoji: "📝", message: Strings.CheckIn.noRecordsToday)
+            } else {
+                ForEach(checkins) { checkin in
+                    NavigationLink(value: CheckInRoute.detail(id: checkin.id ?? "")) {
+                        CheckinCard(checkin: checkin)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.top, Theme.Spacing.sm)
+    }
+
+    // MARK: - Datos
+
+    private func load() async {
+        guard let userID = auth.currentUserID else {
+            isLoading = false
+            return
+        }
+        do {
+            let today = BloomDate.dateKey(Date())
+            checkins = try await firestore.checkins(byDate: today, userID: userID)
+            let dates = try await firestore.checkinDates(lastDays: 30, userID: userID)
+            streak = Streak.current(from: dates)
+        } catch {
+            // Se conserva el último estado conocido ante un fallo de red.
+        }
+        isLoading = false
+    }
 }

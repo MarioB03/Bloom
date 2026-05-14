@@ -41,3 +41,16 @@ struct CheckinEntry: Codable, Identifiable {
     var composted: Bool?
     var compostReflection: String?
 }
+
+/// Datos de formulario para crear un check-in nuevo.
+/// `date`, `createdAt`, `updatedAt` y `userId` los pone `FirestoreService`.
+/// Equivalente a `CheckinFormData` en `src/types/checkin.ts`.
+struct CheckinDraft {
+    var emotion: EmotionID
+    var emotionIntensity: Int = 3
+    var sleepQuality: Int = 3
+    var hungerLevel: Int = 3
+    var cyclePhase: CyclePhase?
+    var events: [ImportantEvent] = []
+    var notes: String = ""
+}
