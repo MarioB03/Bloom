@@ -39,42 +39,20 @@ struct CheckInFormView: View {
     private var isEditing: Bool { entryToEdit != nil }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
+        NavigationStack {
             form
-        }
-        .background(Theme.Palette.background)
-    }
-
-    // MARK: - Cabecera
-
-    private var header: some View {
-        ZStack {
-            Text(isEditing ? Strings.CheckIn.editTitle : Strings.CheckIn.newCheckin)
-                .font(.heading3)
-                .foregroundStyle(Theme.Palette.neutral700)
-
-            HStack {
-                Spacer()
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Theme.Palette.primary400)
-                        .frame(width: 40, height: 40)
-                        .background(Theme.Palette.primary50)
-                        .clipShape(Circle())
+                .background(Theme.Palette.background)
+                .navigationTitle(isEditing ? Strings.CheckIn.editTitle : Strings.CheckIn.newCheckin)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(Strings.Common.cancel) { dismiss() }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(Strings.Common.save) { save() }
+                            .disabled(isSaving)
+                    }
                 }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.sm)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Theme.Palette.neutral100)
-                .frame(height: 1)
         }
     }
 
@@ -136,15 +114,6 @@ struct CheckInFormView: View {
                         .foregroundStyle(Theme.Palette.error)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                BloomButton(
-                    title: isEditing ? Strings.CheckIn.saveChanges : Strings.CheckIn.save,
-                    size: .lg,
-                    loading: isSaving
-                ) {
-                    save()
-                }
-                .padding(.top, Theme.Spacing.sm)
             }
             .padding(.horizontal, Theme.Spacing.md)
             .padding(.top, Theme.Spacing.md)

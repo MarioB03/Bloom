@@ -34,7 +34,8 @@ struct CheckInDetailView: View {
                 notFound
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle(Strings.CheckIn.detailTitle)
+        .navigationBarTitleDisplayMode(.inline)
         .task { await load() }
         .sheet(isPresented: $showingEditForm) {
             if let checkin {
@@ -60,7 +61,6 @@ struct CheckInDetailView: View {
 
     private func content(_ checkin: CheckinEntry) -> some View {
         ScreenWrapper {
-            header
             heroCard(checkin)
             physicalStateCard(checkin)
             if !checkin.events.isEmpty {
@@ -74,51 +74,19 @@ struct CheckInDetailView: View {
                 reflectionCard(reflection)
             }
         }
-    }
-
-    private var header: some View {
-        HStack(spacing: Theme.Spacing.xs) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.Palette.neutral600)
-                    .frame(width: 40, height: 40)
-                    .background(Theme.Palette.neutral100)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    showingEditForm = true
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                }
+                Button(role: .destructive) {
+                    showingDeleteConfirm = true
+                } label: {
+                    Image(systemName: "trash")
+                }
             }
-            .buttonStyle(.plain)
-
-            Text(Strings.CheckIn.detailTitle)
-                .font(.heading3)
-                .foregroundStyle(Theme.Palette.neutral700)
-
-            Spacer()
-
-            Button {
-                showingEditForm = true
-            } label: {
-                Image(systemName: "square.and.pencil")
-                    .font(.system(size: 16))
-                    .foregroundStyle(Theme.Palette.primary400)
-                    .frame(width: 40, height: 40)
-                    .background(Theme.Palette.primary50)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-
-            Button {
-                showingDeleteConfirm = true
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 16))
-                    .foregroundStyle(Theme.Palette.error)
-                    .frame(width: 40, height: 40)
-                    .background(Theme.Palette.error.opacity(0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
         }
     }
 

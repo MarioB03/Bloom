@@ -15,7 +15,6 @@ struct DayDetailView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
-    @Environment(\.dismiss) private var dismiss
 
     /// Fecha del día en formato `"YYYY-MM-DD"`.
     let date: String
@@ -44,7 +43,8 @@ struct DayDetailView: View {
                 content
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle(Strings.Calendar.dayDetailTitle)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: DayDetailRoute.self) { route in
             switch route {
             case .checkin(let id):
@@ -65,7 +65,6 @@ struct DayDetailView: View {
 
     private var content: some View {
         ScreenWrapper {
-            header
             dateBanner
             if checkins.isEmpty {
                 EmptyState(emoji: "🌤️", message: Strings.Calendar.emptyDay)
@@ -84,32 +83,6 @@ struct DayDetailView: View {
                 }
                 .padding(.top, Theme.Spacing.sm)
             }
-        }
-    }
-
-    private var header: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.Palette.neutral600)
-                    .frame(width: 40, height: 40)
-                    .background(Theme.Palette.neutral100)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            Text(Strings.Calendar.dayDetailTitle)
-                .font(.heading3)
-                .foregroundStyle(Theme.Palette.neutral700)
-
-            Spacer()
-
-            Color.clear.frame(width: 40, height: 40)
         }
     }
 
