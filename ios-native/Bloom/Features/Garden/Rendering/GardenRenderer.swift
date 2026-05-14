@@ -441,6 +441,276 @@ enum GardenRenderer {
         }
     }
 
+    // MARK: - Mascotas
+
+    /// Dibuja las mascotas activas deambulando por el jardín, en coordenadas de
+    /// pantalla (sin escalar), igual que los visitantes y las partículas.
+    /// Portado de `GardenPet` / `GardenPets` de `src/components/garden/GardenPet.tsx`.
+    ///
+    /// Cada mascota tiene su propio recorrido y ritmo. `time` (segundos) es
+    /// monótono: se usa `p = time / 10` como análogo continuo del `progress`
+    /// 0→1 de la app RN, para un movimiento sin saltos.
+    static func drawPets(
+        _ pets: [PetType],
+        in context: GraphicsContext,
+        size: CGSize,
+        time: Double
+    ) {
+        guard !pets.isEmpty else { return }
+        let p = time / 10
+        let groundY = size.height * 0.55
+
+        for pet in pets {
+            switch pet {
+            case .cat: drawCat(in: context, size: size, groundY: groundY, p: p)
+            case .bunny: drawBunny(in: context, size: size, groundY: groundY, p: p)
+            case .bird: drawBird(in: context, size: size, groundY: groundY, p: p)
+            case .goldenButterfly: drawGoldenButterfly(in: context, size: size, groundY: groundY, p: p)
+            case .hedgehog: drawHedgehog(in: context, size: size, groundY: groundY, p: p)
+            }
+        }
+    }
+
+    /// Gato que pasea con un trazado en ocho, meneando la cola y cabeceando.
+    private static func drawCat(in context: GraphicsContext, size: CGSize, groundY: Double, p: Double) {
+        let w = Double(size.width)
+        let t = p * 0.4
+        let cx = w * 0.25 + sin(t * 1.1) * w * 0.25
+        let cy = groundY + 10 + sin(t * 2.2) * 12
+        let facing: Double = cos(t * 1.1) > 0 ? 1 : -1
+        let tailAngle = sin(p * .pi * 8) * 0.4
+        let headBob = sin(p * .pi * 4) * 1.5
+
+        var body = context
+        body.translateBy(x: cx, y: cy)
+        body.scaleBy(x: facing, y: 1)
+
+        // Sombra.
+        fillOval(in: body, x: -7, y: 4, w: 14, h: 4, color: .black.opacity(0.06))
+
+        // Cola — translada y rota sobre su base.
+        var tail = body
+        tail.translateBy(x: -9, y: -2)
+        tail.rotate(by: .radians(tailAngle))
+        var tailPath = Path()
+        tailPath.move(to: .zero)
+        tailPath.addCurve(to: CGPoint(x: -8, y: -12),
+                          control1: CGPoint(x: -6, y: -8), control2: CGPoint(x: -10, y: -6))
+        tail.stroke(tailPath, with: .color(Color(hex: "8B7355")),
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round))
+
+        // Cuerpo y barriga.
+        fillOval(in: body, x: -8, y: -5, w: 16, h: 10, color: Color(hex: "A89070"))
+        fillOval(in: body, x: -4, y: -2, w: 8, h: 6, color: Color(hex: "C4B8A0"))
+
+        // Patas.
+        for leg in [(-5.0, 3.0), (-2.0, 4.0), (3.0, 4.0), (6.0, 3.0)] {
+            var legPath = Path()
+            legPath.move(to: CGPoint(x: leg.0, y: leg.1))
+            legPath.addLine(to: CGPoint(x: leg.0, y: leg.1 + 5))
+            body.stroke(legPath, with: .color(Color(hex: "8B7355")),
+                        style: StrokeStyle(lineWidth: 1.8, lineCap: .round))
+        }
+
+        // Cabeza — cabecea suavemente.
+        var head = body
+        head.translateBy(x: 0, y: headBob - 7)
+        fillCircle(in: head, center: CGPoint(x: 3, y: 0), radius: 6, color: Color(hex: "A89070"))
+        head.fill(triangle((-5, -8), (-8, -15), (-2, -10)), with: .color(Color(hex: "A89070")))
+        head.fill(triangle((5, -8), (8, -15), (2, -10)), with: .color(Color(hex: "A89070")))
+        head.fill(triangle((-4.5, -8.5), (-6.5, -13), (-2.5, -10)), with: .color(Color(hex: "D4A0A0")))
+        head.fill(triangle((4.5, -8.5), (6.5, -13), (2.5, -10)), with: .color(Color(hex: "D4A0A0")))
+        fillCircle(in: head, center: CGPoint(x: 0.5, y: -1), radius: 1.2, color: Color(hex: "3A3020"))
+        fillCircle(in: head, center: CGPoint(x: 5.5, y: -1), radius: 1.2, color: Color(hex: "3A3020"))
+        fillCircle(in: head, center: CGPoint(x: 1, y: -1.5), radius: 0.5, color: .white.opacity(0.7))
+        fillCircle(in: head, center: CGPoint(x: 6, y: -1.5), radius: 0.5, color: .white.opacity(0.7))
+        fillCircle(in: head, center: CGPoint(x: 3, y: 1), radius: 0.8, color: Color(hex: "D4A0A0"))
+        let whiskers: [(Double, Double, Double, Double)] = [
+            (-2, 0.5, -7, -0.5), (-2, 1.5, -7, 2), (8, 0.5, 13, -0.5), (8, 1.5, 13, 2),
+        ]
+        for whisker in whiskers {
+            var path = Path()
+            path.move(to: CGPoint(x: whisker.0, y: whisker.1))
+            path.addLine(to: CGPoint(x: whisker.2, y: whisker.3))
+            head.stroke(path, with: .color(Color(.sRGB, red: 80 / 255, green: 60 / 255, blue: 40 / 255, opacity: 0.3)),
+                        lineWidth: 0.5)
+        }
+    }
+
+    /// Conejo que da saltitos por el jardín.
+    private static func drawBunny(in context: GraphicsContext, size: CGSize, groundY: Double, p: Double) {
+        let w = Double(size.width)
+        let t = p * 0.35
+        let cx = w * 0.6 + sin(t * 1.5) * w * 0.2
+        let hop = abs(sin(t * 8)) * 8
+        let cy = groundY + 15 + sin(t * 1.8) * 10 - hop
+        let facing: Double = cos(t * 1.5) > 0 ? 1 : -1
+
+        var body = context
+        body.translateBy(x: cx, y: cy)
+        body.scaleBy(x: facing, y: 1)
+
+        fillOval(in: body, x: -5, y: 3, w: 10, h: 3, color: .black.opacity(0.05))
+        fillOval(in: body, x: -6, y: -4, w: 12, h: 8, color: Color(hex: "E0D4C0"))
+        fillCircle(in: body, center: CGPoint(x: 5, y: -5), radius: 4.5, color: Color(hex: "E8DCD0"))
+
+        var ear1 = Path()
+        ear1.move(to: CGPoint(x: 3, y: -8))
+        ear1.addCurve(to: CGPoint(x: 5, y: -18),
+                      control1: CGPoint(x: 2, y: -18), control2: CGPoint(x: 4, y: -20))
+        ear1.addLine(to: CGPoint(x: 5, y: -8))
+        ear1.closeSubpath()
+        body.fill(ear1, with: .color(Color(hex: "E8DCD0")))
+
+        var ear2 = Path()
+        ear2.move(to: CGPoint(x: 6, y: -8))
+        ear2.addCurve(to: CGPoint(x: 8, y: -17),
+                      control1: CGPoint(x: 7, y: -17), control2: CGPoint(x: 9, y: -19))
+        ear2.addLine(to: CGPoint(x: 7, y: -8))
+        ear2.closeSubpath()
+        body.fill(ear2, with: .color(Color(hex: "E8DCD0")))
+
+        var innerEar = Path()
+        innerEar.move(to: CGPoint(x: 3.5, y: -9))
+        innerEar.addCurve(to: CGPoint(x: 4.5, y: -16),
+                          control1: CGPoint(x: 3, y: -16), control2: CGPoint(x: 4.5, y: -17))
+        innerEar.addLine(to: CGPoint(x: 4.5, y: -9))
+        innerEar.closeSubpath()
+        body.fill(innerEar, with: .color(Color(hex: "E0B0B0")))
+
+        fillCircle(in: body, center: CGPoint(x: 3.5, y: -5.5), radius: 1, color: Color(hex: "3A3020"))
+        fillCircle(in: body, center: CGPoint(x: 6.5, y: -5.5), radius: 1, color: Color(hex: "3A3020"))
+        fillCircle(in: body, center: CGPoint(x: 5, y: -3.5), radius: 0.7, color: Color(hex: "E0B0B0"))
+        fillCircle(in: body, center: CGPoint(x: -6, y: -1), radius: 2.5, color: Color(hex: "F0E8E0"))
+    }
+
+    /// Pájaro que revolotea entre las flores aleteando.
+    private static func drawBird(in context: GraphicsContext, size: CGSize, groundY: Double, p: Double) {
+        let w = Double(size.width)
+        let t = p * 0.6
+        let cx = w * 0.4 + sin(t * 1.3) * w * 0.3
+        let cy = groundY - 20 + sin(t * 2.5) * 15
+        let facing: Double = cos(t * 1.3) > 0 ? 1 : -1
+        let wingFlap = sin(p * 25) * 0.6
+
+        var body = context
+        body.translateBy(x: cx, y: cy)
+        body.scaleBy(x: facing, y: 1)
+
+        fillOval(in: body, x: -4, y: -3, w: 8, h: 6, color: Color(hex: "6BA3D0"))
+
+        // Ala — aletea rotando sobre la base del cuerpo.
+        var wing = body
+        wing.rotate(by: .radians(wingFlap))
+        var wingPath = Path()
+        wingPath.move(to: .zero)
+        wingPath.addCurve(to: CGPoint(x: -7, y: 0),
+                          control1: CGPoint(x: -3, y: -6), control2: CGPoint(x: -8, y: -5))
+        wingPath.closeSubpath()
+        wing.fill(wingPath, with: .color(Color(hex: "5090C0")))
+
+        fillCircle(in: body, center: CGPoint(x: 4, y: -3), radius: 3, color: Color(hex: "6BA3D0"))
+        fillCircle(in: body, center: CGPoint(x: 5, y: -3.5), radius: 0.8, color: Color(hex: "2A2020"))
+        fillCircle(in: body, center: CGPoint(x: 5.3, y: -3.8), radius: 0.3, color: .white.opacity(0.6))
+        body.fill(triangle((7, -3), (10, -2.5), (7, -2)), with: .color(Color(hex: "E8A040")))
+        body.fill(triangle((-4, -1), (-8, -3), (-7, 0)), with: .color(Color(hex: "5090C0")))
+    }
+
+    /// Mariposa dorada de vuelo lento y centelleante.
+    private static func drawGoldenButterfly(in context: GraphicsContext, size: CGSize, groundY: Double, p: Double) {
+        let w = Double(size.width)
+        let h = Double(size.height)
+        let t = p * 0.3
+        let cx = w * 0.5 + sin(t * 1.7) * w * 0.3
+        let cy = groundY - 10 + sin(t * 2.3) * h * 0.08
+        let wingScale = 0.3 + abs(sin(p * 20)) * 0.7
+        let sparkleOpacity = 0.3 + sin(p * 15) * 0.3
+
+        var ctx = context
+        ctx.translateBy(x: cx, y: cy)
+        ctx.scaleBy(x: wingScale, y: 1)
+
+        var wings = Path()
+        wings.move(to: .zero)
+        wings.addCurve(to: CGPoint(x: -8, y: 2),
+                       control1: CGPoint(x: -7, y: -7), control2: CGPoint(x: -11, y: -4))
+        wings.addCurve(to: .zero,
+                       control1: CGPoint(x: -10, y: 6), control2: CGPoint(x: -5, y: 7))
+        wings.move(to: .zero)
+        wings.addCurve(to: CGPoint(x: 8, y: 2),
+                       control1: CGPoint(x: 7, y: -7), control2: CGPoint(x: 11, y: -4))
+        wings.addCurve(to: .zero,
+                       control1: CGPoint(x: 10, y: 6), control2: CGPoint(x: 5, y: 7))
+        ctx.fill(wings, with: .color(Color(.sRGB, red: 240 / 255, green: 200 / 255, blue: 60 / 255, opacity: 0.75)))
+
+        ctx.fill(Path(CGRect(x: -0.7, y: -3, width: 1.4, height: 6)),
+                 with: .color(Color(.sRGB, red: 80 / 255, green: 60 / 255, blue: 20 / 255, opacity: 0.7)))
+
+        let sparkle = Color(.sRGB, red: 1, green: 220 / 255, blue: 80 / 255, opacity: max(0, sparkleOpacity))
+        fillCircle(in: ctx, center: CGPoint(x: -3, y: -2), radius: 1, color: sparkle)
+        fillCircle(in: ctx, center: CGPoint(x: 3, y: -2), radius: 1, color: sparkle)
+    }
+
+    /// Erizo que camina despacio contoneándose.
+    private static func drawHedgehog(in context: GraphicsContext, size: CGSize, groundY: Double, p: Double) {
+        let w = Double(size.width)
+        let t = p * 0.25
+        let cx = w * 0.3 + sin(t * 0.9) * w * 0.15
+        let cy = groundY + 20 + sin(t * 1.6) * 6
+        let facing: Double = cos(t * 0.9) > 0 ? 1 : -1
+        let waddle = sin(p * 12) * 0.08
+
+        var body = context
+        body.translateBy(x: cx, y: cy)
+        body.scaleBy(x: facing, y: 1)
+        body.rotate(by: .radians(waddle))
+
+        fillOval(in: body, x: -6, y: 2, w: 12, h: 3, color: .black.opacity(0.05))
+        fillOval(in: body, x: -7, y: -6, w: 12, h: 10, color: Color(hex: "8B6B40"))
+
+        for spine in [(-4.0, -5.0), (-2.0, -6.0), (0.0, -5.5), (2.0, -5.0), (-3.0, -3.0), (1.0, -3.0)] {
+            var path = Path()
+            path.move(to: CGPoint(x: spine.0, y: spine.1))
+            path.addLine(to: CGPoint(x: spine.0 - 1, y: spine.1 - 2.5))
+            body.stroke(path, with: .color(Color(hex: "6B5030")),
+                        style: StrokeStyle(lineWidth: 1, lineCap: .round))
+        }
+
+        fillOval(in: body, x: 2, y: -4, w: 7, h: 6, color: Color(hex: "D8C8A8"))
+        fillCircle(in: body, center: CGPoint(x: 6, y: -2), radius: 0.9, color: Color(hex: "2A2020"))
+        fillCircle(in: body, center: CGPoint(x: 6.3, y: -2.3), radius: 0.3, color: .white.opacity(0.6))
+        fillCircle(in: body, center: CGPoint(x: 8, y: -0.5), radius: 0.7, color: Color(hex: "3A3020"))
+
+        for leg in [(-3.0, 2.0), (1.0, 2.5), (4.0, 2.0)] {
+            var path = Path()
+            path.move(to: CGPoint(x: leg.0, y: leg.1))
+            path.addLine(to: CGPoint(x: leg.0, y: leg.1 + 3))
+            body.stroke(path, with: .color(Color(hex: "8B7355")),
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+        }
+    }
+
+    /// Atajo para rellenar un óvalo dado por su rectángulo contenedor.
+    private static func fillOval(
+        in context: GraphicsContext,
+        x: Double, y: Double, w: Double, h: Double,
+        color: Color
+    ) {
+        context.fill(Path(ellipseIn: CGRect(x: x, y: y, width: w, height: h)), with: .color(color))
+    }
+
+    /// Triángulo cerrado por sus tres vértices.
+    private static func triangle(
+        _ a: (Double, Double), _ b: (Double, Double), _ c: (Double, Double)
+    ) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: a.0, y: a.1))
+        path.addLine(to: CGPoint(x: b.0, y: b.1))
+        path.addLine(to: CGPoint(x: c.0, y: c.1))
+        path.closeSubpath()
+        return path
+    }
+
     // MARK: - Interacción
 
     /// Anillo azul pulsante bajo cada planta sin regar — solo en modo regar,

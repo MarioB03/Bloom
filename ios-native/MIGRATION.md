@@ -143,7 +143,12 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   una decoración = tocarla en modo Decorar (sin long-press ni confirmación:
   acción reversible dentro de su modo). La tienda no se restringe a Premium
   (esa función no está portada)
-- [ ] **Fase 6 — Mascotas**: las 5 con su movimiento propio
+- [x] **Fase 6 — Mascotas**: las 5 con su movimiento propio. `PetType`
+  (`Models/PetType.swift`); el gato es gratis con racha ≥ 3 y las otras 4 se
+  derivan de `purchasedIDs` (`GardenStore.activePets`). `GardenRenderer.drawPets`
+  porta los 5 dibujos (gato, conejo, pájaro, mariposa dorada, erizo) con su
+  recorrido y ritmo propios, en coordenadas de pantalla; se llaman desde
+  `GardenScene` junto a los visitantes
 - [ ] **Fase 7 — Logros + celebraciones**: toasts, modal de hito con confeti
 - [ ] **Fase 8 — Cosméticos + pulido**: overrides cosméticos, `GardenStats`
 - Nativo: `Features/Garden/` (`GardenView`, `GardenScene`, `GardenStore`,

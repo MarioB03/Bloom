@@ -261,6 +261,7 @@ struct GardenView: View {
             cosmetics: store.cosmetics,
             streak: store.streak,
             mode: store.mode,
+            activePets: store.activePets,
             waterEffects: store.waterEffects,
             onTapCell: { gx, gy in store.handleCellTap(gx: gx, gy: gy) }
         )

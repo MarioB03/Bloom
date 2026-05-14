@@ -25,6 +25,8 @@ struct GardenScene: View {
     let streak: Int
     /// Modo de interacción activo: condiciona las ayudas visuales del lienzo.
     let mode: InteractionMode
+    /// Mascotas activas que deambulan por el jardín.
+    let activePets: [PetType]
     /// Animaciones de riego en curso, una por celda regada hace poco.
     let waterEffects: [WaterEffect]
     /// Se invoca al tocar una celda dentro de la rejilla, ya en coordenadas
@@ -118,8 +120,9 @@ struct GardenScene: View {
             GardenRenderer.drawWaterEffect(effect, in: scene, offset: offset, time: time)
         }
 
-        // Visitantes y partículas estacionales: primer plano, sin escalar.
+        // Visitantes, mascotas y partículas estacionales: primer plano, sin escalar.
         GardenRenderer.drawCreatures(in: context, size: size, streak: streak, time: time)
+        GardenRenderer.drawPets(activePets, in: context, size: size, time: time)
         GardenRenderer.drawSeasonalParticles(in: context, size: size, season: season, time: time)
     }
 

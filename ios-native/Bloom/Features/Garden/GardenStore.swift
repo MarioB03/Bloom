@@ -65,6 +65,16 @@ final class GardenStore {
     /// Overrides visuales activos según los cosméticos comprados.
     var cosmetics: CosmeticOverrides { CosmeticOverrides.resolve(activeIDs: activeCosmeticIDs) }
 
+    /// Mascotas que deambulan ahora mismo por el jardín: el gato con racha ≥ 3
+    /// y las comprables que estén en `purchasedIDs`. Portado de la lógica de
+    /// `PET_SHOP_IDS` y la condición del gato en `app/jardin.tsx`.
+    var activePets: [PetType] {
+        var pets: [PetType] = []
+        if streak >= 3 { pets.append(.cat) }
+        pets += PetType.purchasable.filter { purchasedIDs.contains($0.rawValue) }
+        return pets
+    }
+
     // MARK: - Carga
 
     /// Carga el estado persistido (una sola vez) y refresca las plantas desde
