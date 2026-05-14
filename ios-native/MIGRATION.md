@@ -122,8 +122,12 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   isométrica, plantas con 12 morfologías × 6 etapas, decoraciones como emoji),
   `GardenRenderer`, `GardenView` (cabecera + tarjeta de progreso + escena que
   llena la pantalla, jardín escalado y centrado sin scroll)
-- [ ] **Fase 3 — Animación**: `TimelineView`, vaivén de plantas, atmósfera
-  (nubes/mariposas/luciérnagas/estrellas), partículas estacionales
+- [x] **Fase 3 — Animación**: `GardenScene` envuelve el `Canvas` en
+  `TimelineView(.animation)` y pasa el tiempo absoluto al renderer. Vaivén de
+  plantas (oscilación del tallo con fase por celda), atmósfera (sol pulsante /
+  luna, estrellas titilantes de noche, nubes con desplazamiento continuo,
+  mariposas de día, luciérnagas de noche) y partículas estacionales
+  (pétalos/hojas/nieve). Cantidades escaladas con la racha, igual que en RN
 - [ ] **Fase 4 — Interacción**: gestos tap/long-press, modos
   (ver/regar/decorar), splash de agua, modal de planta
 - [ ] **Fase 5 — Economía + tienda**: `GardenShop`, picker de decoraciones

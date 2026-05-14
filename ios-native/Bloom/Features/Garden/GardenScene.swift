@@ -7,15 +7,18 @@ import SwiftUI
 /// dé el contenedor — sin scroll. La app RN scrollea el lienzo; aquí preferimos
 /// ver el jardín completo de un vistazo, con el cielo rellenando el resto.
 ///
-/// De momento es estática. La animación (vaivén de plantas, partículas
-/// estacionales, atmósfera, efectos de riego) llegará en una fase posterior
-/// envolviendo este `Canvas` en un `TimelineView(.animation)`.
+/// El `Canvas` va dentro de un `TimelineView(.animation)`: en cada frame se
+/// pasa el tiempo absoluto al renderer, que anima el vaivén de las plantas, la
+/// atmósfera (sol/luna, estrellas, nubes, mariposas, luciérnagas) y las
+/// partículas estacionales. La interacción (regar, decorar) llega en otra fase.
 struct GardenScene: View {
 
     let layout: GardenLayout
     let gridSize: Int
     let season: Season
     let cosmetics: CosmeticOverrides
+    /// Racha actual: condiciona cuántos elementos de atmósfera aparecen.
+    let streak: Int
 
     /// Ampliación máxima: el jardín se dibuja a tamaño natural y solo se amplía
     /// hasta este factor si hay sitio de sobra. El espacio restante es cielo.
@@ -28,35 +31,47 @@ struct GardenScene: View {
     private var headroom: CGFloat { CGFloat(gridSize) * 9 }
 
     var body: some View {
-        Canvas { context, size in
-            let natural = naturalSize
-            let scale = min(
-                size.width / natural.width,
-                size.height / natural.height,
-                Self.maxScale
-            )
-            let originX = (size.width - natural.width * scale) / 2
-            let originY = (size.height - natural.height * scale) / 2
+        TimelineView(.animation) { timeline in
+            Canvas { context, size in
+                let time = timeline.date.timeIntervalSinceReferenceDate
+                let natural = naturalSize
+                let scale = min(
+                    size.width / natural.width,
+                    size.height / natural.height,
+                    Self.maxScale
+                )
+                let originX = (size.width - natural.width * scale) / 2
+                let originY = (size.height - natural.height * scale) / 2
 
-            // El cielo cubre todo el marco; el jardín escalado va centrado.
-            GardenRenderer.drawSky(in: context, size: size, season: season, cosmetics: cosmetics)
+                // El cielo cubre todo el marco; el jardín escalado va centrado.
+                GardenRenderer.drawSky(in: context, size: size, season: season, cosmetics: cosmetics)
 
-            var scene = context
-            scene.translateBy(x: originX, y: originY)
-            scene.scaleBy(x: scale, y: scale)
+                // Atmósfera de fondo, en coordenadas de pantalla (sin escalar).
+                GardenRenderer.drawStars(in: context, size: size, streak: streak, time: time)
+                GardenRenderer.drawCelestial(in: context, size: size, streak: streak, time: time)
+                GardenRenderer.drawClouds(in: context, size: size, streak: streak, time: time)
 
-            let offset = CGPoint(x: natural.width / 2, y: headroom + GardenGrid.tileH)
-            GardenRenderer.drawTiles(in: scene, offset: offset, gridSize: gridSize, season: season)
+                var scene = context
+                scene.translateBy(x: originX, y: originY)
+                scene.scaleBy(x: scale, y: scale)
 
-            // Plantas y decoraciones se dibujan juntas en orden isométrico
-            // (algoritmo del pintor): las celdas "de atrás" primero.
-            for drawable in sortedDrawables {
-                switch drawable {
-                case .plant(let plant):
-                    GardenRenderer.drawPlant(plant, in: scene, offset: offset, season: season)
-                case .decoration(let decoration):
-                    GardenRenderer.drawDecoration(decoration, in: scene, offset: offset)
+                let offset = CGPoint(x: natural.width / 2, y: headroom + GardenGrid.tileH)
+                GardenRenderer.drawTiles(in: scene, offset: offset, gridSize: gridSize, season: season)
+
+                // Plantas y decoraciones se dibujan juntas en orden isométrico
+                // (algoritmo del pintor): las celdas "de atrás" primero.
+                for drawable in sortedDrawables {
+                    switch drawable {
+                    case .plant(let plant):
+                        GardenRenderer.drawPlant(plant, in: scene, offset: offset, season: season, time: time)
+                    case .decoration(let decoration):
+                        GardenRenderer.drawDecoration(decoration, in: scene, offset: offset)
+                    }
                 }
+
+                // Visitantes y partículas estacionales: primer plano, sin escalar.
+                GardenRenderer.drawCreatures(in: context, size: size, streak: streak, time: time)
+                GardenRenderer.drawSeasonalParticles(in: context, size: size, season: season, time: time)
             }
         }
     }

@@ -73,12 +73,14 @@ enum GardenRenderer {
     // MARK: - Plantas
 
     /// Dibuja una planta completa (sombra, tallo, hojas y flor) en su celda.
-    /// El aspecto depende de la emoción (morfología) y la etapa de crecimiento.
+    /// El aspecto depende de la emoción (morfología) y la etapa de crecimiento;
+    /// `time` (segundos) anima el vaivén suave del tallo.
     static func drawPlant(
         _ plant: PlantPlacement,
         in context: GraphicsContext,
         offset: CGPoint,
-        season: Season
+        season: Season,
+        time: Double
     ) {
         let base = GardenIso.toScreen(gx: plant.gx, gy: plant.gy, offset: offset)
         let morphology = plant.emotion.plantMorphology
@@ -86,16 +88,25 @@ enum GardenRenderer {
         let bloomColor = plant.emotion.config.color
         let leafColor = season.theme.leafTint
 
-        // Sombra en el suelo.
+        // Sombra en el suelo — no se balancea.
         let shadow = Path(ellipseIn: CGRect(x: base.x - 11, y: base.y - 3, width: 22, height: 7))
         context.fill(shadow, with: .color(.black.opacity(0.12)))
 
-        // Etapa 0: solo un montículo de semilla.
+        // Etapa 0: solo un montículo de semilla, sin vaivén.
         guard stage >= 1 else {
             let seed = Path(ellipseIn: CGRect(x: base.x - 4, y: base.y - 6, width: 8, height: 6))
             context.fill(seed, with: .color(Color(hex: "8B6F47")))
             return
         }
+
+        // Vaivén: tallo, hojas y flor oscilan alrededor de la base. La fase
+        // depende de la celda para que cada planta se mueva distinto.
+        let swayPhase = Double(plant.gx) * 1.7 + Double(plant.gy) * 2.3
+        let swayAngle = sin(time * 1.05 + swayPhase) * 0.05
+        var ctx = context
+        ctx.translateBy(x: base.x, y: base.y)
+        ctx.rotate(by: .radians(swayAngle))
+        ctx.translateBy(x: -base.x, y: -base.y)
 
         // Tallo — su altura crece con la etapa y la intensidad de la emoción.
         let intensityFactor = 0.7 + Double(plant.intensity) * 0.06
@@ -109,7 +120,7 @@ enum GardenRenderer {
         var stem = Path()
         stem.move(to: base)
         stem.addLine(to: stemTop)
-        context.stroke(stem, with: .color(leafColor), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+        ctx.stroke(stem, with: .color(leafColor), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
 
         // Hojas — 1 en etapa 1, 2 en etapa 2, todas a partir de la 3.
         let visibleLeaves = stage == 1 ? 1 : (stage == 2 ? 2 : morphology.leafCount)
@@ -128,7 +139,7 @@ enum GardenRenderer {
                 CGAffineTransform(rotationAngle: side * 0.6)
                     .concatenating(CGAffineTransform(translationX: leafCenter.x, y: leafCenter.y))
             )
-            context.fill(leaf, with: .color(leafColor.lightened(0.1)))
+            ctx.fill(leaf, with: .color(leafColor.lightened(0.1)))
         }
 
         // Flor — aparece a partir de la etapa 3, con cada vez más pétalos.
@@ -148,7 +159,7 @@ enum GardenRenderer {
                     CGAffineTransform(rotationAngle: angle + .pi / 2)
                         .concatenating(CGAffineTransform(translationX: petalCenter.x, y: petalCenter.y))
                 )
-            context.fill(petal, with: .color(bloomColor))
+            ctx.fill(petal, with: .color(bloomColor))
         }
 
         // Centro de la flor.
@@ -159,11 +170,11 @@ enum GardenRenderer {
             width: centerRadius * 2,
             height: centerRadius * 2
         ))
-        context.fill(center, with: .color(bloomColor.darkened(0.2)))
+        ctx.fill(center, with: .color(bloomColor.darkened(0.2)))
 
         // Emoji central — solo en floración completa.
         if stage >= 5, let emoji = morphology.centerEmoji {
-            context.draw(
+            ctx.draw(
                 Text(emoji).font(.system(size: petalSize * 1.6)),
                 at: stemTop
             )
@@ -206,6 +217,243 @@ enum GardenRenderer {
         context.draw(
             Text(decoration.type.config.emoji).font(.system(size: 26)),
             at: CGPoint(x: base.x, y: base.y - 12)
+        )
+    }
+
+    // MARK: - Atmósfera
+
+    /// `true` si es de noche (antes de las 6h o desde las 20h).
+    static func isNight(_ now: Date = Date()) -> Bool {
+        let hour = Calendar.current.component(.hour, from: now)
+        return hour < 6 || hour >= 20
+    }
+
+    /// Sol pulsante (de día, racha ≥ 2) o luna (de noche) en la esquina superior.
+    static func drawCelestial(
+        in context: GraphicsContext,
+        size: CGSize,
+        streak: Int,
+        time: Double,
+        now: Date = Date()
+    ) {
+        let center = CGPoint(x: size.width - 45, y: 38)
+
+        if isNight(now) {
+            fillCircle(in: context, center: center, radius: 14,
+                       color: Color(.sRGB, red: 220 / 255, green: 220 / 255, blue: 240 / 255, opacity: 0.12))
+            fillCircle(in: context, center: center, radius: 10, color: Color(hex: "E8E0E8"))
+            return
+        }
+
+        guard streak >= 2 else { return }
+        let p = time / 10
+        let baseR = 14 + Double(min(streak, 10))
+        let r = baseR + sin(p * .pi * 4) * 2
+        let glowR = baseR + 8 + sin(p * .pi * 2) * 3
+        fillCircle(in: context, center: center, radius: glowR,
+                   color: Color(.sRGB, red: 248 / 255, green: 200 / 255, blue: 80 / 255, opacity: 0.08))
+        fillCircle(in: context, center: center, radius: r, color: Color(hex: "F5D48A"))
+        fillCircle(in: context, center: center, radius: r * 0.75, color: Color(hex: "FCEBC4"))
+    }
+
+    /// Estrellas titilantes — solo de noche y con racha ≥ 5.
+    static func drawStars(
+        in context: GraphicsContext,
+        size: CGSize,
+        streak: Int,
+        time: Double,
+        now: Date = Date()
+    ) {
+        guard isNight(now), streak >= 5 else { return }
+        let count = min(streak, 30)
+        for i in 0..<count {
+            let cx = (Double(i) * 137.508).truncatingRemainder(dividingBy: size.width)
+            let cy = (Double(i) * 97.3).truncatingRemainder(dividingBy: size.height * 0.35) + 5
+            let radius = 0.8 + Double(i % 3) * 0.4
+            let phase = Double(i) * 2.3
+            let opacity = 0.25 + sin(time * 1.2 + phase) * 0.25 + 0.1
+            fillCircle(
+                in: context,
+                center: CGPoint(x: cx, y: cy),
+                radius: radius,
+                color: Color(.sRGB, red: 1, green: 1, blue: 240 / 255, opacity: opacity)
+            )
+        }
+    }
+
+    /// Nubes que se desplazan despacio — aparecen con racha ≥ 3.
+    static func drawClouds(
+        in context: GraphicsContext,
+        size: CGSize,
+        streak: Int,
+        time: Double,
+        now: Date = Date()
+    ) {
+        guard streak >= 3 else { return }
+        let count = streak >= 10 ? 3 : (streak >= 5 ? 2 : 1)
+        let color = isNight(now)
+            ? Color(.sRGB, red: 180 / 255, green: 180 / 255, blue: 210 / 255, opacity: 0.08)
+            : Color(white: 1, opacity: 0.18)
+        let width = Double(size.width)
+        let range = width + 120
+
+        for i in 0..<count {
+            let baseX = width * (0.1 + Double(i) * 0.35)
+            let baseY = 22 + Double(i) * 14
+            let scale = 0.55 + Double(i) * 0.15
+            let speed = 0.3 + Double(i) * 0.15
+            // `time` es monótono: el desplazamiento es continuo, sin saltos.
+            let x = (baseX + time * speed * width / 10)
+                .truncatingRemainder(dividingBy: range) - 60
+            let y = baseY + sin(time / 10 * speed * 3 + baseX * 0.01) * 4
+
+            var path = Path()
+            path.addEllipse(in: CGRect(x: x - 20 * scale, y: y - 6 * scale, width: 40 * scale, height: 12 * scale))
+            path.addEllipse(in: CGRect(x: x - 12 * scale, y: y - 14 * scale, width: 28 * scale, height: 16 * scale))
+            path.addEllipse(in: CGRect(x: x + 5 * scale, y: y - 9 * scale, width: 18 * scale, height: 10 * scale))
+            context.fill(path, with: .color(color))
+        }
+    }
+
+    /// Visitantes animados: mariposas de día, luciérnagas de noche.
+    static func drawCreatures(
+        in context: GraphicsContext,
+        size: CGSize,
+        streak: Int,
+        time: Double,
+        now: Date = Date()
+    ) {
+        if isNight(now) {
+            guard streak >= 10 else { return }
+            let count = streak >= 21 ? 8 : (streak >= 14 ? 5 : 3)
+            for i in 0..<count {
+                let phase = Double(i) * 1.7
+                let t = time * 0.08 + phase
+                let cx = (sin(t * 1.7 + phase * 3) * 0.4 + 0.5) * size.width
+                let cy = size.height * 0.35 + sin(t * 2.3 + phase) * size.height * 0.25
+                let glowR = 3 + sin(time * 0.8 + phase * 7) * 2
+                let opacity = 0.3 + sin(time * 0.6 + phase * 5) * 0.3
+                let center = CGPoint(x: cx, y: cy)
+                fillCircle(in: context, center: center, radius: glowR,
+                           color: Color(.sRGB, red: 240 / 255, green: 220 / 255, blue: 100 / 255, opacity: 0.15 * opacity))
+                fillCircle(in: context, center: center, radius: 1.5,
+                           color: Color(.sRGB, red: 240 / 255, green: 220 / 255, blue: 100 / 255, opacity: 0.8 * opacity))
+            }
+            return
+        }
+
+        guard streak >= 2 else { return }
+        let count = streak >= 18 ? 5 : (streak >= 10 ? 3 : (streak >= 5 ? 2 : 1))
+        let wingColors: [Color] = [
+            Color(.sRGB, red: 200 / 255, green: 120 / 255, blue: 160 / 255, opacity: 0.7),
+            Color(.sRGB, red: 120 / 255, green: 160 / 255, blue: 220 / 255, opacity: 0.7),
+            Color(.sRGB, red: 220 / 255, green: 180 / 255, blue: 80 / 255, opacity: 0.7),
+            Color(.sRGB, red: 140 / 255, green: 200 / 255, blue: 140 / 255, opacity: 0.7),
+            Color(.sRGB, red: 180 / 255, green: 140 / 255, blue: 220 / 255, opacity: 0.7),
+        ]
+        for i in 0..<count {
+            let yZone = 0.1 + Double(i) / Double(count) * 0.7
+            let speed = 0.6 + Double(i) * 0.15
+            let phase = Double(i) * 2.1
+            let t = time / 10 * speed + phase
+            let cx = (sin(t * 1.3) * 0.35 + 0.5) * size.width
+            let cy = size.height * (0.3 + yZone * 0.5) + sin(t * 2.1) * size.height * 0.1
+            // Aleteo: la envergadura se comprime y expande rápido en X.
+            let wingScale = 0.3 + abs(sin(time * 3 + phase * 5)) * 0.7
+
+            var wings = Path()
+            wings.move(to: .zero)
+            wings.addCurve(to: CGPoint(x: -6, y: 1),
+                           control1: CGPoint(x: -5, y: -5), control2: CGPoint(x: -8, y: -3))
+            wings.addCurve(to: .zero,
+                           control1: CGPoint(x: -8, y: 4), control2: CGPoint(x: -4, y: 5))
+            wings.move(to: .zero)
+            wings.addCurve(to: CGPoint(x: 6, y: 1),
+                           control1: CGPoint(x: 5, y: -5), control2: CGPoint(x: 8, y: -3))
+            wings.addCurve(to: .zero,
+                           control1: CGPoint(x: 8, y: 4), control2: CGPoint(x: 4, y: 5))
+            let transformed = wings.applying(
+                CGAffineTransform(scaleX: wingScale, y: 1)
+                    .concatenating(CGAffineTransform(translationX: cx, y: cy))
+            )
+            context.fill(transformed, with: .color(wingColors[i % wingColors.count]))
+            context.fill(
+                Path(CGRect(x: cx - 0.5, y: cy - 2, width: 1, height: 4)),
+                with: .color(Color(.sRGB, red: 60 / 255, green: 50 / 255, blue: 40 / 255, opacity: 0.7))
+            )
+        }
+    }
+
+    /// Partículas estacionales que caen: pétalos en primavera, hojas en otoño,
+    /// nieve en invierno. El verano no tiene partículas.
+    static func drawSeasonalParticles(
+        in context: GraphicsContext,
+        size: CGSize,
+        season: Season,
+        time: Double
+    ) {
+        let theme = season.theme
+        guard theme.particleCount > 0, theme.particleType != .none else { return }
+        let p = time / 10
+
+        for i in 0..<theme.particleCount {
+            let startX = (Double(i) * 97.3 + 23).truncatingRemainder(dividingBy: size.width)
+            let phase = Double(i) * 0.7 + (Double(i * i) * 0.13).truncatingRemainder(dividingBy: 1)
+            let baseSpeed = 0.3 + (Double(i) * 0.37).truncatingRemainder(dividingBy: 0.4)
+            let particleSize = 2 + Double(i % 3)
+            let drift = Double((i * 53) % 40) - 20
+
+            let speed: Double
+            let driftFactor: Double
+            let driftFreq: Double
+            switch theme.particleType {
+            case .blossom: speed = baseSpeed;       driftFactor = 1.0; driftFreq = 3.0
+            case .leaf:    speed = baseSpeed * 0.7;  driftFactor = 1.5; driftFreq = 2.5
+            case .snow:    speed = baseSpeed * 0.5;  driftFactor = 0.8; driftFreq = 2.0
+            case .none:    continue
+            }
+
+            let t = (p * speed + phase).truncatingRemainder(dividingBy: 1)
+            let cx = startX + sin(t * .pi * driftFreq) * drift * driftFactor
+            let cy = -10 + t * (size.height + 20)
+            let fade: Double = t < 0.05 ? t * 14 : (t > 0.9 ? (1 - t) * 8 : 0.55)
+            let color = theme.particleColor.opacity(fade)
+            let center = CGPoint(x: cx, y: cy)
+
+            switch theme.particleType {
+            case .snow:
+                fillCircle(in: context, center: center, radius: particleSize * 0.6, color: color)
+            case .blossom, .leaf:
+                // Pétalo/hoja: un óvalo que voltea al caer.
+                let rotation = t * .pi * (theme.particleType == .leaf ? 6 : 4)
+                let oval = Path(ellipseIn: CGRect(
+                    x: -particleSize * 0.6, y: -particleSize * 0.8,
+                    width: particleSize * 1.2, height: particleSize * 1.6
+                ))
+                .applying(
+                    CGAffineTransform(rotationAngle: rotation)
+                        .concatenating(CGAffineTransform(translationX: cx, y: cy))
+                )
+                context.fill(oval, with: .color(color))
+            case .none:
+                break
+            }
+        }
+    }
+
+    /// Atajo para rellenar un círculo centrado en un punto.
+    private static func fillCircle(
+        in context: GraphicsContext,
+        center: CGPoint,
+        radius: Double,
+        color: Color
+    ) {
+        context.fill(
+            Path(ellipseIn: CGRect(
+                x: center.x - radius, y: center.y - radius,
+                width: radius * 2, height: radius * 2
+            )),
+            with: .color(color)
         )
     }
 }

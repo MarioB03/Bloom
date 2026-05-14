@@ -113,7 +113,8 @@ struct GardenView: View {
             layout: store.layout,
             gridSize: store.gridSize,
             season: store.season,
-            cosmetics: store.cosmetics
+            cosmetics: store.cosmetics,
+            streak: store.streak
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))
