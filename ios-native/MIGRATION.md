@@ -114,14 +114,12 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
   `Models/EmotionalRegisterEntry.swift`, `Strings.EmotionalRegister`
 - RN: `app/(tabs)/notas.tsx`, `app/registro-emocional/`,
   `src/components/checkin/EmotionalRegisterCard.tsx`
-- **Divergencia de RN**: en RN los registros se crean desde un CTA del home y
-  se listan mezclados con los check-ins en un buscador con filtros
-  (`app/(tabs)/registros.tsx`). Aquí la pestaña es autónoma: lista solo
-  registros emocionales y tiene su propio CTA. El buscador combinado llegará
-  con la feature "Agenda y búsqueda". El interruptor "visible al compartir"
-  se omite porque la feature de compartir no está portada (mismo criterio que
-  Premium); el campo `sharedVisible` se conserva en `false` para el round-trip
-  con la app RN
+- **Divergencia de RN**: el CTA de crear registro vive en la propia pestaña
+  "Registros" (no en el home). El interruptor "visible al compartir" se omite
+  porque la feature de compartir no está portada (mismo criterio que Premium);
+  el campo `sharedVisible` se conserva en `false` para el round-trip con la app
+  RN. El listado combinado con búsqueda y filtros se porta en "Agenda y
+  búsqueda" (ver abajo) — es la misma pestaña
 
 ### Plantillas y registros dinámicos — ⬜
 - [ ] Pestaña "Registros" (`app/(tabs)/registros.tsx`)
@@ -129,10 +127,27 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
 - [ ] Colección `templates/` read-only en Firestore
 - RN: `src/types/template.ts`
 
-### Agenda y búsqueda — ⬜
-- [ ] Pantalla Agenda (`app/agenda.tsx`)
-- [ ] Filtros: `DatePickerField`, `EmotionChips`
-- RN: `app/agenda.tsx`, `src/components/search/`
+### Agenda y búsqueda — ✅
+- [x] Diario combinado en la pestaña "Registros" (`NotesView`): check-ins,
+  registros emocionales y entradas de gratitud, agrupados por día
+- [x] Búsqueda por texto libre sobre las tres clases de entrada
+- [x] Segmentos por tipo (Todos / Check-ins / Registros / Gratitud)
+- [x] Filtros por emoción (`EmotionChipsRow`) y por rango de fechas
+  (`DateFilterField`, con el `DatePicker` gráfico del sistema)
+- [x] Tarjeta de gratitud para el listado (`Components/GratitudeCard`)
+- Nativo: `Features/Notes/NotesView.swift` (tipos `AgendaItem` /
+  `AgendaSegment` / `AgendaDestination` + la vista),
+  `Features/Notes/Components/` (`GratitudeCard`, `AgendaFilters`),
+  `Strings.Agenda`
+- RN: `app/agenda.tsx`, `app/(tabs)/registros.tsx`, `src/components/search/`
+- **Divergencia de RN**: se omite la animación del "libro que se abre" de
+  `agenda.tsx` (artificio propio de RN); el diario **es** la pestaña, no una
+  pantalla apilada sobre un mini-libro del home. Se unifican `registros.tsx`
+  (pestaña) y `agenda.tsx` (pantalla apilada) en una sola vista. Las tarjetas
+  de gratitud muestran sus motivos en línea y no navegan (editar la gratitud
+  de hoy se hace desde el CTA del home; el modo solo-lectura de días pasados
+  de RN no se porta). El `DatePickerField` hecho a mano de RN se sustituye por
+  el `DatePicker` nativo
 
 ### Habilidades — ⬜
 - [ ] Listado por categorías + detalle de habilidad

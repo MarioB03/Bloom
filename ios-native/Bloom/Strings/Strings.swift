@@ -321,6 +321,39 @@ enum Strings {
         }
     }
 
+    enum Agenda {
+        static let title = "Mi diario"
+        static let subtitle = "Tu historia emocional"
+        static let searchPlaceholder = "Buscar en tu diario..."
+        static let empty = "Tu diario está vacío.\nComienza a registrar tu bienestar."
+        static let noResults = "No se encontraron registros"
+        static let noResultsHint = "Prueba con otros filtros o términos de búsqueda"
+        static let gratitudeLabel = "Gratitud"
+
+        // Segmentos
+        static let segmentAll = "Todos"
+        static let segmentCheckin = "Check-ins"
+        static let segmentRegister = "Registros"
+        static let segmentGratitude = "Gratitud"
+
+        // Filtros
+        static let emotionsLabel = "Filtrar por emociones"
+        static let dateFrom = "Desde"
+        static let dateTo = "Hasta"
+        static let datePlaceholder = "Cualquiera"
+        static let removeDate = "Quitar fecha"
+        static let clearFilters = "Limpiar filtros"
+
+        // Etiquetas de fecha de las secciones
+        static let today = "Hoy"
+        static let yesterday = "Ayer"
+
+        /// "1 entrada" / "N entradas".
+        static func entryCount(_ count: Int) -> String {
+            "\(count) \(count == 1 ? "entrada" : "entradas")"
+        }
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.
