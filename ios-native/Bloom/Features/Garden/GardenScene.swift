@@ -63,6 +63,31 @@ struct GardenScene: View {
                         geometry: geometry,
                         time: timeline.date.timeIntervalSinceReferenceDate
                     )
+                } symbols: {
+                    // Iconos botánicos para cada tipo de decoración. El
+                    // renderer los resuelve con `context.resolveSymbol(id:)`
+                    // y los dibuja con `context.draw(_:at:)` en orden
+                    // isométrico — no se puede usar `Image(_:)` directo
+                    // dentro del Canvas.
+                    ForEach(DecorationType.allCases, id: \.rawValue) { type in
+                        BloomIconView(.decoration(id: type.rawValue), size: 38)
+                            .tag(type.rawValue)
+                    }
+                    // Acentos centrales de plantas (sol, llama, chispa,
+                    // corazón) que se muestran al alcanzar floración.
+                    BloomIconView(.plantAccent(.sun), size: 18).tag("accent-sun")
+                    BloomIconView(.plantAccent(.flame), size: 18).tag("accent-flame")
+                    BloomIconView(.plantAccent(.sparkle), size: 18).tag("accent-sparkle")
+                    BloomIconView(.plantAccent(.heart), size: 18).tag("accent-heart")
+                    // SVG botánica de cada emoción (Girasol, Sauce, Cactus,
+                    // Lavanda…). El renderer las dibuja como cabeza de la flor
+                    // a partir de etapa 3, en sustitución de los pétalos
+                    // procedurales genéricos. Se publican en su tamaño
+                    // máximo y luego se rescalan en cada celda.
+                    ForEach(EmotionID.allCases) { id in
+                        BloomIconView(.emotion(id), size: 38)
+                            .tag("plant-\(id.rawValue)")
+                    }
                 }
             }
             .contentShape(Rectangle())

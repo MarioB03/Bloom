@@ -91,7 +91,9 @@ enum GardenRenderer {
 
     /// Postes de valla a lo largo de los dos bordes traseros de la rejilla
     /// activa, a partir de una racha de 3 días. Con el cosmético `flowerFence`,
-    /// cada poste se corona con una florecita de color. Portado de los "Fence
+    /// cada poste se corona con una florecita de color y la valla se muestra
+    /// también con rachas más bajas — si no, el comprador del cosmético no
+    /// vería absolutamente nada hasta llegar a 3 días. Portado de los "Fence
     /// posts" de `GardenCanvas.tsx`.
     static func drawFence(
         in context: GraphicsContext,
@@ -100,7 +102,7 @@ enum GardenRenderer {
         streak: Int,
         cosmetics: CosmeticOverrides
     ) {
-        guard streak >= 3 else { return }
+        guard streak >= 3 || cosmetics.flowerFence else { return }
         let postColor = Color(.sRGB, red: 160 / 255, green: 120 / 255, blue: 80 / 255, opacity: 0.3)
         let fenceColors = CosmeticOverrides.flowerFenceColors
         let edge = CGFloat(gridSize) - 0.5
@@ -194,12 +196,28 @@ enum GardenRenderer {
             ctx.fill(leaf, with: .color(leafColor.lightened(0.1)))
         }
 
-        // Flor — aparece a partir de la etapa 3, con cada vez más pétalos.
+        // Flor — aparece a partir de la etapa 3. Antes se dibujaban pétalos
+        // procedurales (mismos en todas las plantas, solo cambiaba el tono);
+        // ahora cada emoción muestra su SVG botánica (Girasol, Sauce, Cactus,
+        // Lavanda…) escalada con la etapa. Si por algún motivo no se resolviera
+        // el símbolo (raro), recae sobre la flor procedural de antes.
         guard stage >= 3 else { return }
+        let petalSize = morphology.petalSize * CGFloat(intensityFactor)
+        let stageScale: CGFloat = [0, 0, 0, 0.55, 0.78, 1.0][min(stage, 5)]
+        let plantSize = max(16, petalSize * 4 * stageScale)
+
+        if let symbol = ctx.resolveSymbol(id: "plant-\(plant.emotion.rawValue)") {
+            // El SVG ya lleva color y centro propios — se posiciona con su
+            // mitad inferior justo encima de la punta del tallo para que el
+            // tallo no asome por el centro de la flor.
+            let center = CGPoint(x: stemTop.x, y: stemTop.y - plantSize * 0.32)
+            ctx.draw(symbol, at: center, anchor: .center)
+            return
+        }
+
+        // Fallback procedural (no debería darse en producción).
         let petalFraction: CGFloat = [0, 0, 0, 0.4, 0.7, 1.0][min(stage, 5)]
         let visiblePetals = max(1, Int((CGFloat(morphology.petalCount) * petalFraction).rounded()))
-        let petalSize = morphology.petalSize * CGFloat(intensityFactor)
-
         for index in 0..<visiblePetals {
             let angle = (2 * .pi * Double(index) / Double(morphology.petalCount)) - .pi / 2
             let petalCenter = CGPoint(
@@ -213,8 +231,6 @@ enum GardenRenderer {
                 )
             ctx.fill(petal, with: .color(bloomColor))
         }
-
-        // Centro de la flor.
         let centerRadius = petalSize * 0.7
         let center = Path(ellipseIn: CGRect(
             x: stemTop.x - centerRadius,
@@ -224,12 +240,17 @@ enum GardenRenderer {
         ))
         ctx.fill(center, with: .color(bloomColor.darkened(0.2)))
 
-        // Emoji central — solo en floración completa.
-        if stage >= 5, let emoji = morphology.centerEmoji {
-            ctx.draw(
-                Text(emoji).font(.system(size: petalSize * 1.6)),
-                at: stemTop
-            )
+        if stage >= 5 {
+            if let accent = morphology.centerAccent,
+               let symbol = ctx.resolveSymbol(id: "accent-\(accent.rawValue)")
+            {
+                ctx.draw(symbol, at: stemTop, anchor: .center)
+            } else if let emoji = morphology.centerEmoji {
+                ctx.draw(
+                    Text(emoji).font(.system(size: petalSize * 1.6)),
+                    at: stemTop
+                )
+            }
         }
     }
 
@@ -254,8 +275,11 @@ enum GardenRenderer {
 
     // MARK: - Decoraciones
 
-    /// Dibuja una decoración en su celda. Por ahora se representa con su emoji;
-    /// las formas Skia personalizadas de la app RN se portarán más adelante.
+    /// Dibuja una decoración en su celda. Usa el icono botánico vectorial
+    /// (los SVGs de `Resources/Assets.xcassets/decorations/`), que `GardenScene`
+    /// publica como símbolos del `Canvas` etiquetados con `decoration.type.rawValue`.
+    /// Si por cualquier motivo el símbolo no estuviera resuelto, recae sobre
+    /// el emoji legado.
     static func drawDecoration(
         _ decoration: DecorationPlacement,
         in context: GraphicsContext,
@@ -266,10 +290,15 @@ enum GardenRenderer {
         let shadow = Path(ellipseIn: CGRect(x: base.x - 11, y: base.y - 3, width: 22, height: 7))
         context.fill(shadow, with: .color(.black.opacity(0.12)))
 
-        context.draw(
-            Text(decoration.type.config.emoji).font(.system(size: 26)),
-            at: CGPoint(x: base.x, y: base.y - 12)
-        )
+        let anchor = CGPoint(x: base.x, y: base.y - 16)
+        if let symbol = context.resolveSymbol(id: decoration.type.rawValue) {
+            context.draw(symbol, at: anchor, anchor: .center)
+        } else {
+            context.draw(
+                Text(decoration.type.config.emoji).font(.system(size: 26)),
+                at: CGPoint(x: base.x, y: base.y - 12)
+            )
+        }
     }
 
     // MARK: - Atmósfera
@@ -368,7 +397,8 @@ enum GardenRenderer {
     }
 
     /// Visitantes animados: mariposas de día, luciérnagas de noche. Con el
-    /// cosmético `firefliesAlways`, las luciérnagas también salen de día.
+    /// cosmético `firefliesAlways`, las luciérnagas también salen de día y se
+    /// garantiza un mínimo aunque la racha no haya llegado al umbral de 10.
     static func drawCreatures(
         in context: GraphicsContext,
         size: CGSize,
@@ -377,19 +407,25 @@ enum GardenRenderer {
         time: Double,
         now: Date = Date()
     ) {
-        if isNight(now) {
-            guard streak >= 10 else { return }
-            let count = streak >= 21 ? 8 : (streak >= 14 ? 5 : 3)
-            drawFireflies(in: context, size: size, count: count, time: time)
-            return
-        }
+        let night = isNight(now)
 
-        // Cosmético: las luciérnagas acompañan a las mariposas también de día.
+        // Luciérnagas: cuántas según la racha de noche; el cosmético
+        // `firefliesAlways` garantiza al menos 5 a cualquier hora — antes el
+        // gate de racha hacía que un cosmético comprado no se viera nunca con
+        // racha baja.
+        var fireflyCount = 0
+        if night, streak >= 10 {
+            fireflyCount = streak >= 21 ? 8 : (streak >= 14 ? 5 : 3)
+        }
         if cosmetics.firefliesAlways {
-            drawFireflies(in: context, size: size, count: 5, time: time)
+            fireflyCount = max(fireflyCount, 5)
+        }
+        if fireflyCount > 0 {
+            drawFireflies(in: context, size: size, count: fireflyCount, time: time)
         }
 
-        guard streak >= 2 else { return }
+        // Mariposas: solo de día y a partir de racha 2.
+        guard !night, streak >= 2 else { return }
         let count = streak >= 18 ? 5 : (streak >= 10 ? 3 : (streak >= 5 ? 2 : 1))
         let wingColors: [Color] = [
             Color(.sRGB, red: 200 / 255, green: 120 / 255, blue: 160 / 255, opacity: 0.7),
