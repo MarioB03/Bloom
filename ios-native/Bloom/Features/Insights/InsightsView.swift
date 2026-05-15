@@ -5,16 +5,19 @@ import SwiftUI
 /// (sueño, hambre, ciclo, día de la semana, tendencia semanal).
 /// Equivalente a `app/insights.tsx` en la app React Native.
 ///
-/// En RN las medias y correlaciones van detrás del muro de Premium; aquí se
-/// muestran siempre, porque Premium aún no está portado (mismo criterio que
-/// la tienda del jardín).
+/// Las medias, el consejo y las correlaciones van detrás del muro de
+/// Premium —igual que en RN—; los usuarios sin Premium ven el resumen
+/// emocional, la actividad semanal y las emociones más frecuentes, y un
+/// candado que abre el paywall como hoja modal.
 struct InsightsView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
+    @Environment(PremiumService.self) private var premium
 
     @State private var checkins: [CheckinEntry] = []
     @State private var isLoading = true
+    @State private var showPaywall = false
 
     private static let positiveEmotions: Set<EmotionID> = [.alegria, .calma, .gratitud]
     private static let weekDayLabels = ["L", "M", "X", "J", "V", "S", "D"]
@@ -34,16 +37,66 @@ struct InsightsView: View {
                 statsRow
                 weeklyActivityCard
                 topEmotionsCard
-                averagesRow
-                tipBanner
-                if enoughData {
-                    correlationsSection
+                if premium.isPremium {
+                    averagesRow
+                    tipBanner
+                    if enoughData {
+                        correlationsSection
+                    } else {
+                        banner(emoji: "📊", text: Strings.Insights.needMoreData)
+                    }
                 } else {
-                    banner(emoji: "📊", text: Strings.Insights.needMoreData)
+                    premiumLockCard
                 }
             }
         }
         .task { await load() }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack { PremiumView() }
+        }
+    }
+
+    // MARK: - Candado Premium
+
+    /// Bloque promocional que sustituye a medias y correlaciones para los
+    /// usuarios sin Premium. Al tocarlo abre el paywall como hoja modal.
+    /// Equivalente al `premiumLock` de `app/insights.tsx`.
+    private var premiumLockCard: some View {
+        Button {
+            showPaywall = true
+        } label: {
+            VStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(Theme.Palette.accent500)
+                Text(Strings.Insights.premiumLockTitle)
+                    .font(.bodyBold)
+                    .foregroundStyle(Theme.Palette.neutral700)
+                Text(Strings.Insights.premiumLockText)
+                    .font(.bodyText)
+                    .foregroundStyle(Theme.Palette.neutral500)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                Text(Strings.Insights.premiumLockBadge)
+                    .font(.tag)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .padding(.vertical, 5)
+                    .background(Theme.Palette.accent500)
+                    .clipShape(Capsule())
+                    .padding(.top, Theme.Spacing.xs)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(Theme.Spacing.lg)
+            .background(Theme.Palette.accent50)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.xl)
+                    .strokeBorder(Theme.Palette.accent100, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .light), trigger: showPaywall)
     }
 
     // MARK: - Cabecera

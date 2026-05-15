@@ -239,6 +239,11 @@ enum Strings {
         static let emptyMessage = "Haz algunos check-ins para ver tus estadísticas"
         static let tipDefault = "Sigue registrando para descubrir patrones en tu bienestar."
 
+        // Gating Premium
+        static let premiumLockTitle = "Promedios e insights"
+        static let premiumLockText = "Desbloquea intensidad media, calidad de sueño y consejos personalizados con Premium."
+        static let premiumLockBadge = "Ver Premium"
+
         /// Consejo cuando hay una emoción dominante y el sueño es bajo.
         static func tipLowSleep(_ emotionLabel: String) -> String {
             "Tu emoción más frecuente es \(emotionLabel) y tu sueño es bajo. Intenta mejorar tu descanso."
@@ -537,6 +542,27 @@ enum Strings {
         static let achievementsDesc = "Tu progreso y medallas"
         static let safetyPlanDesc = "Tu red de apoyo personal"
 
+        static let settingsSection = "Ajustes"
+        static let reminderTitle = "Recordatorio diario"
+        static let reminderDisabled = "Desactivado"
+        static let reminderPermissionTitle = "Notificaciones no permitidas"
+        static let reminderPermissionMessage = "Para recibir el recordatorio diario, activa las notificaciones de Bloom en los Ajustes del sistema."
+
+        // Exportar datos
+        static let exportTitle = "Exportar datos"
+        static let exportDesc = "Descarga un PDF con tu diario y tus estadísticas"
+        static let exporting = "Generando PDF…"
+        static let exportEmpty = "No hay check-ins para exportar"
+        static let exportError = "No se pudo exportar el PDF"
+        static let exportPremiumTitle = "Premium"
+        static let exportPremiumMessage = "La exportación de datos es una función Premium. Canjea un código de regalo o suscríbete para activarla."
+        static let exportPremiumGoToPremium = "Ver Premium"
+
+        /// "Cada día a las 20:00"
+        static func reminderTime(hour: Int, minute: Int) -> String {
+            String(format: "Cada día a las %d:%02d", hour, minute)
+        }
+
         static let accountSection = "Cuenta"
         static let aboutSection = "Acerca de"
         static let version = "Versión"
@@ -730,6 +756,12 @@ enum Strings {
         static let insufficientMessage = "Necesitas más semillas. Haz registros y riega tus plantas para ganar más."
         static let purchased = "Comprado"
         static let emptyCategory = "Nada por aquí todavía"
+
+        // Gating Premium
+        static let premiumBanner = "✨ Necesitas Premium para comprar"
+        static let premiumAlertTitle = "Premium"
+        static let premiumAlertMessage = "La tienda del jardín es una función Premium. Canjea un código de regalo o suscríbete para desbloquearla."
+        static let premiumAlertGoToPremium = "Ver Premium"
     }
 }
 

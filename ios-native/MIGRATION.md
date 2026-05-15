@@ -28,8 +28,8 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Cifrado de campos sensibles (CryptoJS → CryptoKit) | ✅ | `Services/BloomCrypto.swift` — AES-256-CBC + `EVP_BytesToKey`/MD5, compatible byte a byte con `src/lib/crypto.ts`. Round-trip de notas/eventos con la app RN |
 | `Utils/BloomDate.swift` | ✅ | Portado de `src/utils/date.ts` (dateKey, time, displayDate, greeting) |
 | `strings.ts` → catálogo de textos | 🚧 | `Strings.swift` con namespace `Auth`/`SocialAuth`/`App`. Se completa feature a feature. Estrategia definitiva (`String(localized:)` vs enum) ❓ |
-| Notificaciones (recordatorios diarios) | ⬜ | RN: `src/lib/notifications.ts` |
-| Export PDF | ⬜ | RN: `src/lib/export-pdf.ts`, `src/lib/export.ts` |
+| Notificaciones (recordatorios diarios) | ✅ | `Services/NotificationsService.swift` con `UNCalendarNotificationTrigger` repetitivo. Toggle + edición de hora en la pestaña Tú. 4 mensajes aleatorios igual que RN. RN: `src/lib/notifications.ts` |
+| Export PDF | ✅ | `Services/ExportService.swift` — porta el HTML del RN 1:1 y lo rasteriza con `UIPrintPageRenderer` + `UIMarkupTextPrintFormatter` (A4, margen 40pt). Entrada en Ajustes (Tu) detrás del muro Premium |
 | Widget iOS | ⬜ | RN ya tiene uno vía `@bacons/apple-targets` + `widget-sync.ts` |
 
 ### Modelos pendientes de portar (se harán con cada feature)
@@ -88,16 +88,18 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
 - [x] Resumen emocional (check-ins, días activos, racha)
 - [x] Actividad semanal (gráfico de barras de la semana en curso, lunes a domingo)
 - [x] Emociones más frecuentes (top 5 con barra de porcentaje)
-- [x] Medias de intensidad y calidad de sueño + banner de consejo
+- [x] Medias de intensidad y calidad de sueño + banner de consejo (Premium)
 - [x] Correlaciones (≥ 7 registros): sueño, hambre, ciclo, día de la semana,
-  tendencia semanal — `Correlations.swift` portado de `correlations.ts`
+  tendencia semanal — `Correlations.swift` portado de `correlations.ts` (Premium)
+- [x] Gating Premium: candado tappable que abre `PremiumView` como hoja modal
+  cuando el usuario no tiene Premium activo (mismo criterio que RN)
 - Nativo: `Features/Insights/` (`InsightsView`, `Correlations`),
   `FirestoreService.allCheckins(userID:)`
 - RN: `app/insights.tsx`, `src/lib/correlations.ts`
-- **Divergencia de RN**: en RN las medias y correlaciones van detrás del muro
-  de Premium; aquí se muestran siempre porque Premium no está portado (mismo
-  criterio que la tienda del jardín). El botón "Volver" del RN se omite: en
-  nativo Insights es una pestaña, no una pantalla apilada
+- **Divergencia de RN**: el botón "Volver" del RN se omite porque desde la
+  Fase de Perfil Insights se accede via NavigationStack y la barra de
+  navegación ya provee el botón de retroceso. Los stats básicos (totales,
+  actividad semanal y top de emociones) siguen siendo gratuitos
 
 ### Notas y registros emocionales — ✅
 - [x] Pestaña "Registros" — listado de registros emocionales (`NotesView`)
@@ -218,8 +220,9 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   el jardín entero). Modo Decorar en la barra de modos con un chip que muestra
   el "pincel" activo y abre la paleta; botón de tienda en el toolbar. Quitar
   una decoración = tocarla en modo Decorar (sin long-press ni confirmación:
-  acción reversible dentro de su modo). La tienda no se restringe a Premium
-  (esa función no está portada)
+  acción reversible dentro de su modo). La tienda solo permite comprar con
+  Premium activo (mismo criterio que RN): sin él, el catálogo es navegable
+  pero los botones de precio abren una alerta con CTA al paywall
 - [x] **Fase 6 — Mascotas**: las 5 con su movimiento propio. `PetType`
   (`Models/PetType.swift`); el gato es gratis con racha ≥ 3 y las otras 4 se
   derivan de `purchasedIDs` (`GardenStore.activePets`). `GardenRenderer.drawPets`
@@ -316,9 +319,12 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   `.environment`. `MainTabView` refresca el estado en `.task(id: userID)`.
   Entrada desde la pestaña Tú con badge "Premium" si activo
 - [ ] Sección admin (generar código, toggle premium) — pendiente
-- [ ] Gating real de features (export PDF, compartir, tienda jardín,
-  insights avanzados): cada feature lo añadirá cuando se porte. Hoy ninguna
-  está gated en nativo
+- [x] Gating real de features:
+  - Compartir cuenta (Sharing): generar/canjear código bloqueado tras alerta
+  - Insights avanzados: candado tappable que abre el paywall como hoja modal
+  - Tienda del jardín: catálogo navegable, compra bloqueada tras alerta con
+    CTA al paywall
+  - Export PDF: fila en Ajustes con badge Premium; alerta con CTA al paywall
 
 ### Compartir cuenta — ✅
 - [x] Generar/canjear código de 6 chars → `SharingView.swift` + `FirestoreService.createSharingCode`/`redeemSharingCode`
@@ -349,8 +355,16 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   + documento de perfil. Best-effort. No toca `sharingCodes`/`viewerLinks`
   todavía: cuando se borra una cuenta no se revoca el vínculo activo (queda
   como referencia muerta; el viewer ve "no autorizado" al intentar leer)
-- **No portado en esta tanda** (depende de features ⬜): recordatorio diario
-  (notificaciones), exportar PDF
+- **Sección Ajustes**: toggle del recordatorio diario con
+  `NotificationsService` (pide permiso al activar, lo programa con
+  `UNCalendarNotificationTrigger` repetitivo). Al tocar la fila con el
+  recordatorio activo se abre una hoja con `DatePicker` para cambiar la hora.
+  Si el permiso está denegado en Ajustes del sistema, el toggle revierte y se
+  muestra una alerta con instrucciones
+- **Exportar PDF**: fila en Ajustes con badge Premium. Si el usuario es
+  Premium, genera el PDF (mismo HTML que la app RN) y lo abre con
+  `UIActivityViewController`; si no, alerta con CTA al paywall. El servicio
+  (`ExportService`) vive aparte para mantener la vista ligera
 - **Entradas duplicadas**: Logros (🏆 home) y Plan de seguridad (🛡️
   Habilidades) siguen como cabeceras además de aparecer dentro de "Tú". Se
   podrán retirar cuando se decida la canónica

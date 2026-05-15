@@ -9,20 +9,32 @@ import SwiftUI
 /// explorar un catálogo, deja sitio a las descripciones y muestra todas las
 /// categorías de un scroll. El saldo vive en el toolbar, siempre visible.
 ///
-/// A diferencia de la app RN, la tienda no está restringida a Premium: esa
-/// función aún no se ha portado y limitarla la dejaría inaccesible.
+/// Igual que en RN, la tienda solo permite comprar con Premium activo: sin él
+/// el catálogo es navegable pero los botones de precio abren una alerta que
+/// invita a desbloquearlo (con CTA al paywall).
 struct GardenShop: View {
 
     @Bindable var store: GardenStore
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(PremiumService.self) private var premium
 
     @State private var pendingPurchase: ShopItem?
     @State private var showInsufficient = false
+    @State private var showPremiumAlert = false
+    @State private var showPaywall = false
 
     var body: some View {
         NavigationStack {
             List {
+                if !premium.isPremium {
+                    Section {
+                        premiumBanner
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
+                }
                 ForEach(ShopCategory.allCases, id: \.self) { category in
                     Section(category.label) {
                         ForEach(GardenEconomy.items(category: category)) { item in
@@ -65,6 +77,47 @@ struct GardenShop: View {
         } message: {
             Text(Strings.Shop.insufficientMessage)
         }
+        .alert(Strings.Shop.premiumAlertTitle, isPresented: $showPremiumAlert) {
+            Button(Strings.Shop.premiumAlertGoToPremium) { showPaywall = true }
+            Button(Strings.Common.close, role: .cancel) {}
+        } message: {
+            Text(Strings.Shop.premiumAlertMessage)
+        }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack { PremiumView() }
+        }
+    }
+
+    // MARK: - Banner Premium
+
+    /// Banner que avisa de que se necesita Premium para comprar. Solo aparece
+    /// cuando el usuario no es Premium. Equivalente al `premiumBanner` de
+    /// `GardenShop.tsx`.
+    private var premiumBanner: some View {
+        Button {
+            showPaywall = true
+        } label: {
+            HStack(spacing: Theme.Spacing.sm) {
+                Text(Strings.Shop.premiumBanner)
+                    .font(.bodyBold)
+                    .foregroundStyle(Theme.Palette.accent600)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.Palette.accent500)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.sm + 2)
+            .background(Theme.Palette.accent50)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.md)
+                    .strokeBorder(Theme.Palette.accent100, lineWidth: 1)
+            )
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.top, Theme.Spacing.sm)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Saldo
@@ -119,7 +172,9 @@ struct GardenShop: View {
             .foregroundStyle(Theme.Palette.success)
         } else {
             Button {
-                if canAfford {
+                if !premium.isPremium {
+                    showPremiumAlert = true
+                } else if canAfford {
                     pendingPurchase = item
                 } else {
                     showInsufficient = true
