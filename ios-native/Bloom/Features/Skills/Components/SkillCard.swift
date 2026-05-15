@@ -11,8 +11,7 @@ struct SkillCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack {
-                Text(skill.icon)
-                    .font(.system(size: 28))
+                BloomIconView(.skill(id: skill.id), size: 36)
                 Spacer()
                 SkillTypeBadge(type: skill.type)
             }

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Relajación muscular progresiva</title>
+
+  
+  
+  <path d="M10 38 Q10 32 16 32 L48 32 Q54 32 54 38 L54 46 Q54 52 48 52 L16 52 Q10 52 10 46 Z" fill="#8B7EB5"></path>
+  
+  <path d="M14 38 Q14 36 18 36 L46 36" stroke="#5F5483" stroke-width="0.6" opacity="0.5"></path>
+  
+  
+  <circle cx="22" cy="28" r="6" fill="#D4937E"></circle>
+  
+  <path d="M19 27 Q20 28 21 27" stroke="#6E3A2B" stroke-width="0.7" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M22 30 Q23 31 24 30" stroke="#6E3A2B" stroke-width="0.7" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M28 26 Q40 24 50 26 Q52 28 50 30 Q40 30 28 30 Z" fill="#C4725A"></path>
+  
+  <text x="44" y="18" font-family="DM Serif Display, serif" font-size="9" fill="#5F5483" font-style="italic">z</text>
+  <text x="50" y="14" font-family="DM Serif Display, serif" font-size="11" fill="#5F5483" font-style="italic">Z</text>
+
+</svg>

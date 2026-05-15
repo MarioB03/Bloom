@@ -139,8 +139,7 @@ struct GardenShop: View {
         let canAfford = store.seedBalance.total >= item.cost
 
         return HStack(spacing: Theme.Spacing.md) {
-            Text(item.emoji)
-                .font(.system(size: 26))
+            shopIcon(for: item)
                 .frame(width: 44, height: 44)
                 .background(Theme.Palette.accent50, in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
 
@@ -159,6 +158,25 @@ struct GardenShop: View {
             priceControl(item, owned: owned, canAfford: canAfford)
         }
         .padding(.vertical, 4)
+    }
+
+    /// Resuelve el icono botánico de un artículo de la tienda. La expansión
+    /// de terreno no tiene SVG dedicada (no es un objeto colocable) y se
+    /// dibuja con un SF Symbol acorde.
+    @ViewBuilder
+    private func shopIcon(for item: ShopItem) -> some View {
+        switch item.category {
+        case .decorations:
+            BloomIconView(.decoration(id: item.id), size: 32)
+        case .pets:
+            BloomIconView(.pet(id: item.id), size: 32)
+        case .cosmetics:
+            BloomIconView(.cosmetic(id: item.id), size: 32)
+        case .terrain:
+            Image(systemName: "map.fill")
+                .font(.system(size: 22, weight: .regular))
+                .foregroundStyle(Theme.Palette.accent500)
+        }
     }
 
     @ViewBuilder

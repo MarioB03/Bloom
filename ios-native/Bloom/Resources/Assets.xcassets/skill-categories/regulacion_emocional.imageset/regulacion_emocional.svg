@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Regulación emocional</title>
+
+  
+  <circle cx="32" cy="32" r="24" fill="#E8A948" opacity="0.18"></circle>
+  <circle cx="32" cy="32" r="20" fill="#FAF6F0"></circle>
+  
+  <path d="M32 12 A20 20 0 0 1 32 52 A10 10 0 0 1 32 32 A10 10 0 0 0 32 12 Z" fill="#C4725A"></path>
+  
+  <circle cx="32" cy="22" r="3.6" fill="#FAF6F0"></circle>
+  <circle cx="32" cy="42" r="3.6" fill="#C4725A"></circle>
+  
+  <path d="M22 32 Q18 30 14 32 Q18 34 22 32 Z" fill="#6B8B6A"></path>
+  <path d="M42 32 Q46 30 50 32 Q46 34 42 32 Z" fill="#6B8B6A"></path>
+  
+  <circle cx="32" cy="32" r="1.6" fill="#E8A948"></circle>
+
+</svg>

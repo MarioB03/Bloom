@@ -127,8 +127,7 @@ private struct SkillsCatalogView: View {
             selectedEmotion = isSelected ? nil : emotion.id
         } label: {
             HStack(spacing: 4) {
-                Text(emotion.emoji)
-                    .font(.system(size: 14))
+                BloomIconView(emotion.icon, size: 16)
                 Text(emotion.label)
                     .font(.tag)
             }

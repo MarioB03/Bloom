@@ -23,8 +23,7 @@ struct PracticeHistoryCard: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(category.emoji)
-                .font(.system(size: 24))
+            BloomIconView(.skillCategory(category.id), size: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(practice.skillTitle)

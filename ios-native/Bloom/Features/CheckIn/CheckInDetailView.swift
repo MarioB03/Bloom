@@ -105,8 +105,7 @@ struct CheckInDetailView: View {
         let emotion = checkin.emotion.config
         return BloomCard(style: .elevated) {
             VStack(spacing: Theme.Spacing.sm) {
-                Text(emotion.emoji)
-                    .font(.system(size: 42))
+                BloomIconView(emotion.icon, size: 64)
                     .frame(width: 80, height: 80)
                     .background(emotion.color.opacity(0.12))
                     .clipShape(RoundedRectangle(cornerRadius: 24))

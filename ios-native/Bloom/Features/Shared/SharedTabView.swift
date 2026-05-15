@@ -267,8 +267,7 @@ struct SharedTabView: View {
     private func emotionBar(config: EmotionConfig, count: Int, total: Int) -> some View {
         let pct = Double(count) / Double(total)
         return HStack(spacing: Theme.Spacing.sm) {
-            Text(config.emoji)
-                .font(.system(size: 18))
+            BloomIconView(config.icon, size: 22)
                 .frame(width: 24, alignment: .center)
             Text(config.label)
                 .font(.smallText)

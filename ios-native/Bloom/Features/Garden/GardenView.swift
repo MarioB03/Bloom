@@ -102,7 +102,7 @@ struct GardenView: View {
         .overlay(alignment: .top) {
             if let toast = currentToast {
                 AchievementToastView(
-                    emoji: toast.emoji,
+                    icon: .gardenAchievement(id: toast.id),
                     title: toast.title,
                     description: toast.description
                 ) {
@@ -240,8 +240,7 @@ struct GardenView: View {
         } label: {
             HStack(spacing: Theme.Spacing.sm) {
                 if let type = store.selectedDecorationType {
-                    Text(type.config.emoji)
-                        .font(.system(size: 18))
+                    BloomIconView(.decoration(id: type.rawValue), size: 22)
                     Text(type.config.label)
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.Palette.neutral800)

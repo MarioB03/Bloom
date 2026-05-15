@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>¡Primera flor!</title>
+
+  <circle cx="32" cy="32" r="28" fill="#8BA888" opacity="0.15"></circle>
+  <circle cx="32" cy="32" r="22" fill="#FAF6F0"></circle>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#8BA888" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"></circle>
+  
+  
+  <ellipse cx="32" cy="46" rx="12" ry="2.5" fill="#6E3A2B" opacity="0.6"></ellipse>
+  <path d="M32 46 Q32 38 32 32" stroke="#6B8B6A" stroke-width="2.2" stroke-linecap="round"></path>
+  <path d="M32 36 Q24 32 22 36 Q24 40 30 38 Z" fill="#8BA888"></path>
+  <path d="M32 32 Q40 28 42 32 Q40 36 32 34 Z" fill="#6B8B6A"></path>
+  
+  <circle cx="32" cy="28" r="2" fill="#E8A948"></circle>
+
+  
+</svg>

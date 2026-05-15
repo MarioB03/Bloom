@@ -28,8 +28,7 @@ struct EmotionChipsRow: View {
             }
         } label: {
             HStack(spacing: 4) {
-                Text(emotion.emoji)
-                    .font(.system(size: 14))
+                BloomIconView(emotion.icon, size: 16)
                 Text(emotion.label)
                     .font(.smallText)
                     .foregroundStyle(isOn ? emotion.color : Theme.Palette.neutral500)

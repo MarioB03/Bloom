@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Estatua</title>
+
+  
+  <rect x="20" y="50" width="24" height="8" rx="1" fill="#B8AFA6"></rect>
+  <rect x="22" y="48" width="20" height="4" fill="#D6CCC2"></rect>
+  
+  <path d="M24 48 Q24 36 32 32 Q40 36 40 48 Z" fill="#D6CCC2"></path>
+  
+  <path d="M28 42 Q30 46 28 48" stroke="#B8AFA6" stroke-width="0.6" fill="none"></path>
+  <path d="M36 42 Q34 46 36 48" stroke="#B8AFA6" stroke-width="0.6" fill="none"></path>
+  
+  <rect x="30" y="28" width="4" height="4" fill="#B8AFA6"></rect>
+  
+  <ellipse cx="32" cy="22" rx="6" ry="7" fill="#D6CCC2"></ellipse>
+  
+  <path d="M28 20 Q29 21 30 20" stroke="#5C5752" stroke-width="0.7" stroke-linecap="round" fill="none"></path>
+  <path d="M34 20 Q35 21 36 20" stroke="#5C5752" stroke-width="0.7" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M30 24 Q32 25 34 24" stroke="#5C5752" stroke-width="0.7" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M26 16 Q32 14 38 16" stroke="#6B8B6A" stroke-width="1" fill="none"></path>
+  <ellipse cx="28" cy="15" rx="1.4" ry="1" fill="#6B8B6A"></ellipse>
+  <ellipse cx="32" cy="14" rx="1.4" ry="1" fill="#8BA888"></ellipse>
+  <ellipse cx="36" cy="15" rx="1.4" ry="1" fill="#6B8B6A"></ellipse>
+  
+  <path d="M32 32 L31 38" stroke="#7A7570" stroke-width="0.4" opacity="0.5"></path>
+
+</svg>

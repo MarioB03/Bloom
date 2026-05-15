@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Autocuidado</title>
+
+  
+  
+  <path d="M14 38 Q14 30 22 28 Q32 26 42 28 Q50 30 50 38 Q50 48 42 50 L22 50 Q14 48 14 38 Z" fill="#B58B9E"></path>
+  
+  <path d="M16 36 Q14 32 18 30" stroke="#8E6B7E" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.6"></path>
+  <path d="M48 36 Q50 32 46 30" stroke="#8E6B7E" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.6"></path>
+  
+  <path d="M22 40 Q32 42 42 40" stroke="#8E6B7E" stroke-width="0.6" opacity="0.4"></path>
+  
+  <path d="M32 32 L32 18" stroke="#6B8B6A" stroke-width="2" stroke-linecap="round"></path>
+  
+  <path d="M32 24 Q24 22 22 26 Q26 28 32 26 Z" fill="#8BA888"></path>
+  
+  <path d="M32 20 Q40 18 42 22 Q38 24 32 22 Z" fill="#6B8B6A"></path>
+  
+  <g transform="translate(32 14)">
+    <g><circle cx="0" cy="-2" r="2" fill="#E8A948"></circle></g>
+    <g transform="rotate(72)"><circle cx="0" cy="-2" r="2" fill="#E8A948"></circle></g>
+    <g transform="rotate(144)"><circle cx="0" cy="-2" r="2" fill="#E8A948"></circle></g>
+    <g transform="rotate(216)"><circle cx="0" cy="-2" r="2" fill="#E8A948"></circle></g>
+    <g transform="rotate(288)"><circle cx="0" cy="-2" r="2" fill="#E8A948"></circle></g>
+    <circle r="1" fill="#A45B44"></circle>
+  </g>
+
+</svg>

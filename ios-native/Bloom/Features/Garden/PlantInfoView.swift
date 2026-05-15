@@ -49,8 +49,7 @@ struct PlantInfoView: View {
 
     private var header: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Text(emotion.emoji)
-                .font(.system(size: 36))
+            BloomIconView(emotion.icon, size: 44)
             VStack(alignment: .leading, spacing: 1) {
                 Text(morphology.name)
                     .font(.bodyBold)

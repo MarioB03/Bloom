@@ -103,8 +103,7 @@ struct SkillDetailView: View {
 
     private func heroBlock(_ skill: Skill) -> some View {
         VStack(spacing: Theme.Spacing.md) {
-            Text(skill.icon)
-                .font(.system(size: 56))
+            BloomIconView(.skill(id: skill.id), size: 72)
 
             HStack(spacing: Theme.Spacing.sm) {
                 SkillTypeBadge(type: skill.type)
@@ -298,8 +297,7 @@ struct SkillDetailView: View {
 
     private func doneOverlay(_ skill: Skill) -> some View {
         VStack(spacing: Theme.Spacing.md) {
-            Text(skill.icon)
-                .font(.system(size: 72))
+            BloomIconView(.skill(id: skill.id), size: 96)
             Text(Strings.Skills.congratulations)
                 .font(.displayLarge)
                 .foregroundStyle(Theme.Palette.neutral800)

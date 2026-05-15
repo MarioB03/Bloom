@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Piedra</title>
+
+  <ellipse cx="32" cy="50" rx="20" ry="3" fill="#B8AFA6" opacity="0.25"></ellipse>
+  <path d="M16 48 Q12 40 18 32 Q22 24 32 22 Q44 24 48 32 Q52 42 46 48 Q40 52 32 51 Q24 52 16 48 Z" fill="#B8AFA6"></path>
+  <path d="M20 46 Q16 38 22 30 Q26 26 30 26" stroke="#FAF6F0" stroke-width="1.2" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M32 24 Q40 26 44 32" stroke="#7A7570" stroke-width="0.8" stroke-linecap="round" opacity="0.5"></path>
+
+</svg>

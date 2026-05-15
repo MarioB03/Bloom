@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Culpa · Helecho</title>
+
+  
+  <path d="M32 60 Q33 50 32 38 Q31 26 28 16 Q27 12 24 10" stroke="#7E7570" stroke-width="2" stroke-linecap="round"></path>
+
+  
+  
+  <path d="M32 54 Q24 52 18 56 Q24 56 32 56 Z" fill="#B8AFA6"></path>
+  <path d="M32 54 Q40 52 46 56 Q40 56 32 56 Z" fill="#8B847C"></path>
+
+  
+  <path d="M32 48 Q24 46 20 50 Q25 50 32 50 Z" fill="#8B847C"></path>
+  <path d="M32 48 Q40 46 44 50 Q39 50 32 50 Z" fill="#B8AFA6"></path>
+
+  
+  <path d="M32 42 Q24 40 22 44 Q26 44 32 44 Z" fill="#B8AFA6"></path>
+  <path d="M32 42 Q40 40 42 44 Q38 44 32 44 Z" fill="#8B847C"></path>
+
+  
+  <path d="M31 36 Q24 34 23 38 Q26 38 31 38 Z" fill="#8B847C"></path>
+  <path d="M31 36 Q38 34 39 38 Q35 38 31 38 Z" fill="#B8AFA6"></path>
+
+  
+  <path d="M30 30 Q24 28 24 32 Q27 32 30 32 Z" fill="#B8AFA6"></path>
+  <path d="M30 30 Q36 28 36 32 Q33 32 30 32 Z" fill="#8B847C"></path>
+
+  
+  <path d="M29 24 Q25 22 25 26 Q27 26 29 26 Z" fill="#8B847C"></path>
+  <path d="M29 24 Q33 22 33 26 Q31 26 29 26 Z" fill="#B8AFA6"></path>
+
+  
+  <path d="M28 18 Q25 17 25 20 Q27 20 28 20 Z" fill="#B8AFA6"></path>
+  <path d="M28 18 Q31 17 31 20 Q29 20 28 20 Z" fill="#8B847C"></path>
+
+  
+  <path d="M24 10 Q21 11 21 14 Q23 14 23 12" stroke="#7E7570" stroke-width="1.5" stroke-linecap="round" fill="none"></path>
+  <circle cx="22" cy="13" r="1.2" fill="#7E7570"></circle>
+</svg>

@@ -51,8 +51,10 @@ struct AchievementsView: View {
 
     private var summaryCard: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Text("🏆")
-                .font(.system(size: 36))
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 32))
+                .foregroundStyle(Theme.Palette.accent500)
+                .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(Strings.Achievements.summaryCount(unlocked: totalUnlocked, total: totalAchievements))
                     .font(.custom("DMSans-Bold", size: 22))
@@ -95,9 +97,9 @@ struct AchievementsView: View {
             AppAchievementCatalog.progress(for: achievement, data: $0)
         } ?? 0
         return achievementCard(
-            emoji: achievement.emoji,
             title: achievement.title,
-            isUnlocked: isUnlocked
+            isUnlocked: isUnlocked,
+            icon: { Text(isUnlocked ? achievement.emoji : "🔒").font(.system(size: 28)) }
         ) {
             if isUnlocked, let date = timestamps[achievement.id] {
                 Text(Self.dateFormatter.string(from: date))
@@ -131,9 +133,17 @@ struct AchievementsView: View {
     private func gardenCard(_ achievement: GardenAchievement) -> some View {
         let isUnlocked = gardenUnlocked.contains(achievement.id)
         return achievementCard(
-            emoji: achievement.emoji,
             title: achievement.title,
-            isUnlocked: isUnlocked
+            isUnlocked: isUnlocked,
+            icon: {
+                if isUnlocked {
+                    BloomIconView(.gardenAchievement(id: achievement.id), size: 36)
+                } else {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.neutral400)
+                }
+            }
         ) {
             Text(achievement.description)
                 .font(.smallText)
@@ -145,15 +155,14 @@ struct AchievementsView: View {
 
     // MARK: - Tarjeta común
 
-    private func achievementCard<Footer: View>(
-        emoji: String,
+    private func achievementCard<Icon: View, Footer: View>(
         title: String,
         isUnlocked: Bool,
+        @ViewBuilder icon: () -> Icon,
         @ViewBuilder footer: () -> Footer
     ) -> some View {
         VStack(spacing: Theme.Spacing.xs) {
-            Text(isUnlocked ? emoji : "🔒")
-                .font(.system(size: 28))
+            icon()
             Text(title)
                 .font(.bodyBold)
                 .foregroundStyle(isUnlocked ? Theme.Palette.neutral700 : Theme.Palette.neutral400)

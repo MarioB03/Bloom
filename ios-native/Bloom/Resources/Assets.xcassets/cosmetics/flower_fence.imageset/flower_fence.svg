@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Valla de flores</title>
+
+  
+  <line x1="4" y1="48" x2="60" y2="48" stroke="#3F5440" stroke-width="0.6" opacity="0.5"></line>
+  
+  <rect x="4" y="32" width="56" height="3" fill="#8B4A37"></rect>
+  <rect x="4" y="42" width="56" height="3" fill="#8B4A37"></rect>
+  
+  <g fill="#A45B44">
+    <path d="M10 50 L10 28 L12 24 L14 28 L14 50 Z"></path>
+    <path d="M22 50 L22 28 L24 24 L26 28 L26 50 Z"></path>
+    <path d="M34 50 L34 28 L36 24 L38 28 L38 50 Z"></path>
+    <path d="M46 50 L46 28 L48 24 L50 28 L50 50 Z"></path>
+  </g>
+  
+  <g transform="translate(12 22)">
+    <g><circle cx="0" cy="-2" r="2" fill="#C9A0B0"></circle></g>
+    <g transform="rotate(72)"><circle cx="0" cy="-2" r="2" fill="#C9A0B0"></circle></g>
+    <g transform="rotate(144)"><circle cx="0" cy="-2" r="2" fill="#C9A0B0"></circle></g>
+    <g transform="rotate(216)"><circle cx="0" cy="-2" r="2" fill="#C9A0B0"></circle></g>
+    <g transform="rotate(288)"><circle cx="0" cy="-2" r="2" fill="#C9A0B0"></circle></g>
+    <circle r="1" fill="#E8A948"></circle>
+  </g>
+  <g transform="translate(24 18)">
+    <g><circle cx="0" cy="-2" r="2" fill="#F0C478"></circle></g>
+    <g transform="rotate(72)"><circle cx="0" cy="-2" r="2" fill="#F0C478"></circle></g>
+    <g transform="rotate(144)"><circle cx="0" cy="-2" r="2" fill="#F0C478"></circle></g>
+    <g transform="rotate(216)"><circle cx="0" cy="-2" r="2" fill="#F0C478"></circle></g>
+    <g transform="rotate(288)"><circle cx="0" cy="-2" r="2" fill="#F0C478"></circle></g>
+    <circle r="1" fill="#A45B44"></circle>
+  </g>
+  <g transform="translate(36 16)">
+    <g><circle cx="0" cy="-2" r="2" fill="#8B7EB5"></circle></g>
+    <g transform="rotate(72)"><circle cx="0" cy="-2" r="2" fill="#8B7EB5"></circle></g>
+    <g transform="rotate(144)"><circle cx="0" cy="-2" r="2" fill="#8B7EB5"></circle></g>
+    <g transform="rotate(216)"><circle cx="0" cy="-2" r="2" fill="#8B7EB5"></circle></g>
+    <g transform="rotate(288)"><circle cx="0" cy="-2" r="2" fill="#8B7EB5"></circle></g>
+    <circle r="1" fill="#E8A948"></circle>
+  </g>
+  <g transform="translate(48 20)">
+    <g><circle cx="0" cy="-2" r="2" fill="#C4725A"></circle></g>
+    <g transform="rotate(72)"><circle cx="0" cy="-2" r="2" fill="#C4725A"></circle></g>
+    <g transform="rotate(144)"><circle cx="0" cy="-2" r="2" fill="#C4725A"></circle></g>
+    <g transform="rotate(216)"><circle cx="0" cy="-2" r="2" fill="#C4725A"></circle></g>
+    <g transform="rotate(288)"><circle cx="0" cy="-2" r="2" fill="#C4725A"></circle></g>
+    <circle r="1" fill="#E8A948"></circle>
+  </g>
+  
+  <path d="M8 32 Q12 28 12 24" stroke="#557055" stroke-width="0.8" fill="none"></path>
+  <path d="M22 32 Q24 26 24 22" stroke="#557055" stroke-width="0.8" fill="none"></path>
+  <path d="M52 32 Q50 26 48 22" stroke="#557055" stroke-width="0.8" fill="none"></path>
+
+</svg>

@@ -6,10 +6,27 @@ import SwiftUI
 /// por eso recibe los campos sueltos en lugar de un modelo concreto.
 /// Equivalente nativo de `AchievementToast.tsx`.
 struct AchievementToastView: View {
+    /// Icono botánico del logro. Cuando hay (logros del jardín con SVG en
+    /// `achievements/`), tiene preferencia sobre el emoji.
+    let icon: BloomIcon?
     let emoji: String
     let title: String
     let description: String
     let onDismiss: () -> Void
+
+    init(
+        icon: BloomIcon? = nil,
+        emoji: String = "",
+        title: String,
+        description: String,
+        onDismiss: @escaping () -> Void
+    ) {
+        self.icon = icon
+        self.emoji = emoji
+        self.title = title
+        self.description = description
+        self.onDismiss = onDismiss
+    }
 
     @State private var offsetY: CGFloat = -140
     @State private var scale: CGFloat = 0.8
@@ -17,8 +34,12 @@ struct AchievementToastView: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(emoji)
-                .font(.system(size: 28))
+            if let icon {
+                BloomIconView(icon, size: 36)
+            } else {
+                Text(emoji)
+                    .font(.system(size: 28))
+            }
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.system(size: 14, weight: .bold, design: .rounded))

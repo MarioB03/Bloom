@@ -1,0 +1,15 @@
+{
+  "images": [
+    {
+      "filename": "pros_contras.svg",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "preserves-vector-representation": true
+  }
+}

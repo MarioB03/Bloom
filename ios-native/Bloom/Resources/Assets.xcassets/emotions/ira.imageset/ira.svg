@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Ira · Cactus ardiente</title>
+
+  
+  <path d="M22 58 Q32 56 42 58" stroke="#6E3A2B" stroke-width="1.2" stroke-linecap="round" opacity="0.4" fill="none"></path>
+
+  
+  <path d="M26 56 Q26 32 28 22 Q32 16 36 22 Q38 32 38 56 Q32 60 26 56 Z" fill="#A0522D"></path>
+
+  
+  <path d="M26 38 Q20 38 18 36 Q16 33 19 32 Q22 32 24 34 Q26 36 26 38 Z" fill="#A0522D"></path>
+  
+  <path d="M19 33 Q21 35 23 36" stroke="#6E3A1E" stroke-width="0.8" stroke-linecap="round" opacity="0.7"></path>
+
+  
+  <path d="M38 32 Q44 30 46 32 Q47 35 44 36 Q41 36 39 35 Q38 33 38 32 Z" fill="#A0522D"></path>
+
+  
+  <path d="M30 24 Q30 38 30 54" stroke="#6E3A1E" stroke-width="0.8" stroke-linecap="round" opacity="0.6"></path>
+  <path d="M34 24 Q34 38 34 54" stroke="#6E3A1E" stroke-width="0.8" stroke-linecap="round" opacity="0.6"></path>
+
+  
+  <g stroke="#FAF6F0" stroke-width="0.7" stroke-linecap="round" opacity="0.75">
+    <line x1="30" y1="30" x2="30" y2="32"></line>
+    <line x1="29" y1="31" x2="31" y2="31"></line>
+    <line x1="34" y1="30" x2="34" y2="32"></line>
+    <line x1="33" y1="31" x2="35" y2="31"></line>
+    <line x1="30" y1="42" x2="30" y2="44"></line>
+    <line x1="29" y1="43" x2="31" y2="43"></line>
+    <line x1="34" y1="42" x2="34" y2="44"></line>
+    <line x1="33" y1="43" x2="35" y2="43"></line>
+    <line x1="30" y1="50" x2="30" y2="52"></line>
+    <line x1="29" y1="51" x2="31" y2="51"></line>
+    <line x1="34" y1="50" x2="34" y2="52"></line>
+    <line x1="33" y1="51" x2="35" y2="51"></line>
+  </g>
+
+  
+  <path d="M32 16 Q28 12 30 8 Q32 11 32 6 Q34 11 34 8 Q36 12 32 16 Z" fill="#C4725A"></path>
+  <path d="M32 14 Q30 12 31 9 Q32 11 33 9 Q34 12 32 14 Z" fill="#E8A948"></path>
+</svg>

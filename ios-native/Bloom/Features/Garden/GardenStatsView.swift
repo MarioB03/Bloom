@@ -72,8 +72,7 @@ struct GardenStatsView: View {
                     Circle()
                         .fill(topEmotion.config.color)
                         .frame(width: 10, height: 10)
-                    Text(topEmotion.config.emoji)
-                        .font(.system(size: 18))
+                    BloomIconView(topEmotion.config.icon, size: 22)
                 }
                 Text(topEmotion.plantMorphology.name)
                     .font(.smallText)

@@ -34,8 +34,7 @@ private struct EmotionCell: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: Theme.Spacing.xs) {
-                Text(emotion.emoji)
-                    .font(.system(size: isSelected ? 34 : 28))
+                BloomIconView(emotion.icon, size: isSelected ? 44 : 36)
                 Text(emotion.label)
                     .font(.caption)
                     .foregroundStyle(isSelected ? emotion.color : Theme.Palette.neutral600)

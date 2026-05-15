@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Cielo atardecer</title>
+
+  <defs>
+    <linearGradient id="sky-grad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#D4937E"></stop>
+      <stop offset="50%" stop-color="#F0C478"></stop>
+      <stop offset="100%" stop-color="#FAF6F0"></stop>
+    </linearGradient>
+  </defs>
+  
+  <rect x="4" y="4" width="56" height="56" rx="8" fill="url(#sky-grad)"></rect>
+  
+  <circle cx="32" cy="38" r="9" fill="#E8A948"></circle>
+  <circle cx="32" cy="38" r="9" fill="#F0C478" opacity="0.4"></circle>
+  
+  <line x1="6" y1="48" x2="58" y2="48" stroke="#A45B44" stroke-width="0.6" opacity="0.5"></line>
+  
+  <ellipse cx="16" cy="20" rx="6" ry="2" fill="#FAF6F0" opacity="0.8"></ellipse>
+  <ellipse cx="48" cy="16" rx="5" ry="1.6" fill="#FAF6F0" opacity="0.8"></ellipse>
+  
+  <path d="M4 56 Q14 50 24 52 Q34 54 44 50 Q54 48 60 52 L60 60 L4 60 Z" fill="#3F5440" opacity="0.85"></path>
+
+</svg>

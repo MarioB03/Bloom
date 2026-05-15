@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Rutina PLEASE</title>
+
+  
+  
+  <circle cx="48" cy="14" r="5" fill="#E8A948"></circle>
+  <g stroke="#E8A948" stroke-width="1.2" stroke-linecap="round">
+    <line x1="48" y1="6" x2="48" y2="8"></line>
+    <line x1="42" y1="9" x2="43.5" y2="10.5"></line>
+    <line x1="54" y1="9" x2="52.5" y2="10.5"></line>
+    <line x1="40" y1="14" x2="42" y2="14"></line>
+    <line x1="54" y1="14" x2="56" y2="14"></line>
+  </g>
+  
+  <path d="M16 8 Q12 14 14 18 Q18 20 20 16 Q20 12 16 8 Z" fill="#7E9EB5"></path>
+  <ellipse cx="15" cy="13" rx="1" ry="1.4" fill="#FAF6F0" opacity="0.7"></ellipse>
+  
+  <path d="M22 52 L26 60 L38 60 L42 52 Z" fill="#A45B44"></path>
+  <path d="M22 52 L42 52" stroke="#6E3A2B" stroke-width="0.8" opacity="0.7"></path>
+  
+  <path d="M24 50 Q32 48 40 50 L42 52 L22 52 Z" fill="#6E3A2B"></path>
+  
+  <path d="M32 50 L32 30" stroke="#6B8B6A" stroke-width="2" stroke-linecap="round"></path>
+  
+  <path d="M32 44 Q26 42 24 44 Q28 46 32 44 Z" fill="#6B8B6A"></path>
+  <path d="M32 38 Q38 36 40 38 Q36 40 32 38 Z" fill="#8BA888"></path>
+  <path d="M32 32 Q26 30 24 32 Q28 34 32 32 Z" fill="#6B8B6A"></path>
+  
+  <circle cx="32" cy="28" r="2" fill="#E8A948"></circle>
+
+</svg>

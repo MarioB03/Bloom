@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Emociones positivas</title>
+
+  
+  <g fill="none" stroke-width="3" stroke-linecap="round">
+    <path d="M10 48 Q32 16 54 48" stroke="#A45B44"></path>
+    <path d="M13 48 Q32 20 51 48" stroke="#E8A948"></path>
+    <path d="M16 48 Q32 24 48 48" stroke="#8BA888"></path>
+    <path d="M19 48 Q32 28 45 48" stroke="#7E9EB5"></path>
+  </g>
+  
+  <ellipse cx="10" cy="48" rx="4" ry="2.5" fill="#FAF6F0"></ellipse>
+  <ellipse cx="12" cy="50" rx="6" ry="2" fill="#F3EDE6"></ellipse>
+  <ellipse cx="54" cy="48" rx="4" ry="2.5" fill="#FAF6F0"></ellipse>
+  <ellipse cx="52" cy="50" rx="6" ry="2" fill="#F3EDE6"></ellipse>
+  
+  <g fill="#E8A948">
+    <path d="M48 18 L49 20 L51 20.5 L49 21 L48 23 L47 21 L45 20.5 L47 20 Z"></path>
+    <path d="M14 22 L15 24 L17 24.5 L15 25 L14 27 L13 25 L11 24.5 L13 24 Z" opacity="0.7"></path>
+  </g>
+
+</svg>

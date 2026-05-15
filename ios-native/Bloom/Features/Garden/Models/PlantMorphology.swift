@@ -24,8 +24,12 @@ struct PlantMorphology: Sendable {
     let leafCount: Int
     /// Tamaño de la hoja: ancho × alto.
     let leafSize: CGSize
-    /// Emoji opcional mostrado en el centro de la flor.
+    /// Emoji opcional (fallback) del acento central.
     let centerEmoji: String?
+    /// Acento central vectorial preferido sobre el emoji. Apunta a uno de los
+    /// 4 SVGs de `plant-accents/` (sol, llama, chispa, corazón) entregados por
+    /// Claude Design v3.
+    let centerAccent: BloomIcon.PlantAccent?
     let petalShape: PetalShape
 
     /// Tabla de morfología por emoción — las 12 "especies" del jardín.
@@ -33,62 +37,62 @@ struct PlantMorphology: Sendable {
         .alegria: .init(
             name: "Girasol", petalCount: 8, petalSize: 7, petalSpread: 14,
             stemHeight: 45...60, leafCount: 3, leafSize: .init(width: 7, height: 18),
-            centerEmoji: "☀️", petalShape: .elongated
+            centerEmoji: "☀️", centerAccent: .sun, petalShape: .elongated
         ),
         .tristeza: .init(
             name: "Sauce llorón", petalCount: 5, petalSize: 6, petalSpread: 12,
             stemHeight: 35...50, leafCount: 4, leafSize: .init(width: 6, height: 20),
-            centerEmoji: nil, petalShape: .elongated
+            centerEmoji: nil, centerAccent: nil, petalShape: .elongated
         ),
         .ira: .init(
             name: "Cactus ardiente", petalCount: 6, petalSize: 5, petalSpread: 10,
             stemHeight: 30...45, leafCount: 2, leafSize: .init(width: 5, height: 12),
-            centerEmoji: "🔥", petalShape: .pointed
+            centerEmoji: "🔥", centerAccent: .flame, petalShape: .pointed
         ),
         .miedo: .init(
             name: "Lavanda", petalCount: 6, petalSize: 5, petalSpread: 11,
             stemHeight: 40...55, leafCount: 3, leafSize: .init(width: 5, height: 16),
-            centerEmoji: nil, petalShape: .elongated
+            centerEmoji: nil, centerAccent: nil, petalShape: .elongated
         ),
         .asco: .init(
             name: "Musgo", petalCount: 5, petalSize: 6, petalSpread: 11,
             stemHeight: 25...38, leafCount: 4, leafSize: .init(width: 8, height: 14),
-            centerEmoji: nil, petalShape: .round
+            centerEmoji: nil, centerAccent: nil, petalShape: .round
         ),
         .sorpresa: .init(
             name: "Flor tropical", petalCount: 7, petalSize: 7, petalSpread: 14,
             stemHeight: 40...55, leafCount: 3, leafSize: .init(width: 7, height: 18),
-            centerEmoji: "✨", petalShape: .round
+            centerEmoji: "✨", centerAccent: .sparkle, petalShape: .round
         ),
         .ansiedad: .init(
             name: "Hiedra", petalCount: 5, petalSize: 5, petalSpread: 10,
             stemHeight: 35...48, leafCount: 4, leafSize: .init(width: 6, height: 15),
-            centerEmoji: nil, petalShape: .pointed
+            centerEmoji: nil, centerAccent: nil, petalShape: .pointed
         ),
         .calma: .init(
             name: "Bambú sereno", petalCount: 6, petalSize: 6, petalSpread: 12,
             stemHeight: 45...60, leafCount: 3, leafSize: .init(width: 6, height: 22),
-            centerEmoji: nil, petalShape: .elongated
+            centerEmoji: nil, centerAccent: nil, petalShape: .elongated
         ),
         .frustracion: .init(
             name: "Rosa espinosa", petalCount: 7, petalSize: 6, petalSpread: 13,
             stemHeight: 38...52, leafCount: 3, leafSize: .init(width: 6, height: 16),
-            centerEmoji: nil, petalShape: .pointed
+            centerEmoji: nil, centerAccent: nil, petalShape: .pointed
         ),
         .gratitud: .init(
             name: "Cerezo", petalCount: 5, petalSize: 8, petalSpread: 14,
             stemHeight: 42...58, leafCount: 3, leafSize: .init(width: 7, height: 17),
-            centerEmoji: "💛", petalShape: .round
+            centerEmoji: "💛", centerAccent: .heart, petalShape: .round
         ),
         .verguenza: .init(
             name: "Violeta", petalCount: 5, petalSize: 6, petalSpread: 11,
             stemHeight: 30...42, leafCount: 3, leafSize: .init(width: 6, height: 15),
-            centerEmoji: nil, petalShape: .round
+            centerEmoji: nil, centerAccent: nil, petalShape: .round
         ),
         .culpa: .init(
             name: "Helecho", petalCount: 6, petalSize: 5, petalSpread: 10,
             stemHeight: 32...44, leafCount: 4, leafSize: .init(width: 7, height: 18),
-            centerEmoji: nil, petalShape: .elongated
+            centerEmoji: nil, centerAccent: nil, petalShape: .elongated
         ),
     ]
 }

@@ -184,7 +184,7 @@ struct InsightsView: View {
                     let config = stat.id.config
                     HStack(spacing: Theme.Spacing.sm) {
                         HStack(spacing: Theme.Spacing.sm) {
-                            Text(config.emoji).font(.system(size: 20))
+                            BloomIconView(config.icon, size: 24)
                             Text(config.label)
                                 .font(.bodyText)
                                 .foregroundStyle(Theme.Palette.neutral700)
@@ -319,8 +319,13 @@ struct InsightsView: View {
                         Text(day.label.prefix(3))
                             .font(.system(size: 10, weight: .regular, design: .rounded))
                             .foregroundStyle(Theme.Palette.neutral400)
-                        Text(day.topEmotion.map { $0.id.config.emoji } ?? "·")
-                            .font(.system(size: 18))
+                        if let top = day.topEmotion {
+                            BloomIconView(top.id.config.icon, size: 22)
+                        } else {
+                            Text("·")
+                                .font(.system(size: 18))
+                                .foregroundStyle(Theme.Palette.neutral300)
+                        }
                         Text("\(day.count)")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.Palette.neutral400)
@@ -334,13 +339,15 @@ struct InsightsView: View {
                 if let top = bestDay.topEmotion {
                     dayInsightChip(
                         label: Strings.Insights.bestDay,
-                        value: "\(bestDay.label) \(top.id.config.emoji)"
+                        value: bestDay.label,
+                        emotion: top.id.config
                     )
                 }
                 if let top = hardestDay.topEmotion {
                     dayInsightChip(
                         label: Strings.Insights.hardestDay,
-                        value: "\(hardestDay.label) \(top.id.config.emoji)"
+                        value: hardestDay.label,
+                        emotion: top.id.config
                     )
                 }
             }
@@ -401,8 +408,9 @@ struct InsightsView: View {
         let config = emotion.id.config
         return correlationRow(
             label: label,
-            chip: chip(
-                "\(config.emoji) \(config.label) (\(emotion.percentage)%)",
+            chip: emotionChip(
+                config: config,
+                trailing: "(\(emotion.percentage)%)",
                 background: Theme.Palette.neutral50
             )
         )
@@ -421,7 +429,20 @@ struct InsightsView: View {
 
     private func trendChip(emotion: EmotionFrequency, suffix: String, background: Color) -> some View {
         let config = emotion.id.config
-        return chip("\(config.emoji) \(config.label) \(suffix)", background: background)
+        return emotionChip(config: config, trailing: suffix, background: background)
+    }
+
+    private func emotionChip(config: EmotionConfig, trailing: String, background: Color) -> some View {
+        HStack(spacing: 6) {
+            BloomIconView(config.icon, size: 18)
+            Text("\(config.label) \(trailing)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.Palette.neutral700)
+        }
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.vertical, 5)
+        .background(background)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
     }
 
     private func chip(_ text: String, background: Color) -> some View {
@@ -434,14 +455,19 @@ struct InsightsView: View {
             .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
     }
 
-    private func dayInsightChip(label: String, value: String) -> some View {
+    private func dayInsightChip(label: String, value: String, emotion: EmotionConfig?) -> some View {
         VStack(spacing: 2) {
             Text(label)
                 .font(.smallText)
                 .foregroundStyle(Theme.Palette.neutral400)
-            Text(value)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Theme.Palette.neutral700)
+            HStack(spacing: 6) {
+                Text(value)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.Palette.neutral700)
+                if let emotion {
+                    BloomIconView(emotion.icon, size: 18)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.sm)

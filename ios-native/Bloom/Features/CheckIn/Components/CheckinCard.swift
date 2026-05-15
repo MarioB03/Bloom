@@ -31,8 +31,7 @@ struct CheckinCard: View {
 
     private var header: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(emotion.emoji)
-                .font(.system(size: 22))
+            BloomIconView(emotion.icon, size: 28)
                 .frame(width: 40, height: 40)
                 .background(emotion.color.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))

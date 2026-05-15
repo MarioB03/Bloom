@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Gnomo</title>
+
+  
+  <path d="M22 56 Q22 52 26 52 Q30 52 30 56 Z" fill="#6E3A2B"></path>
+  <path d="M34 56 Q34 52 38 52 Q42 52 42 56 Z" fill="#6E3A2B"></path>
+  
+  <path d="M22 50 Q22 40 32 36 Q42 40 42 50 Z" fill="#6B8B6A"></path>
+  
+  <rect x="22" y="48" width="20" height="2" fill="#6E3A2B"></rect>
+  
+  <path d="M24 36 Q24 44 32 46 Q40 44 40 36 Q40 38 36 38 Q32 38 28 38 Q24 38 24 36 Z" fill="#FAF6F0"></path>
+  
+  <circle cx="32" cy="32" r="6" fill="#D4937E"></circle>
+  
+  <ellipse cx="32" cy="33" rx="2" ry="2.5" fill="#C4725A"></ellipse>
+  
+  <circle cx="29" cy="30" r="0.7" fill="#1C1917"></circle>
+  <circle cx="35" cy="30" r="0.7" fill="#1C1917"></circle>
+  
+  <circle cx="27" cy="33" r="1" fill="#C4725A" opacity="0.6"></circle>
+  <circle cx="37" cy="33" r="1" fill="#C4725A" opacity="0.6"></circle>
+  
+  <path d="M24 26 Q32 6 40 26 Q36 28 32 27 Q28 28 24 26 Z" fill="#A45B44"></path>
+  
+  <path d="M30 22 L33 12" stroke="#D4937E" stroke-width="0.8" opacity="0.6"></path>
+  
+  <circle cx="40" cy="9" r="1.5" fill="#FAF6F0"></circle>
+
+</svg>

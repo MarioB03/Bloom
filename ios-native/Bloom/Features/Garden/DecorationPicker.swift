@@ -97,10 +97,17 @@ struct DecorationPicker: View {
             handleTap(config, owned: owned, streakLocked: streakLocked)
         } label: {
             HStack(spacing: Theme.Spacing.md) {
-                Text(streakLocked ? "🔒" : config.emoji)
-                    .font(.system(size: 24))
-                    .frame(width: 40, height: 40)
-                    .background(Theme.Palette.accent50, in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
+                Group {
+                    if streakLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(Theme.Palette.neutral400)
+                    } else {
+                        BloomIconView(.decoration(id: config.type.rawValue), size: 32)
+                    }
+                }
+                .frame(width: 40, height: 40)
+                .background(Theme.Palette.accent50, in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
 
                 Text(config.label)
                     .font(.bodyBold)

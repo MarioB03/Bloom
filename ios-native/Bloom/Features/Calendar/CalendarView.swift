@@ -80,10 +80,8 @@ struct CalendarView: View {
             FlowLayout {
                 ForEach(usedEmotions) { emotion in
                     HStack(spacing: 6) {
-                        Circle()
-                            .fill(emotion.color)
-                            .frame(width: 8, height: 8)
-                        Text("\(emotion.emoji) \(emotion.label)")
+                        BloomIconView(emotion.icon, size: 18)
+                        Text(emotion.label)
                             .font(.smallText)
                             .foregroundStyle(Theme.Palette.neutral600)
                     }

@@ -10,8 +10,7 @@ struct CategoryCard: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Text(category.emoji)
-                .font(.system(size: 24))
+            BloomIconView(.skillCategory(category.id), size: 36)
                 .frame(width: 48, height: 48)
                 .background(category.color.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
