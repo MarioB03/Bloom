@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// Punto de entrada de la UI. Decide qué mostrar según el estado de sesión.
-/// Equivalente al auth guard de `app/(tabs)/_layout.tsx` en la app React Native.
+/// Punto de entrada de la UI. Decide qué mostrar según el estado de sesión y
+/// presenta el splash animado por encima hasta que la app está lista y la
+/// animación ha completado. Equivalente al auth guard de
+/// `app/(tabs)/_layout.tsx` + el `AnimatedSplash` overlay del `_layout.tsx` de RN.
 struct RootView: View {
     @Environment(AuthService.self) private var authService
 
@@ -9,10 +11,28 @@ struct RootView: View {
     /// carrusel de bienvenida antes del flujo de autenticación.
     @AppStorage("bloom.onboardingComplete") private var onboardingComplete = false
 
+    /// `true` cuando el splash ha terminado su animación de salida. Hasta
+    /// entonces, se renderiza encima del contenido principal.
+    @State private var splashDone = false
+
     var body: some View {
+        ZStack {
+            content
+            if !splashDone {
+                AnimatedSplashView(isReady: authService.state != .loading) {
+                    splashDone = true
+                }
+                .transition(.opacity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch authService.state {
         case .loading:
-            LoadingScreen()
+            // Fondo neutro mientras se resuelve la sesión. El splash tapa todo.
+            Theme.Palette.background.ignoresSafeArea()
         case .signedOut:
             if onboardingComplete {
                 AuthView()
@@ -21,17 +41,6 @@ struct RootView: View {
             }
         case .signedIn:
             MainTabView()
-        }
-    }
-}
-
-/// Pantalla de carga mientras se resuelve el estado de sesión inicial.
-struct LoadingScreen: View {
-    var body: some View {
-        ZStack {
-            Theme.Palette.background.ignoresSafeArea()
-            ProgressView()
-                .tint(Theme.Palette.primary400)
         }
     }
 }
