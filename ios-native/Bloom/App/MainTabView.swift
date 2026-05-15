@@ -3,6 +3,11 @@ import SwiftUI
 /// Navegación principal con las 5 pestañas de Bloom.
 /// Equivalente a `app/(tabs)/_layout.tsx` en la app React Native.
 struct MainTabView: View {
+
+    @Environment(AuthService.self) private var auth
+    @Environment(FirestoreService.self) private var firestore
+    @Environment(PremiumService.self) private var premium
+
     var body: some View {
         TabView {
             CheckInHomeView()
@@ -21,5 +26,8 @@ struct MainTabView: View {
                 .tabItem { Label(Strings.Profile.tabTitle, systemImage: "person.fill") }
         }
         .tint(Theme.Palette.primary500)
+        .task(id: auth.currentUserID) {
+            await premium.refresh(userID: auth.currentUserID, firestore: firestore)
+        }
     }
 }

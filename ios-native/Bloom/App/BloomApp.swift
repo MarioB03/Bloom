@@ -6,12 +6,14 @@ struct BloomApp: App {
 
     @State private var authService: AuthService
     @State private var firestoreService: FirestoreService
+    @State private var premiumService: PremiumService
 
     init() {
         FirebaseBootstrap.configure()
         Self.configureGoogleSignIn()
         _authService = State(initialValue: AuthService())
         _firestoreService = State(initialValue: FirestoreService())
+        _premiumService = State(initialValue: PremiumService())
     }
 
     var body: some Scene {
@@ -19,6 +21,7 @@ struct BloomApp: App {
             RootView()
                 .environment(authService)
                 .environment(firestoreService)
+                .environment(premiumService)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }

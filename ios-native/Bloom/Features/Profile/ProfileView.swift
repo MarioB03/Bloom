@@ -6,6 +6,7 @@ enum ProfileRoute: Hashable {
     case insights
     case achievements
     case safetyPlan
+    case premium
     case deleteAccount
     case privacyPolicy
 }
@@ -25,6 +26,7 @@ struct ProfileView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
+    @Environment(PremiumService.self) private var premium
 
     @State private var totalCheckins = 0
     @State private var uniqueDays = 0
@@ -50,6 +52,7 @@ struct ProfileView: View {
                 case .insights: InsightsView()
                 case .achievements: AchievementsView()
                 case .safetyPlan: SafetyPlanView()
+                case .premium: PremiumView()
                 case .deleteAccount: DeleteAccountView()
                 case .privacyPolicy: PrivacyPolicyView()
                 }
@@ -127,6 +130,15 @@ struct ProfileView: View {
                 label: Strings.SafetyPlan.title,
                 description: Strings.Profile.safetyPlanDesc,
                 route: .safetyPlan
+            )
+            Divider().overlay(Theme.Palette.neutral100)
+            navRow(
+                icon: "sparkles",
+                tint: Theme.Palette.accent500,
+                label: Strings.Premium.entryLabel,
+                description: Strings.Premium.entryDesc,
+                route: .premium,
+                badge: premium.isPremium ? Strings.Premium.activeBadge : nil
             )
         }
     }
@@ -219,7 +231,8 @@ struct ProfileView: View {
         tint: Color,
         label: String,
         description: String,
-        route: ProfileRoute
+        route: ProfileRoute,
+        badge: String? = nil
     ) -> some View {
         Button {
             path.append(route)
@@ -235,6 +248,15 @@ struct ProfileView: View {
                         .foregroundStyle(Theme.Palette.neutral400)
                 }
                 Spacer()
+                if let badge {
+                    Text(badge)
+                        .font(.tag)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .padding(.vertical, 2)
+                        .background(Theme.Palette.accent500)
+                        .clipShape(Capsule())
+                }
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.Palette.neutral300)

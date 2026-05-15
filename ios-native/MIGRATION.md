@@ -299,9 +299,26 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   en lugar de descartarlo (RN hace `clearTimeout` en el desmontaje y pierde el
   último cambio si no han pasado los 1,5 s)
 
-### Premium — ⬜
-- [ ] Paywall + gestión de suscripción (RevenueCat SDK nativo)
-- RN: `app/premium.tsx`, `src/contexts/PremiumContext.tsx`, `src/lib/purchases.ts`
+### Premium — 🚧
+- [x] Paywall + canje de código de regalo → `Features/Premium/PremiumView.swift`
+- [x] Servicio Premium (`Services/PremiumService.swift`) + modelos (`Models/Premium.swift`)
+- [x] Métodos Firestore: `userPremiumStatus`, `redeemPremiumCode`
+- **Divergencia clave**: pasarela de pago en **StoreKit 2 nativo**, no
+  RevenueCat (la app RN usa `react-native-purchases`). Decisión del usuario:
+  ir directo contra App Store.
+- **Product IDs**: `bloom.premium.annual` y `bloom.premium.monthly`. Pendiente
+  crearlos en App Store Connect y configurarlos (precio, free trial,
+  introductory offer)
+- **Gift codes**: lógica idéntica a RN — `premiumCodes/{code}` +
+  `users/{uid}.premium`. La suscripción tiene prioridad sobre el gift code
+  como fuente que se muestra
+- **Cableado**: `PremiumService` se crea en `BloomApp`, se inyecta vía
+  `.environment`. `MainTabView` refresca el estado en `.task(id: userID)`.
+  Entrada desde la pestaña Tú con badge "Premium" si activo
+- [ ] Sección admin (generar código, toggle premium) — pendiente
+- [ ] Gating real de features (export PDF, compartir, tienda jardín,
+  insights avanzados): cada feature lo añadirá cuando se porte. Hoy ninguna
+  está gated en nativo
 
 ### Compartir cuenta — ⬜
 - [ ] Generar/canjear código de 6 chars

@@ -329,6 +329,76 @@ final class FirestoreService {
         }
     }
 
+    // MARK: - Premium
+
+    /// Lee el estado Premium guardado en `users/{uid}.premium`. Si está
+    /// caducado, lo marca como inactivo en segundo plano (mismo criterio que
+    /// `getUserPremiumStatus` en la app RN).
+    func userPremiumStatus(userID: String) async throws -> PremiumStatus? {
+        let document = try await db.collection("users").document(userID).getDocument()
+        guard let data = document.data(), data["premium"] != nil else { return nil }
+        var status = try document.data(as: PremiumProfile.self).premium
+
+        if status.source == nil {
+            status.source = status.giftCode != nil ? .giftCode : nil
+        }
+        if status.isActive, let expiresAt = status.expiresAt, expiresAt < Date() {
+            try? await db.collection("users").document(userID)
+                .updateData(["premium.isActive": false])
+            status.isActive = false
+        }
+        return status
+    }
+
+    /// Canjea un código de regalo: marca el código como redimido y actualiza
+    /// el estado Premium del usuario.
+    @discardableResult
+    func redeemPremiumCode(_ rawCode: String, userID: String) async throws -> PremiumStatus {
+        let code = rawCode.uppercased()
+        let codeRef = db.collection("premiumCodes").document(code)
+        let snapshot = try await codeRef.getDocument()
+        guard snapshot.exists else { throw PremiumCodeError.invalid }
+
+        let premiumCode: PremiumCode
+        do {
+            premiumCode = try snapshot.data(as: PremiumCode.self)
+        } catch {
+            throw PremiumCodeError.invalid
+        }
+
+        if premiumCode.status == .redeemed { throw PremiumCodeError.alreadyRedeemed }
+        if premiumCode.expiresAt < Date() { throw PremiumCodeError.expired }
+
+        let now = Date()
+        let premiumExpiresAt = now.addingTimeInterval(Double(premiumCode.durationDays) * 86_400)
+        let status = PremiumStatus(
+            isActive: true,
+            source: .giftCode,
+            expiresAt: premiumExpiresAt,
+            giftCode: code,
+            activatedAt: now
+        )
+
+        let encoder = Firestore.Encoder()
+        let statusDict = try encoder.encode(status)
+
+        try await db.collection("users").document(userID).updateData([
+            "premium": statusDict,
+            "updatedAt": now,
+        ])
+        try await codeRef.updateData([
+            "redeemedBy": userID,
+            "redeemedAt": now,
+            "status": PremiumCode.Status.redeemed.rawValue,
+        ])
+        return status
+    }
+
+    /// Wrapper para descodificar solo el campo `premium` del documento.
+    private struct PremiumProfile: Codable {
+        var premium: PremiumStatus
+    }
+
     // MARK: - Cifrado de campos sensibles
 
     /// Copia del check-in con `notes` y los eventos cifrados, lista para escribir.

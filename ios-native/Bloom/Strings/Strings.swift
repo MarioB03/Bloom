@@ -577,6 +577,70 @@ enum Strings {
         static let passwordPlaceholder = "Tu contraseña"
     }
 
+    enum Premium {
+        static let title = "Bloom Premium"
+        static let heroEmoji = "✨"
+        static let heroDesc = "Desbloquea todo el potencial de tu bienestar emocional"
+
+        // Estado activo
+        static let activeTitle = "Ya eres Premium"
+        static let activeEmoji = "👑"
+        static let activeDesc = "Tienes acceso a todas las funciones."
+        static let managedByStore = "Tu suscripción se gestiona desde la App Store."
+
+        // Planes
+        static let monthlyLabel = "Mensual"
+        static let annualLabel = "Anual"
+        static let annualSave = "Ahorra 50%"
+        static let popular = "Popular"
+        static let perYear = "/año"
+        static let perMonth = "/mes"
+        static let noProductsAvailable = "Suscripciones no disponibles ahora mismo. Inténtalo más tarde."
+
+        // Acciones de compra
+        static let freeTrial = "Empieza con prueba gratis"
+        static let subscribe = "Suscribirse"
+        static let subscribing = "Procesando..."
+        static let finePrint = "Renovación automática. Puedes cancelar en cualquier momento desde los Ajustes de tu Apple ID."
+
+        static let restore = "Restaurar compra"
+        static let restoring = "Restaurando..."
+        static let restoreSuccess = "Compras restauradas"
+        static let errorRestore = "No se pudo restaurar la compra"
+
+        static let successTitle = "¡Bienvenido a Premium! ✨"
+        static let successMessage = "Tu suscripción está activa."
+        static let errorTitle = "Algo ha ido mal"
+        static let errorPurchase = "No se pudo completar la compra"
+        static let pendingPurchase = "Compra pendiente de confirmación"
+
+        // Código de regalo
+        static let giftLabel = "¿Tienes un código de regalo?"
+        static let giftCodePlaceholder = "AB12CD"
+        static let redeem = "Canjear"
+        static let redeeming = "Canjeando..."
+        static let successRedeemed = "¡Código canjeado!"
+        static let successRedeemedMessage = "Ya tienes acceso a todas las funciones Premium."
+        static let errorInvalidCode = "Código no válido"
+        static let errorExpiredCode = "Este código ha caducado"
+        static let errorAlreadyRedeemed = "Este código ya fue canjeado"
+
+        // Features
+        static let featureExport = "Exportar datos"
+        static let featureExportDesc = "Descarga tus registros en PDF"
+        static let featureShare = "Compartir"
+        static let featureShareDesc = "Comparte tu bienestar con alguien de confianza"
+        static let featureGarden = "Tienda del jardín"
+        static let featureGardenDesc = "Compra mascotas, decoraciones y más"
+        static let featureInsights = "Insights avanzados"
+        static let featureInsightsDesc = "Promedios, calidad de sueño y consejos"
+
+        // Entrada en perfil
+        static let entryLabel = "Premium"
+        static let entryDesc = "Desbloquea funciones avanzadas"
+        static let activeBadge = "Premium"
+    }
+
     enum Shop {
         static let title = "Tienda"
         /// Emoji que acompaña al saldo de semillas en toda la UI del jardín.
