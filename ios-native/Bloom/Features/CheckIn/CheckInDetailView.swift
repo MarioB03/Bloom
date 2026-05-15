@@ -299,6 +299,7 @@ struct CheckInDetailView: View {
                 try await firestore.delete(checkinID: id, userID: userID)
                 onChanged()
                 dismiss()
+                await WidgetSyncService.refreshFromFirestore(firestore, userID: userID)
             } catch {
                 // Si falla el borrado, se mantiene la pantalla abierta.
             }

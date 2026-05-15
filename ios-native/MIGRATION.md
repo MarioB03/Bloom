@@ -30,7 +30,7 @@ Contexto de arquitectura y stack: ver `README.md`.
 | `strings.ts` → catálogo de textos | 🚧 | `Strings.swift` con namespace `Auth`/`SocialAuth`/`App`. Se completa feature a feature. Estrategia definitiva (`String(localized:)` vs enum) ❓ |
 | Notificaciones (recordatorios diarios) | ✅ | `Services/NotificationsService.swift` con `UNCalendarNotificationTrigger` repetitivo. Toggle + edición de hora en la pestaña Tú. 4 mensajes aleatorios igual que RN. RN: `src/lib/notifications.ts` |
 | Export PDF | ✅ | `Services/ExportService.swift` — porta el HTML del RN 1:1 y lo rasteriza con `UIPrintPageRenderer` + `UIMarkupTextPrintFormatter` (A4, margen 40pt). Entrada en Ajustes (Tu) detrás del muro Premium |
-| Widget iOS | ⬜ | RN ya tiene uno vía `@bacons/apple-targets` + `widget-sync.ts` |
+| Widget iOS | ✅ | Target `BloomWidget` (app extension), App Group `group.com.akemi01.bloom`, `WidgetSyncService` escribe el snapshot tras cambios en check-ins/jardín |
 
 ### Modelos pendientes de portar (se harán con cada feature)
 `Skill` · `Template` + `TemplateField` + `RegisterEntry` · `PremiumStatus` ·

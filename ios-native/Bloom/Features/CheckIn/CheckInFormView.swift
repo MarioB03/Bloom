@@ -210,6 +210,10 @@ struct CheckInFormView: View {
             }
             onSaved()
             dismiss()
+            // Refresca el widget de pantalla de inicio en background: como el
+            // usuario puede crear un check-in sin pasar por el jardín, hace
+            // falta recalcular la racha aquí también.
+            Task { await WidgetSyncService.refreshFromFirestore(firestore, userID: userID) }
         } catch {
             isSaving = false
             errorMessage = Strings.CheckIn.saveError

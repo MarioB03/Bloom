@@ -39,6 +39,12 @@ struct MainTabView: View {
             await premium.refresh(userID: auth.currentUserID, firestore: firestore)
             await sharing.refresh(userID: auth.currentUserID, firestore: firestore)
             await gender.sync(userID: auth.currentUserID, firestore: firestore)
+            // Garantiza que el widget tenga datos al instante: si el usuario
+            // añade el widget a la pantalla de inicio sin entrar al jardín o
+            // crear un check-in, esta llamada inicial los rellena.
+            if let userID = auth.currentUserID {
+                await WidgetSyncService.refreshFromFirestore(firestore, userID: userID)
+            }
         }
     }
 }

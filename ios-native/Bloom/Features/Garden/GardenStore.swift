@@ -120,6 +120,20 @@ final class GardenStore {
         replacePlants()
         awardDailyReward()
         checkAchievements()
+        syncWidget()
+    }
+
+    /// Vuelca el estado relevante para el widget de pantalla de inicio. Se
+    /// llama al final de cada mutación que el widget pinta (carga, compra,
+    /// recompensa, suma de semillas).
+    private func syncWidget() {
+        let lastDate = lastCheckins.map(\.date).max() ?? ""
+        WidgetSyncService.refresh(
+            streak: streak,
+            seedBalance: seedBalance.total,
+            totalPlants: layout.plants.count,
+            lastCheckinDate: lastDate
+        )
     }
 
     /// Recoloca las plantas a partir de los últimos check-ins cargados y del
@@ -244,6 +258,7 @@ final class GardenStore {
         if itemID == GardenEconomy.terrainExpansionID {
             replacePlants()
         }
+        syncWidget()
         return true
     }
 
@@ -270,6 +285,7 @@ final class GardenStore {
         guard amount > 0 else { return }
         seedBalance = GardenEconomy.adding(amount, to: seedBalance)
         GardenPersistence.saveSeedBalance(seedBalance)
+        syncWidget()
     }
 
     private func awardDailyReward() {
@@ -280,6 +296,7 @@ final class GardenStore {
         seedBalance = outcome.balance
         pendingDailyReward = outcome.result
         GardenPersistence.saveSeedBalance(seedBalance)
+        // No llamamos a syncWidget aquí: se invoca desde apply() después.
     }
 
     /// Marca consumida la recompensa diaria pendiente (tras mostrarla).

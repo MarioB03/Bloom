@@ -77,6 +77,7 @@ final class AuthService {
 
     func signOut() throws {
         try Auth.auth().signOut()
+        WidgetSyncService.clear()
     }
 
     // MARK: - Eliminar cuenta
@@ -137,6 +138,7 @@ final class AuthService {
         }
         try? await firestore.deleteAllUserData(userID: user.uid)
         clearLocalData()
+        WidgetSyncService.clear()
         try await user.delete()
     }
 

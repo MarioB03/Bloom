@@ -52,6 +52,10 @@ targets:
         product: FirebaseFirestore
       - package: GoogleSignIn
         product: GoogleSignIn
+      # Embed la extensión del widget para que aparezca en la galería de
+      # widgets del sistema al instalar la app. El target `BloomWidget` se
+      # define más abajo.
+      - target: BloomWidget
     scheme:
       testTargets: []
       # Conecta el StoreKit Configuration local con el scheme para que el
@@ -61,3 +65,20 @@ targets:
       # Antes vivía en `xcuserdata/`, que se borra con cada
       # `xcodegen generate`.
       storeKitConfiguration: Bloom.storekit
+
+  BloomWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: BloomWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akemi01.bloom.widget
+        INFOPLIST_FILE: BloomWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: BloomWidget/BloomWidget.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        # iOS 17 introduce containerBackground(_:for:) — exigido por el
+        # widget para no salir vacío en pantalla de inicio.
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        SKIP_INSTALL: YES
