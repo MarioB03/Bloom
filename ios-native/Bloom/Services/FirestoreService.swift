@@ -300,6 +300,35 @@ final class FirestoreService {
         try safetyPlanDocument(for: userID).setData(from: encrypted(updated))
     }
 
+    // MARK: - Eliminar todos los datos del usuario
+
+    /// Borra todas las subcolecciones del usuario y su documento de perfil.
+    /// Best-effort: cada paso se aísla para que un fallo parcial no bloquee la
+    /// baja de la cuenta (mismo criterio que `deleteUserAccount` en la app RN).
+    ///
+    /// No toca `sharingCodes` ni `viewerLinks`: el sharing aún no está portado.
+    func deleteAllUserData(userID: String) async throws {
+        let collections = [
+            checkinsCollection(for: userID),
+            registersCollection(for: userID),
+            gratitudeCollection(for: userID),
+            skillPracticeCollection(for: userID),
+            db.collection("users").document(userID).collection("safetyPlan"),
+        ]
+        for collection in collections {
+            try? await deleteAllDocuments(in: collection)
+        }
+        try? await db.collection("users").document(userID).delete()
+    }
+
+    /// Borra todos los documentos de una colección, uno a uno.
+    private func deleteAllDocuments(in collection: CollectionReference) async throws {
+        let snapshot = try await collection.getDocuments()
+        for document in snapshot.documents {
+            try await document.reference.delete()
+        }
+    }
+
     // MARK: - Cifrado de campos sensibles
 
     /// Copia del check-in con `notes` y los eventos cifrados, lista para escribir.

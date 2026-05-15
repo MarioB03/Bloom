@@ -40,6 +40,7 @@ enum Strings {
     }
 
     enum PrivacyPolicy {
+        static let title = "Política de privacidad"
         static let link = "Política de privacidad"
     }
 
@@ -522,6 +523,58 @@ enum Strings {
 
         static let slide3Title = "Observa tu crecimiento"
         static let slide3Subtitle = "Visualiza tu calendario emocional, descubre insights y aprende habilidades para tu bienestar."
+    }
+
+    enum Profile {
+        static let tabTitle = "Tú"
+
+        static let checkinsStat = "Check-ins"
+        static let activeDaysStat = "Días activos"
+        static let streakStat = "Racha"
+
+        static let insightsDesc = "Tu resumen emocional"
+        static let achievementsDesc = "Tu progreso y medallas"
+        static let safetyPlanDesc = "Tu red de apoyo personal"
+
+        static let accountSection = "Cuenta"
+        static let aboutSection = "Acerca de"
+        static let version = "Versión"
+        static let versionNumber = "1.0.0"
+        static let madeWith = "Hecho con"
+        static let madeWithValue = "🌿 y SwiftUI"
+
+        static let logout = "Cerrar sesión"
+        static let loggingOut = "Cerrando sesión..."
+        static let logoutConfirmMessage = "¿Seguro que quieres cerrar sesión?"
+
+        static let disclaimer = "Bloom es una herramienta de bienestar emocional y no pretende diagnosticar, tratar, curar ni prevenir ninguna enfermedad o trastorno mental. No sustituye el consejo, diagnóstico o tratamiento médico profesional. Si necesitas ayuda profesional, consulta a un especialista."
+    }
+
+    enum DeleteAccount {
+        static let title = "Eliminar cuenta"
+        static let warning = "Esta acción es permanente e irreversible. Se eliminarán todos tus datos."
+        static let whatDeleted = "Se eliminará:"
+        static let itemCheckins = "Todos tus check-ins y registros emocionales"
+        static let itemGratitude = "Tu diario de gratitud"
+        static let itemSkills = "Tu historial de habilidades"
+        static let itemSafetyPlan = "Tu plan de seguridad"
+        static let itemAccount = "Tu cuenta y perfil"
+
+        static let reAuthTitle = "Verificar identidad"
+        static let reAuthPassword = "Introduce tu contraseña para continuar"
+        static let reAuthApple = "Verificar con Apple"
+        static let reAuthGoogle = "Verificar con Google"
+        static let verify = "Verificar"
+        static let verified = "Identidad verificada"
+
+        static let confirmButton = "Eliminar cuenta permanentemente"
+        static let deleting = "Eliminando datos..."
+        static let confirmTitle = "¿Eliminar cuenta?"
+        static let confirmMessage = "¿Estás completamente seguro? No hay vuelta atrás."
+
+        static let errorReAuth = "No se pudo verificar tu identidad"
+        static let errorDelete = "Error al eliminar la cuenta. Inténtalo de nuevo."
+        static let passwordPlaceholder = "Tu contraseña"
     }
 
     enum Shop {

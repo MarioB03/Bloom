@@ -79,6 +79,75 @@ final class AuthService {
         try Auth.auth().signOut()
     }
 
+    // MARK: - Eliminar cuenta
+
+    /// Proveedor con el que se autentica la sesión actual. Determina qué flujo
+    /// de reautenticación mostrar antes de eliminar la cuenta.
+    var currentAuthProvider: AuthProvider {
+        guard let user = Auth.auth().currentUser else { return .email }
+        for data in user.providerData {
+            if data.providerID == "apple.com" { return .apple }
+            if data.providerID == "google.com" { return .google }
+        }
+        return .email
+    }
+
+    /// Reautentica con email y contraseña. Firebase exige una credencial
+    /// reciente antes de operaciones sensibles como borrar la cuenta.
+    func reauthenticate(password: String) async throws {
+        guard let user = Auth.auth().currentUser, let email = user.email else {
+            throw AuthServiceError(message: "No hay sesión activa")
+        }
+        let credential = EmailAuthProvider.credential(withEmail: email, password: password)
+        try await user.reauthenticate(with: credential)
+    }
+
+    /// Reautentica con una credencial fresca de Apple.
+    func reauthenticateWithApple(idToken: String, rawNonce: String) async throws {
+        guard let user = Auth.auth().currentUser else {
+            throw AuthServiceError(message: "No hay sesión activa")
+        }
+        let credential = OAuthProvider.appleCredential(
+            withIDToken: idToken,
+            rawNonce: rawNonce,
+            fullName: nil
+        )
+        try await user.reauthenticate(with: credential)
+    }
+
+    /// Reautentica con una credencial fresca de Google.
+    func reauthenticateWithGoogle(idToken: String, accessToken: String) async throws {
+        guard let user = Auth.auth().currentUser else {
+            throw AuthServiceError(message: "No hay sesión activa")
+        }
+        let credential = GoogleAuthProvider.credential(
+            withIDToken: idToken,
+            accessToken: accessToken
+        )
+        try await user.reauthenticate(with: credential)
+    }
+
+    /// Elimina la cuenta: primero los datos de Firestore y los locales
+    /// (best-effort), después el usuario de Firebase Auth —el paso crítico—.
+    /// El listener de sesión detecta la baja y `RootView` vuelve al login.
+    /// Requiere haber reautenticado recientemente.
+    func deleteAccount(firestore: FirestoreService) async throws {
+        guard let user = Auth.auth().currentUser else {
+            throw AuthServiceError(message: "No hay sesión activa")
+        }
+        try? await firestore.deleteAllUserData(userID: user.uid)
+        clearLocalData()
+        try await user.delete()
+    }
+
+    /// Borra las claves locales de la app (`bloom.*`) en `UserDefaults`.
+    private func clearLocalData() {
+        let defaults = UserDefaults.standard
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("bloom.") {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
     // MARK: - Social
 
     /// Inicia sesión con Apple. `fullName` solo llega en el primer inicio.

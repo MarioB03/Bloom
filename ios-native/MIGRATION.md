@@ -309,10 +309,29 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - [ ] Revocar acceso
 - RN: `app/(tabs)/compartido.tsx`, `app/compartido-view.tsx`, `src/contexts/SharingContext.tsx`
 
-### Perfil y cuenta — ⬜
-- [ ] Pantalla de perfil / ajustes (`app/perfil.tsx`, tab `tu`)
-- [ ] Eliminar cuenta (`app/eliminar-cuenta.tsx`)
-- [ ] Política de privacidad (`app/politica-privacidad.tsx`)
+### Perfil y cuenta — 🚧
+- [x] Pantalla de perfil / ajustes (pestaña `tu`) → `Features/Profile/ProfileView.swift`
+- [x] Eliminar cuenta (`app/eliminar-cuenta.tsx`) → `Features/Profile/DeleteAccountView.swift`
+- [x] Política de privacidad (`app/politica-privacidad.tsx`) → `Features/Profile/PrivacyPolicyView.swift`
+- [ ] Pantalla de compartir datos (`app/perfil.tsx` en RN — la URL es engañosa,
+  es la pantalla de sharing) → se porta junto a **Compartir cuenta** (bloque 8)
+- **Tabs**: pasa de 5 a 5 manteniendo el set canónico de RN. Se quita
+  `InsightsView` como pestaña independiente y entra como acceso desde "Tú".
+  Tabs finales: Hoy, Calendario, Registros, Habilidades, Tú
+- **AuthService**: añade `currentAuthProvider`, `reauthenticate(password:)`,
+  `reauthenticateWithApple`, `reauthenticateWithGoogle`, `deleteAccount`. La
+  baja limpia las claves locales `bloom.*` de `UserDefaults` antes de
+  `user.delete()`
+- **FirestoreService**: añade `deleteAllUserData(userID:)` — borra
+  subcolecciones (checkins, registers, gratitude, skillPractice, safetyPlan)
+  + documento de perfil. Best-effort. No toca `sharingCodes`/`viewerLinks`
+  (sharing aún no portado)
+- **No portado en esta tanda** (depende de features ⬜): recordatorio diario
+  (notificaciones), exportar PDF, selector de género (`GenderContext`),
+  entradas a Premium y Compartir cuenta
+- **Entradas duplicadas**: Logros (🏆 home) y Plan de seguridad (🛡️
+  Habilidades) siguen como cabeceras además de aparecer dentro de "Tú". Se
+  podrán retirar cuando se decida la canónica
 
 ### Onboarding — ✅
 - [x] Flujo de onboarding inicial (`app/onboarding.tsx`) → `Features/Onboarding/OnboardingView.swift`

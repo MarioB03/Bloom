@@ -11,14 +11,14 @@ struct MainTabView: View {
             CalendarView()
                 .tabItem { Label("Calendario", systemImage: "calendar") }
 
-            InsightsView()
-                .tabItem { Label("Insights", systemImage: "chart.line.uptrend.xyaxis") }
-
             NotesView()
                 .tabItem { Label("Registros", systemImage: "note.text") }
 
             SkillsView()
                 .tabItem { Label("Habilidades", systemImage: "sparkles") }
+
+            ProfileView()
+                .tabItem { Label(Strings.Profile.tabTitle, systemImage: "person.fill") }
         }
         .tint(Theme.Palette.primary500)
     }
