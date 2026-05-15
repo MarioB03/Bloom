@@ -23,7 +23,7 @@ Contexto de arquitectura y stack: ver `README.md`.
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
 | **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
 | **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
-| **Lenguaje con género** (cross-cutting) | ⬜ | `src/contexts/GenderContext.tsx`, usado en 8 pantallas; afecta a los textos. El registro ya guarda `genderForm` en el perfil; falta persistencia local |
+| **Lenguaje con género** (cross-cutting) | ✅ | `Services/GenderService.swift` + `Models/GenderedText.swift`. Persistencia local (`UserDefaults @ bloom.genderForm`) + sync con `users/{uid}.preferences.genderForm`. Selector en `ProfileView`. `gender.resolve(GenderedText)` reemplaza al `g()` de RN |
 | **Lógica de racha / streak** (cross-cutting) | 🚧 | `Utils/Streak.swift` portado y en uso en el home; falta integrarlo en jardín, insights y perfil cuando se porten |
 | Cifrado de campos sensibles (CryptoJS → CryptoKit) | ✅ | `Services/BloomCrypto.swift` — AES-256-CBC + `EVP_BytesToKey`/MD5, compatible byte a byte con `src/lib/crypto.ts`. Round-trip de notas/eventos con la app RN |
 | `Utils/BloomDate.swift` | ✅ | Portado de `src/utils/date.ts` (dateKey, time, displayDate, greeting) |
@@ -329,7 +329,7 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - **SharingService**: `@Observable`, expone `viewer` y `sharedAccount`. Se refresca al cambiar `auth.currentUserID` desde `MainTabView`
 - **Gating Premium**: generar y canjear código están bloqueados detrás de Premium con alerta (mismo criterio que RN). Una vez vinculado, la pestaña Compartido es accesible aunque se pierda Premium
 - **Registros emocionales filtrados**: `FirestoreService.emotionalRegisters(byDate:userID:sharedOnly:)` y `allEmotionalRegisters(userID:sharedOnly:)` filtran por `sharedVisible == true` para cumplir las reglas de Firestore (`registers/{id}` requiere ese filtro en lecturas de viewer)
-- **No portado**: el modo solo lectura de gratitud y los selectores de género en mensajes de error/confirmación (depende de `GenderContext` aún ⬜); se usa la versión neutra por defecto
+- **No portado**: el modo solo lectura de gratitud (cuando se porte la feature). Los mensajes con flexión por género (`revokeConfirmMessage`, `errorAlreadyLinked`) ya se resuelven con `GenderService.resolve(...)`
 
 ### Perfil y cuenta — 🚧
 - [x] Pantalla de perfil / ajustes (pestaña `tu`) → `Features/Profile/ProfileView.swift`
@@ -350,7 +350,7 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   todavía: cuando se borra una cuenta no se revoca el vínculo activo (queda
   como referencia muerta; el viewer ve "no autorizado" al intentar leer)
 - **No portado en esta tanda** (depende de features ⬜): recordatorio diario
-  (notificaciones), exportar PDF, selector de género (`GenderContext`)
+  (notificaciones), exportar PDF
 - **Entradas duplicadas**: Logros (🏆 home) y Plan de seguridad (🛡️
   Habilidades) siguen como cabeceras además de aparecer dentro de "Tú". Se
   podrán retirar cuando se decida la canónica

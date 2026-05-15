@@ -546,7 +546,15 @@ enum Strings {
 
         static let logout = "Cerrar sesión"
         static let loggingOut = "Cerrando sesión..."
-        static let logoutConfirmMessage = "¿Seguro que quieres cerrar sesión?"
+        static let logoutConfirmMessage = GenderedText(
+            f: "¿Estás segura de que quieres cerrar sesión?",
+            m: "¿Estás seguro de que quieres cerrar sesión?",
+            n: "¿Seguro/a de que quieres cerrar sesión?"
+        )
+
+        static let genderSection = "Forma de tratamiento"
+        static let genderSheetTitle = "Elige cómo te tratamos"
+        static let genderDesc = "Personaliza los mensajes con tu forma preferida"
 
         static let disclaimer = "Bloom es una herramienta de bienestar emocional y no pretende diagnosticar, tratar, curar ni prevenir ninguna enfermedad o trastorno mental. No sustituye el consejo, diagnóstico o tratamiento médico profesional. Si necesitas ayuda profesional, consulta a un especialista."
     }
@@ -571,7 +579,11 @@ enum Strings {
         static let confirmButton = "Eliminar cuenta permanentemente"
         static let deleting = "Eliminando datos..."
         static let confirmTitle = "¿Eliminar cuenta?"
-        static let confirmMessage = "¿Estás completamente seguro? No hay vuelta atrás."
+        static let confirmMessage = GenderedText(
+            f: "¿Estás completamente segura? No hay vuelta atrás.",
+            m: "¿Estás completamente seguro? No hay vuelta atrás.",
+            n: "¿Completamente seguro/a? No hay vuelta atrás."
+        )
 
         static let errorReAuth = "No se pudo verificar tu identidad"
         static let errorDelete = "Error al eliminar la cuenta. Inténtalo de nuevo."
@@ -669,7 +681,11 @@ enum Strings {
         static let noShared = "Nadie ha compartido contigo"
         static let revokeAccess = "Revocar acceso"
         static let revokeConfirmTitle = "Revocar acceso"
-        static let revokeConfirmMessage = "¿Seguro/a de que quieres quitar el acceso a esta persona?"
+        static let revokeConfirmMessage = GenderedText(
+            f: "¿Estás segura de que quieres quitar el acceso a esta persona?",
+            m: "¿Estás seguro de que quieres quitar el acceso a esta persona?",
+            n: "¿Seguro/a de que quieres quitar el acceso a esta persona?"
+        )
 
         // Pestaña Compartido
         static let tabTitle = "Compartido"
@@ -690,7 +706,11 @@ enum Strings {
         static let errorInvalidCode = "El código no es válido"
         static let errorExpiredCode = "El código ha expirado"
         static let errorSelfLink = "No puedes vincularte contigo mismo"
-        static let errorAlreadyLinked = "Ya tienes un vínculo con esta persona"
+        static let errorAlreadyLinked = GenderedText(
+            f: "Ya estás vinculada con esta persona",
+            m: "Ya estás vinculado con esta persona",
+            n: "Ya tienes un vínculo con esta persona"
+        )
         static let errorLinkRevoked = "El acceso fue revocado por el propietario"
         static let errorGeneric = "No se pudo completar la acción"
         static let successLinked = "Vinculación exitosa"

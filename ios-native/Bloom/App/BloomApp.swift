@@ -8,6 +8,7 @@ struct BloomApp: App {
     @State private var firestoreService: FirestoreService
     @State private var premiumService: PremiumService
     @State private var sharingService: SharingService
+    @State private var genderService: GenderService
 
     init() {
         FirebaseBootstrap.configure()
@@ -16,6 +17,7 @@ struct BloomApp: App {
         _firestoreService = State(initialValue: FirestoreService())
         _premiumService = State(initialValue: PremiumService())
         _sharingService = State(initialValue: SharingService())
+        _genderService = State(initialValue: GenderService())
     }
 
     var body: some Scene {
@@ -25,6 +27,7 @@ struct BloomApp: App {
                 .environment(firestoreService)
                 .environment(premiumService)
                 .environment(sharingService)
+                .environment(genderService)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }

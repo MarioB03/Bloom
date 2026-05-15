@@ -418,6 +418,28 @@ final class FirestoreService {
         var premium: PremiumStatus
     }
 
+    // MARK: - Preferencia de género
+
+    /// Lee `users/{uid}.preferences.genderForm`, o `nil` si no está fijada.
+    /// Se usa para hidratar `GenderService` tras iniciar sesión.
+    func genderPreference(userID: String) async throws -> GenderForm? {
+        let document = try await db.collection("users").document(userID).getDocument()
+        guard
+            let preferences = document.data()?["preferences"] as? [String: Any],
+            let raw = preferences["genderForm"] as? String
+        else { return nil }
+        return GenderForm(rawValue: raw)
+    }
+
+    /// Guarda la forma seleccionada en `users/{uid}.preferences.genderForm`.
+    /// Equivalente de `updateGenderPreference` en `src/lib/firestore.ts`.
+    func updateGenderPreference(userID: String, form: GenderForm) async throws {
+        try await db.collection("users").document(userID).updateData([
+            "preferences.genderForm": form.rawValue,
+            "updatedAt": Date(),
+        ])
+    }
+
     // MARK: - Compartir cuenta
 
     /// Alfabeto del código de invitación: sin caracteres confusos (0/O, 1/I/L).

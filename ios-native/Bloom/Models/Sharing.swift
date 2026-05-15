@@ -45,7 +45,10 @@ enum SharingError: LocalizedError {
         case .invalidCode: return Strings.Sharing.errorInvalidCode
         case .codeExpired: return Strings.Sharing.errorExpiredCode
         case .cannotLinkSelf: return Strings.Sharing.errorSelfLink
-        case .alreadyLinked: return Strings.Sharing.errorAlreadyLinked
+        // Cae a la forma neutra como fallback; las pantallas con acceso a
+        // `GenderService` resuelven `Strings.Sharing.errorAlreadyLinked`
+        // con la flexión real antes de mostrarlo.
+        case .alreadyLinked: return Strings.Sharing.errorAlreadyLinked.n
         case .linkRevoked: return Strings.Sharing.errorLinkRevoked
         }
     }

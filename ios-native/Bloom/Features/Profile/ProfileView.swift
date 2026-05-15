@@ -28,6 +28,7 @@ struct ProfileView: View {
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
     @Environment(PremiumService.self) private var premium
+    @Environment(GenderService.self) private var gender
 
     @State private var totalCheckins = 0
     @State private var uniqueDays = 0
@@ -62,7 +63,7 @@ struct ProfileView: View {
         }
         .task { await loadStats() }
         .confirmationDialog(
-            Strings.Profile.logoutConfirmMessage,
+            gender.resolve(Strings.Profile.logoutConfirmMessage),
             isPresented: $showLogoutConfirm,
             titleVisibility: .visible
         ) {
@@ -161,6 +162,34 @@ struct ProfileView: View {
                 .foregroundStyle(Theme.Palette.neutral700)
                 .padding(.bottom, Theme.Spacing.md)
 
+            Menu {
+                Button(Strings.Auth.genderFeminine) { setGender(.femenino) }
+                Button(Strings.Auth.genderMasculine) { setGender(.masculino) }
+                Button(Strings.Auth.genderNeutral) { setGender(.neutro) }
+            } label: {
+                HStack(spacing: Theme.Spacing.sm) {
+                    iconBadge(systemName: "person.text.rectangle", tint: Theme.Palette.primary400, background: Theme.Palette.primary400.opacity(0.12))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(Strings.Profile.genderSection)
+                            .font(.bodyText)
+                            .foregroundStyle(Theme.Palette.neutral700)
+                        Text(currentGenderLabel)
+                            .font(.smallText)
+                            .foregroundStyle(Theme.Palette.neutral400)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.neutral300)
+                }
+                .padding(.vertical, Theme.Spacing.sm)
+                .contentShape(Rectangle())
+            }
+            .menuStyle(.borderlessButton)
+            .menuOrder(.fixed)
+
+            Divider().overlay(Theme.Palette.neutral100)
+
             Button {
                 path.append(.deleteAccount)
             } label: {
@@ -179,6 +208,18 @@ struct ProfileView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private var currentGenderLabel: String {
+        switch gender.form {
+        case .femenino: Strings.Auth.genderFeminine
+        case .masculino: Strings.Auth.genderMasculine
+        case .neutro: Strings.Auth.genderNeutral
+        }
+    }
+
+    private func setGender(_ form: GenderForm) {
+        Task { await gender.update(form: form, userID: auth.currentUserID, firestore: firestore) }
     }
 
     private var aboutCard: some View {
@@ -375,4 +416,6 @@ private struct StatCard: View {
     ProfileView()
         .environment(AuthService())
         .environment(FirestoreService())
+        .environment(PremiumService())
+        .environment(GenderService())
 }

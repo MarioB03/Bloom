@@ -8,6 +8,7 @@ struct MainTabView: View {
     @Environment(FirestoreService.self) private var firestore
     @Environment(PremiumService.self) private var premium
     @Environment(SharingService.self) private var sharing
+    @Environment(GenderService.self) private var gender
 
     var body: some View {
         TabView {
@@ -37,6 +38,7 @@ struct MainTabView: View {
         .task(id: auth.currentUserID) {
             await premium.refresh(userID: auth.currentUserID, firestore: firestore)
             await sharing.refresh(userID: auth.currentUserID, firestore: firestore)
+            await gender.sync(userID: auth.currentUserID, firestore: firestore)
         }
     }
 }

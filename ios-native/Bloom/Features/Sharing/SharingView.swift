@@ -16,6 +16,7 @@ struct SharingView: View {
     @Environment(FirestoreService.self) private var firestore
     @Environment(SharingService.self) private var sharing
     @Environment(PremiumService.self) private var premium
+    @Environment(GenderService.self) private var gender
 
     @State private var activeCode: SharingCode?
     @State private var generatingCode = false
@@ -48,7 +49,7 @@ struct SharingView: View {
             }
             Button(Strings.Common.cancel, role: .cancel) {}
         } message: {
-            Text(Strings.Sharing.revokeConfirmMessage)
+            Text(gender.resolve(Strings.Sharing.revokeConfirmMessage))
         }
         .alert("", isPresented: Binding(
             get: { infoMessage != nil },
@@ -336,9 +337,11 @@ struct SharingView: View {
             await sharing.refresh(userID: userID, firestore: firestore)
             infoMessage = Strings.Sharing.successLinked
         } catch let sharingError as SharingError {
-            errorMessage = sharingError.errorDescription
             if case .alreadyLinked = sharingError {
+                errorMessage = gender.resolve(Strings.Sharing.errorAlreadyLinked)
                 await sharing.refresh(userID: userID, firestore: firestore)
+            } else {
+                errorMessage = sharingError.errorDescription
             }
         } catch {
             errorMessage = Strings.Sharing.errorGeneric
@@ -367,5 +370,6 @@ struct SharingView: View {
             .environment(FirestoreService())
             .environment(SharingService())
             .environment(PremiumService())
+            .environment(GenderService())
     }
 }

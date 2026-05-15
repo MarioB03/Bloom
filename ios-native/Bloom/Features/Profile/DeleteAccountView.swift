@@ -13,6 +13,7 @@ struct DeleteAccountView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
+    @Environment(GenderService.self) private var gender
 
     @State private var password = ""
     @State private var reAuthenticated = false
@@ -43,7 +44,7 @@ struct DeleteAccountView: View {
             }
             Button(Strings.Common.cancel, role: .cancel) {}
         } message: {
-            Text(Strings.DeleteAccount.confirmMessage)
+            Text(gender.resolve(Strings.DeleteAccount.confirmMessage))
         }
         .errorAlert($errorMessage)
     }
@@ -329,5 +330,6 @@ struct DeleteAccountView: View {
         DeleteAccountView()
             .environment(AuthService())
             .environment(FirestoreService())
+            .environment(GenderService())
     }
 }
