@@ -7,6 +7,7 @@ enum ProfileRoute: Hashable {
     case achievements
     case safetyPlan
     case premium
+    case sharing
     case deleteAccount
     case privacyPolicy
 }
@@ -53,6 +54,7 @@ struct ProfileView: View {
                 case .achievements: AchievementsView()
                 case .safetyPlan: SafetyPlanView()
                 case .premium: PremiumView()
+                case .sharing: SharingView()
                 case .deleteAccount: DeleteAccountView()
                 case .privacyPolicy: PrivacyPolicyView()
                 }
@@ -139,6 +141,15 @@ struct ProfileView: View {
                 description: Strings.Premium.entryDesc,
                 route: .premium,
                 badge: premium.isPremium ? Strings.Premium.activeBadge : nil
+            )
+            Divider().overlay(Theme.Palette.neutral100)
+            navRow(
+                icon: "person.2.fill",
+                tint: Theme.Palette.info,
+                label: Strings.Sharing.entryLabel,
+                description: Strings.Sharing.entryDesc,
+                route: .sharing,
+                badge: premium.isPremium ? nil : Strings.Premium.entryLabel
             )
         }
     }

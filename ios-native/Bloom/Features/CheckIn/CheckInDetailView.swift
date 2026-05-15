@@ -5,6 +5,10 @@ import SwiftUI
 ///
 /// La acción de "compostar" de la app RN depende de la economía del jardín,
 /// que aún no está portada; aquí solo se muestra la reflexión si ya existe.
+///
+/// Modo solo lectura: si `ownerID` no es `nil`, el detalle se carga del
+/// dueño compartido y se ocultan los botones de editar y eliminar
+/// (equivalente al parámetro `?owner=` de la app RN).
 struct CheckInDetailView: View {
 
     @Environment(AuthService.self) private var auth
@@ -12,9 +16,14 @@ struct CheckInDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     let id: String
+    /// Si no es `nil`, la vista se carga del dueño compartido y se oculta la
+    /// edición/borrado. `nil` significa "es mi propio check-in".
+    var ownerID: String? = nil
     /// Se invoca cuando el check-in se edita o se elimina, para recargar la
     /// pantalla origen.
     let onChanged: () -> Void
+
+    private var isReadOnly: Bool { ownerID != nil }
 
     @State private var checkin: CheckinEntry?
     @State private var isLoading = true
@@ -75,16 +84,18 @@ struct CheckInDetailView: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {
-                    showingEditForm = true
-                } label: {
-                    Image(systemName: "square.and.pencil")
-                }
-                Button(role: .destructive) {
-                    showingDeleteConfirm = true
-                } label: {
-                    Image(systemName: "trash")
+            if !isReadOnly {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showingEditForm = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    Button(role: .destructive) {
+                        showingDeleteConfirm = true
+                    } label: {
+                        Image(systemName: "trash")
+                    }
                 }
             }
         }
@@ -270,7 +281,7 @@ struct CheckInDetailView: View {
     // MARK: - Datos
 
     private func load() async {
-        guard let userID = auth.currentUserID else {
+        guard let userID = ownerID ?? auth.currentUserID else {
             isLoading = false
             return
         }

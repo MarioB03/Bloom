@@ -11,6 +11,10 @@ enum DayDetailRoute: Hashable {
 /// La versión RN mezcla además registros emocionales y gratitud del día;
 /// esas piezas llegarán al portar sus respectivas features. Aquí se muestran
 /// solo los check-ins.
+///
+/// Modo solo lectura: si `ownerID` no es `nil`, lee los check-ins del dueño
+/// compartido y oculta el CTA "Añadir registro" (equivalente al `?owner=`
+/// de la app RN).
 struct DayDetailView: View {
 
     @Environment(AuthService.self) private var auth
@@ -18,10 +22,15 @@ struct DayDetailView: View {
 
     /// Fecha del día en formato `"YYYY-MM-DD"`.
     let date: String
+    /// Si no es `nil`, la vista se carga del dueño compartido y queda en solo
+    /// lectura. `nil` significa "es mi propio día".
+    var ownerID: String? = nil
 
     @State private var checkins: [CheckinEntry] = []
     @State private var isLoading = true
     @State private var showingForm = false
+
+    private var isReadOnly: Bool { ownerID != nil }
 
     private var isToday: Bool {
         date == BloomDate.dateKey(Date())
@@ -48,7 +57,7 @@ struct DayDetailView: View {
         .navigationDestination(for: DayDetailRoute.self) { route in
             switch route {
             case .checkin(let id):
-                CheckInDetailView(id: id, onChanged: {
+                CheckInDetailView(id: id, ownerID: ownerID, onChanged: {
                     Task { await load() }
                 })
             }
@@ -77,7 +86,7 @@ struct DayDetailView: View {
                     .buttonStyle(.plain)
                 }
             }
-            if isToday {
+            if isToday && !isReadOnly {
                 BloomButton(title: "🌿 \(Strings.Calendar.addRecord)", size: .lg) {
                     showingForm = true
                 }
@@ -112,7 +121,7 @@ struct DayDetailView: View {
     // MARK: - Datos
 
     private func load() async {
-        guard let userID = auth.currentUserID else {
+        guard let userID = ownerID ?? auth.currentUserID else {
             isLoading = false
             return
         }

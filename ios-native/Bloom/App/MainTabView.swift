@@ -7,6 +7,7 @@ struct MainTabView: View {
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
     @Environment(PremiumService.self) private var premium
+    @Environment(SharingService.self) private var sharing
 
     var body: some View {
         TabView {
@@ -22,12 +23,20 @@ struct MainTabView: View {
             SkillsView()
                 .tabItem { Label("Habilidades", systemImage: "sparkles") }
 
+            // La pestaña Compartido solo aparece cuando alguien me ha
+            // compartido su jardín (mismo criterio que el `href: null` de RN).
+            if sharing.sharedAccount != nil {
+                SharedTabView()
+                    .tabItem { Label(Strings.Sharing.tabTitle, systemImage: "person.2.fill") }
+            }
+
             ProfileView()
                 .tabItem { Label(Strings.Profile.tabTitle, systemImage: "person.fill") }
         }
         .tint(Theme.Palette.primary500)
         .task(id: auth.currentUserID) {
             await premium.refresh(userID: auth.currentUserID, firestore: firestore)
+            await sharing.refresh(userID: auth.currentUserID, firestore: firestore)
         }
     }
 }

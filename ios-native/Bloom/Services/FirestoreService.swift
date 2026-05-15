@@ -139,13 +139,32 @@ final class FirestoreService {
     // MARK: - Registros emocionales (Observar y describir)
 
     /// Todos los registros emocionales del usuario, del más reciente al más antiguo.
-    func allEmotionalRegisters(userID: String) async throws -> [EmotionalRegisterEntry] {
-        let snapshot = try await registersCollection(for: userID)
-            .order(by: "createdAt", descending: true)
-            .getDocuments()
+    /// Si `sharedOnly` es `true`, filtra por `sharedVisible == true` — lo que
+    /// permite leer como viewer (las reglas exigen ese filtro en el cliente).
+    func allEmotionalRegisters(userID: String, sharedOnly: Bool = false) async throws -> [EmotionalRegisterEntry] {
+        var query: Query = registersCollection(for: userID)
+        if sharedOnly {
+            query = query.whereField("sharedVisible", isEqualTo: true)
+        }
+        let snapshot = try await query.order(by: "createdAt", descending: true).getDocuments()
         return try snapshot.documents
             .map { try $0.data(as: EmotionalRegisterEntry.self) }
             .map(decrypted)
+    }
+
+    /// Registros emocionales de un día concreto, del más reciente al más antiguo.
+    /// El filtro `sharedOnly` aplica las mismas reglas que `allEmotionalRegisters`.
+    func emotionalRegisters(byDate date: String, userID: String, sharedOnly: Bool = false) async throws -> [EmotionalRegisterEntry] {
+        var query: Query = registersCollection(for: userID)
+            .whereField("date", isEqualTo: date)
+        if sharedOnly {
+            query = query.whereField("sharedVisible", isEqualTo: true)
+        }
+        let snapshot = try await query.getDocuments()
+        return try snapshot.documents
+            .map { try $0.data(as: EmotionalRegisterEntry.self) }
+            .map(decrypted)
+            .sorted { $0.createdAt > $1.createdAt }
     }
 
     /// Un registro emocional por su id, o `nil` si no existe.
@@ -397,6 +416,131 @@ final class FirestoreService {
     /// Wrapper para descodificar solo el campo `premium` del documento.
     private struct PremiumProfile: Codable {
         var premium: PremiumStatus
+    }
+
+    // MARK: - Compartir cuenta
+
+    /// Alfabeto del código de invitación: sin caracteres confusos (0/O, 1/I/L).
+    /// Idéntico al de la app RN.
+    private static let sharingCodeChars = Array("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")
+
+    private static func generateSharingCode() -> String {
+        String((0..<6).map { _ in sharingCodeChars.randomElement()! })
+    }
+
+    private func viewersCollection(for ownerID: String) -> CollectionReference {
+        db.collection("users").document(ownerID).collection("viewers")
+    }
+
+    /// Código activo más reciente del dueño (no caducado), o `nil`. Diverge
+    /// de la app RN: ahí cada tap de "Generar código" creaba un documento
+    /// nuevo y dejaba huérfanos los anteriores; aquí se reutiliza mientras
+    /// siga vivo para no inundar la colección.
+    func activeSharingCode(forOwner ownerID: String) async throws -> SharingCode? {
+        let snapshot = try await db.collection("sharingCodes")
+            .whereField("ownerId", isEqualTo: ownerID)
+            .getDocuments()
+        let now = Date()
+        return try snapshot.documents
+            .map { try $0.data(as: SharingCode.self) }
+            .filter { $0.expiresAt > now }
+            .max { $0.createdAt < $1.createdAt }
+    }
+
+    /// Devuelve el código activo del dueño si lo hay; si no, genera uno nuevo
+    /// en `sharingCodes/{code}`. Caduca a las 24 horas.
+    func createSharingCode(userID: String, displayName: String) async throws -> String {
+        if let existing = try await activeSharingCode(forOwner: userID) {
+            return existing.code
+        }
+        let code = Self.generateSharingCode()
+        let now = Date()
+        let expiresAt = now.addingTimeInterval(24 * 60 * 60)
+        let payload = SharingCode(
+            code: code,
+            ownerId: userID,
+            ownerDisplayName: displayName,
+            createdAt: now,
+            expiresAt: expiresAt
+        )
+        try db.collection("sharingCodes").document(code).setData(from: payload)
+        return code
+    }
+
+    /// Lee `sharingCodes/{code}` (devuelve `nil` si no existe).
+    func sharingCode(_ rawCode: String) async throws -> SharingCode? {
+        let document = try await db.collection("sharingCodes").document(rawCode.uppercased()).getDocument()
+        guard document.exists else { return nil }
+        return try document.data(as: SharingCode.self)
+    }
+
+    /// Canjea un código: comprueba validez/expiración, evita auto-vínculo y
+    /// vínculos duplicados, crea `users/{ownerId}/viewers/{viewerId}` y el
+    /// lookup inverso `viewerLinks/{viewerId}` (idéntico criterio que la app RN).
+    @discardableResult
+    func redeemSharingCode(_ rawCode: String, viewerID: String, viewerDisplayName: String) async throws -> SharingLink {
+        let code = rawCode.uppercased()
+        guard let sharingCode = try await sharingCode(code) else {
+            throw SharingError.invalidCode
+        }
+        if sharingCode.expiresAt < Date() {
+            throw SharingError.codeExpired
+        }
+        if sharingCode.ownerId == viewerID {
+            throw SharingError.cannotLinkSelf
+        }
+
+        let viewerDocRef = viewersCollection(for: sharingCode.ownerId).document(viewerID)
+        let existing = try await viewerDocRef.getDocument()
+        if existing.exists {
+            let existingLink = try existing.data(as: SharingLink.self)
+            if existingLink.status == .active {
+                // Asegura el lookup inverso (migración para enlaces existentes
+                // creados antes de añadir `viewerLinks`).
+                try db.collection("viewerLinks").document(viewerID).setData(from: existingLink)
+                throw SharingError.alreadyLinked
+            }
+            throw SharingError.linkRevoked
+        }
+
+        let link = SharingLink(
+            ownerId: sharingCode.ownerId,
+            viewerId: viewerID,
+            ownerDisplayName: sharingCode.ownerDisplayName,
+            viewerDisplayName: viewerDisplayName,
+            createdAt: Date(),
+            status: .active
+        )
+        try viewerDocRef.setData(from: link)
+        try db.collection("viewerLinks").document(viewerID).setData(from: link)
+        return link
+    }
+
+    /// Vínculo activo del que soy dueño (alguien me ve), o `nil` si nadie.
+    func myViewer(ownerID: String) async throws -> SharingLink? {
+        let snapshot = try await viewersCollection(for: ownerID)
+            .whereField("status", isEqualTo: SharingLink.Status.active.rawValue)
+            .getDocuments()
+        guard let document = snapshot.documents.first else { return nil }
+        return try document.data(as: SharingLink.self)
+    }
+
+    /// Vínculo activo en el que soy el viewer (puedo ver a alguien), o `nil`.
+    /// Lee directo el documento de `viewerLinks/{viewerId}` para evitar una
+    /// consulta `collectionGroup`, igual que en la app RN.
+    func mySharedAccount(viewerID: String) async throws -> SharingLink? {
+        let document = try await db.collection("viewerLinks").document(viewerID).getDocument()
+        guard document.exists else { return nil }
+        let link = try document.data(as: SharingLink.self)
+        return link.status == .active ? link : nil
+    }
+
+    /// Marca el vínculo como revocado en ambos lados. El historial se conserva
+    /// para que pueda restaurarse con un código nuevo (mismo criterio que RN).
+    func revokeAccess(ownerID: String, viewerID: String) async throws {
+        let updates: [String: Any] = ["status": SharingLink.Status.revoked.rawValue]
+        try await viewersCollection(for: ownerID).document(viewerID).updateData(updates)
+        try await db.collection("viewerLinks").document(viewerID).updateData(updates)
     }
 
     // MARK: - Cifrado de campos sensibles

@@ -30,6 +30,13 @@ targets:
     platform: iOS
     sources:
       - path: Bloom
+      # Configuración local de StoreKit para el paywall en simulador. No se
+      # empaqueta con la app (solo lo usa Xcode al simular compras), por eso
+      # `buildPhase: none`. Sin esta entrada xcodegen no añadía el archivo
+      # al proyecto y el scheme apuntaba a una referencia rota → el paywall
+      # mostraba "Suscripciones no disponibles".
+      - path: Bloom.storekit
+        buildPhase: none
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akemi01.bloom
@@ -45,3 +52,12 @@ targets:
         product: FirebaseFirestore
       - package: GoogleSignIn
         product: GoogleSignIn
+    scheme:
+      testTargets: []
+      # Conecta el StoreKit Configuration local con el scheme para que el
+      # paywall vea los productos en simulador sin tener que pasar por App
+      # Store Connect. Path relativo al directorio del `.xcodeproj` (no al
+      # `.xcscheme`): el archivo vive al lado, en `ios-native/Bloom.storekit`.
+      # Antes vivía en `xcuserdata/`, que se borra con cada
+      # `xcodegen generate`.
+      storeKitConfiguration: Bloom.storekit

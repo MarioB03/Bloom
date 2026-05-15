@@ -320,18 +320,23 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   insights avanzados): cada feature lo añadirá cuando se porte. Hoy ninguna
   está gated en nativo
 
-### Compartir cuenta — ⬜
-- [ ] Generar/canjear código de 6 chars
-- [ ] Tab "Compartido" (Hoy/Calendario/Resumen) en modo solo-lectura
-- [ ] Revocar acceso
-- RN: `app/(tabs)/compartido.tsx`, `app/compartido-view.tsx`, `src/contexts/SharingContext.tsx`
+### Compartir cuenta — ✅
+- [x] Generar/canjear código de 6 chars → `SharingView.swift` + `FirestoreService.createSharingCode`/`redeemSharingCode`
+- [x] Tab "Compartido" (Hoy/Calendario/Resumen) en modo solo-lectura → `SharedTabView.swift`, visible solo cuando `SharingService.sharedAccount != nil`
+- [x] Revocar acceso → `FirestoreService.revokeAccess(ownerID:viewerID:)`, refleja en ambos lados (`viewers` + `viewerLinks`)
+- [x] Modo solo lectura en detalles: `CheckInDetailView`, `DayDetailView` y `EmotionalRegisterDetailView` aceptan `ownerID:` opcional (oculta editar/eliminar, lee del dueño)
+- RN: `app/(tabs)/compartido.tsx`, `app/compartido-view.tsx`, `src/contexts/SharingContext.tsx`, `app/perfil.tsx`
+- **SharingService**: `@Observable`, expone `viewer` y `sharedAccount`. Se refresca al cambiar `auth.currentUserID` desde `MainTabView`
+- **Gating Premium**: generar y canjear código están bloqueados detrás de Premium con alerta (mismo criterio que RN). Una vez vinculado, la pestaña Compartido es accesible aunque se pierda Premium
+- **Registros emocionales filtrados**: `FirestoreService.emotionalRegisters(byDate:userID:sharedOnly:)` y `allEmotionalRegisters(userID:sharedOnly:)` filtran por `sharedVisible == true` para cumplir las reglas de Firestore (`registers/{id}` requiere ese filtro en lecturas de viewer)
+- **No portado**: el modo solo lectura de gratitud y los selectores de género en mensajes de error/confirmación (depende de `GenderContext` aún ⬜); se usa la versión neutra por defecto
 
 ### Perfil y cuenta — 🚧
 - [x] Pantalla de perfil / ajustes (pestaña `tu`) → `Features/Profile/ProfileView.swift`
 - [x] Eliminar cuenta (`app/eliminar-cuenta.tsx`) → `Features/Profile/DeleteAccountView.swift`
 - [x] Política de privacidad (`app/politica-privacidad.tsx`) → `Features/Profile/PrivacyPolicyView.swift`
-- [ ] Pantalla de compartir datos (`app/perfil.tsx` en RN — la URL es engañosa,
-  es la pantalla de sharing) → se porta junto a **Compartir cuenta** (bloque 8)
+- [x] Pantalla de compartir datos (`app/perfil.tsx` en RN — la URL es engañosa,
+  es la pantalla de sharing) → `Features/Sharing/SharingView.swift`, accesible desde la pestaña "Tú"
 - **Tabs**: pasa de 5 a 5 manteniendo el set canónico de RN. Se quita
   `InsightsView` como pestaña independiente y entra como acceso desde "Tú".
   Tabs finales: Hoy, Calendario, Registros, Habilidades, Tú
@@ -342,10 +347,10 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - **FirestoreService**: añade `deleteAllUserData(userID:)` — borra
   subcolecciones (checkins, registers, gratitude, skillPractice, safetyPlan)
   + documento de perfil. Best-effort. No toca `sharingCodes`/`viewerLinks`
-  (sharing aún no portado)
+  todavía: cuando se borra una cuenta no se revoca el vínculo activo (queda
+  como referencia muerta; el viewer ve "no autorizado" al intentar leer)
 - **No portado en esta tanda** (depende de features ⬜): recordatorio diario
-  (notificaciones), exportar PDF, selector de género (`GenderContext`),
-  entradas a Premium y Compartir cuenta
+  (notificaciones), exportar PDF, selector de género (`GenderContext`)
 - **Entradas duplicadas**: Logros (🏆 home) y Plan de seguridad (🛡️
   Habilidades) siguen como cabeceras además de aparecer dentro de "Tú". Se
   podrán retirar cuando se decida la canónica

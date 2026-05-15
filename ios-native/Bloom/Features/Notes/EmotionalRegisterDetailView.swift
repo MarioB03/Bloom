@@ -3,6 +3,10 @@ import SwiftUI
 /// Detalle de un registro emocional: emoción, intensidad y los campos de la
 /// técnica "Observar y describir" que se hayan rellenado.
 /// Portado de `app/registro-emocional/[id].tsx`.
+///
+/// Modo solo lectura: si `ownerID` no es `nil`, el detalle se carga del
+/// dueño compartido y se ocultan los botones de editar y eliminar
+/// (equivalente al parámetro `?owner=` de la app RN).
 struct EmotionalRegisterDetailView: View {
 
     @Environment(AuthService.self) private var auth
@@ -10,9 +14,14 @@ struct EmotionalRegisterDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     let id: String
+    /// Si no es `nil`, la vista se carga del dueño compartido y se oculta la
+    /// edición/borrado.
+    var ownerID: String? = nil
     /// Se invoca cuando el registro se edita o se elimina, para recargar la
     /// pantalla origen.
     let onChanged: () -> Void
+
+    private var isReadOnly: Bool { ownerID != nil }
 
     @State private var register: EmotionalRegisterEntry?
     @State private var isLoading = true
@@ -65,16 +74,18 @@ struct EmotionalRegisterDetailView: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {
-                    showingEditForm = true
-                } label: {
-                    Image(systemName: "square.and.pencil")
-                }
-                Button(role: .destructive) {
-                    showingDeleteConfirm = true
-                } label: {
-                    Image(systemName: "trash")
+            if !isReadOnly {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showingEditForm = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    Button(role: .destructive) {
+                        showingDeleteConfirm = true
+                    } label: {
+                        Image(systemName: "trash")
+                    }
                 }
             }
         }
@@ -179,7 +190,7 @@ struct EmotionalRegisterDetailView: View {
     // MARK: - Datos
 
     private func load() async {
-        guard let userID = auth.currentUserID else {
+        guard let userID = ownerID ?? auth.currentUserID else {
             isLoading = false
             return
         }

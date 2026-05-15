@@ -255,6 +255,7 @@ enum Strings {
         static let listTitle = "Registros emocionales"
         static let listSubtitle = "Observa y describe lo que sientes"
         static let recentTitle = "Registros recientes"
+        static let sectionEmotional = "Registros emocionales"
         static let newRegister = "Nuevo registro"
         static let newRegisterSubtitle = "Describe una emoción en detalle"
         static let empty = "Aún no has descrito ninguna emoción.\nObservar y describir lo que sientes ayuda a entenderlo."
@@ -639,6 +640,64 @@ enum Strings {
         static let entryLabel = "Premium"
         static let entryDesc = "Desbloquea funciones avanzadas"
         static let activeBadge = "Premium"
+    }
+
+    enum Sharing {
+        static let title = "Compartir"
+        static let subtitle = "Comparte tu jardín emocional"
+        static let entryLabel = "Compartir"
+        static let entryDesc = "Invita a alguien a ver tu jardín"
+
+        // Generar código
+        static let generateSection = "🔗 Invitar a alguien"
+        static let generateCode = "Generar código"
+        static let codeExpiry = "Expira en 24 horas"
+        static let codeExpired = "Código caducado"
+        static let codeCopied = "Código copiado"
+
+        // Canjear código
+        static let enterSection = "🔑 Introducir código"
+        static let enterCodePlaceholder = "AB12CD"
+        static let enterCodeHint = "Pide el código a la persona que quiere compartir contigo"
+        static let link = "Vincular"
+        static let linking = "Vinculando..."
+
+        // Mi viewer
+        static let viewerSection = "👁️ Quién ve mi jardín"
+        static let noViewer = "No has compartido con nadie"
+        static let sharedWithSection = "🌿 Jardín compartido conmigo"
+        static let noShared = "Nadie ha compartido contigo"
+        static let revokeAccess = "Revocar acceso"
+        static let revokeConfirmTitle = "Revocar acceso"
+        static let revokeConfirmMessage = "¿Seguro/a de que quieres quitar el acceso a esta persona?"
+
+        // Pestaña Compartido
+        static let tabTitle = "Compartido"
+        static let readOnly = "Solo lectura"
+        static let viewingGarden = "Jardín de"
+        static let todaySection = "Hoy"
+        static let calendarSection = "Calendario"
+        static let summarySection = "Resumen"
+        static let emptyToday = "Sin registros hoy"
+        static let totalCheckins = "Registros totales"
+        static let uniqueDays = "Días activos"
+        static let topEmotion = "Emoción principal"
+        static let frequentEmotions = "Emociones frecuentes"
+        static let noLink = "No tienes ningún jardín vinculado"
+        static let noLinkHint = "Ve a tu perfil para vincular un código de invitación"
+
+        // Errores
+        static let errorInvalidCode = "El código no es válido"
+        static let errorExpiredCode = "El código ha expirado"
+        static let errorSelfLink = "No puedes vincularte contigo mismo"
+        static let errorAlreadyLinked = "Ya tienes un vínculo con esta persona"
+        static let errorLinkRevoked = "El acceso fue revocado por el propietario"
+        static let errorGeneric = "No se pudo completar la acción"
+        static let successLinked = "Vinculación exitosa"
+
+        // Gating Premium
+        static let premiumAlertTitle = "Premium"
+        static let premiumAlertMessage = "Compartir tu jardín es una función Premium. Canjea un código de regalo para activarla."
     }
 
     enum Shop {
