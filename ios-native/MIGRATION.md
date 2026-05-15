@@ -22,7 +22,7 @@ Contexto de arquitectura y stack: ver `README.md`.
 | `FirestoreService` | 🚧 | CRUD cifrado de check-ins, registros emocionales (`registers`) y diario de gratitud (`gratitude`); resto de colecciones pendiente |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
 | **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
-| **Splash animado** | ⬜ | `src/components/ui/AnimatedSplash.tsx` (usado en `app/_layout.tsx`) |
+| **Splash animado** | ✅ | `Features/Splash/AnimatedSplashView.swift` — flor que crece (tallo, hoja, 5 pétalos, centro) y lockup "Bloom · Tu jardín de bienestar". Overlay sobre `RootView` con `minDisplay` de 1.6 s antes de salir. Reemplaza al antiguo `LoadingScreen` |
 | **Lenguaje con género** (cross-cutting) | ✅ | `Services/GenderService.swift` + `Models/GenderedText.swift`. Persistencia local (`UserDefaults @ bloom.genderForm`) + sync con `users/{uid}.preferences.genderForm`. Selector en `ProfileView`. `gender.resolve(GenderedText)` reemplaza al `g()` de RN |
 | **Lógica de racha / streak** (cross-cutting) | 🚧 | `Utils/Streak.swift` portado y en uso en el home; falta integrarlo en jardín, insights y perfil cuando se porten |
 | Cifrado de campos sensibles (CryptoJS → CryptoKit) | ✅ | `Services/BloomCrypto.swift` — AES-256-CBC + `EVP_BytesToKey`/MD5, compatible byte a byte con `src/lib/crypto.ts`. Round-trip de notas/eventos con la app RN |
@@ -318,7 +318,12 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - **Cableado**: `PremiumService` se crea en `BloomApp`, se inyecta vía
   `.environment`. `MainTabView` refresca el estado en `.task(id: userID)`.
   Entrada desde la pestaña Tú con badge "Premium" si activo
-- [ ] Sección admin (generar código, toggle premium) — pendiente
+- [x] Toggle Premium para desarrollo: sección "Desarrollo" en la pestaña Tú,
+  visible solo en builds `#if DEBUG`. Llama a
+  `FirestoreService.setAdminPremium(userID:active:)` que escribe el mismo
+  formato de gift code "ADMIN" + 365 días que `setAdminPremium` de RN, y
+  refresca `PremiumService` al instante
+- [ ] Sección admin completa (generar códigos manualmente, ver lista) — pendiente
 - [x] Gating real de features:
   - Compartir cuenta (Sharing): generar/canjear código bloqueado tras alerta
   - Insights avanzados: candado tappable que abre el paywall como hoja modal

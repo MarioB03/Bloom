@@ -418,6 +418,34 @@ final class FirestoreService {
         var premium: PremiumStatus
     }
 
+    #if DEBUG
+    /// Activa o desactiva manualmente el Premium del usuario para pruebas
+    /// locales (sin pasar por App Store ni por un código de regalo real).
+    /// Usa el mismo formato que `setAdminPremium` de `firestore.ts:638-655`:
+    /// gift code `ADMIN` con expiración de 365 días.
+    ///
+    /// Solo se compila en builds de debug — la sección admin de la pestaña
+    /// "Tú" solo aparece en esas mismas builds.
+    func setAdminPremium(userID: String, active: Bool) async throws {
+        let userRef = db.collection("users").document(userID)
+        if active {
+            try await userRef.updateData([
+                "premium.isActive": true,
+                "premium.source": PremiumSource.giftCode.rawValue,
+                "premium.activatedAt": Date(),
+                "premium.expiresAt": Date().addingTimeInterval(365 * 86_400),
+                "premium.giftCode": "ADMIN",
+                "updatedAt": Date(),
+            ])
+        } else {
+            try await userRef.updateData([
+                "premium.isActive": false,
+                "updatedAt": Date(),
+            ])
+        }
+    }
+    #endif
+
     // MARK: - Preferencia de género
 
     /// Lee `users/{uid}.preferences.genderForm`, o `nil` si no está fijada.

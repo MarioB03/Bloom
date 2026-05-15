@@ -55,6 +55,9 @@ struct ProfileView: View {
                 settingsCard
                 accountCard
                 aboutCard
+                #if DEBUG
+                devCard
+                #endif
                 logoutButton
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -441,6 +444,53 @@ struct ProfileView: View {
                 .padding(.top, Theme.Spacing.sm)
         }
     }
+
+    #if DEBUG
+    /// Sección de desarrollo — toggle local del Premium para probar el gating
+    /// sin pasar por App Store ni Firestore Console. Escribe el mismo formato
+    /// que `setAdminPremium` de la app RN (gift code "ADMIN", 365 días). Solo
+    /// se compila en builds de debug.
+    private var devCard: some View {
+        let binding = Binding<Bool>(
+            get: { premium.isPremium },
+            set: { newValue in
+                guard let userID = auth.currentUserID else { return }
+                Task {
+                    try? await firestore.setAdminPremium(userID: userID, active: newValue)
+                    await premium.refresh(userID: userID, firestore: firestore)
+                }
+            }
+        )
+
+        return BloomCard {
+            Text("Desarrollo")
+                .font(.bodyBold)
+                .foregroundStyle(Theme.Palette.neutral700)
+                .padding(.bottom, Theme.Spacing.md)
+
+            HStack(spacing: Theme.Spacing.sm) {
+                iconBadge(
+                    systemName: "hammer.fill",
+                    tint: Theme.Palette.accent500,
+                    background: Theme.Palette.accent500.opacity(0.12)
+                )
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Premium (dev)")
+                        .font(.bodyText)
+                        .foregroundStyle(Theme.Palette.neutral700)
+                    Text(premium.isPremium ? "Activo · gift code ADMIN" : "Inactivo")
+                        .font(.smallText)
+                        .foregroundStyle(Theme.Palette.neutral400)
+                }
+                Spacer()
+                Toggle("", isOn: binding)
+                    .labelsHidden()
+                    .tint(Theme.Palette.accent500)
+            }
+            .padding(.vertical, Theme.Spacing.sm)
+        }
+    }
+    #endif
 
     private var logoutButton: some View {
         BloomButton(
