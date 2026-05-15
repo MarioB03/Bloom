@@ -123,10 +123,15 @@ final class GardenStore {
     }
 
     /// Recoloca las plantas a partir de los últimos check-ins cargados y del
-    /// `gridSize` actual, conservando el riego de las que no cambian de celda.
+    /// `gridSize` actual, conservando el riego del día tanto si está en memoria
+    /// (sesión actual) como si viene de `UserDefaults` (la app se cerró y se ha
+    /// vuelto a abrir el mismo día).
     private func replacePlants() {
         let placed = Self.autoPlacePlants(checkins: lastCheckins, streak: streak, gridSize: gridSize)
-        let wateredKeys = Set(layout.plants.filter(\.wateredToday).map { GridPosition(gx: $0.gx, gy: $0.gy) })
+        let today = BloomDate.dateKey(Date())
+        let inMemory = layout.plants.filter(\.wateredToday).map { GridPosition(gx: $0.gx, gy: $0.gy) }
+        let persisted = GardenPersistence.loadWateredCells(today: today)
+        let wateredKeys = Set(inMemory).union(persisted)
         layout.plants = placed.map { plant in
             guard wateredKeys.contains(GridPosition(gx: plant.gx, gy: plant.gy)) else { return plant }
             var watered = plant
@@ -197,6 +202,7 @@ final class GardenStore {
 
         layout.plants[index].wateredToday = true
         layout.plants[index].growthStage = min(5, layout.plants[index].growthStage + 1)
+        persistWatering()
 
         let effect = WaterEffect(gx: gx, gy: gy, startTime: Date())
         waterEffects.append(effect)
@@ -338,6 +344,16 @@ final class GardenStore {
 
     private func persistLayout() {
         GardenPersistence.saveLayout(decorations: layout.decorations, pathTiles: layout.pathTiles)
+    }
+
+    /// Guarda las celdas regadas del día en `UserDefaults` para que sobrevivan
+    /// a cerrar la app. La fecha se recalcula a "hoy" — al abrir mañana, el
+    /// loader las descarta automáticamente y el jardín amanece seco.
+    private func persistWatering() {
+        let cells = layout.plants
+            .filter(\.wateredToday)
+            .map { GridPosition(gx: $0.gx, gy: $0.gy) }
+        GardenPersistence.saveWateredCells(cells, date: BloomDate.dateKey(Date()))
     }
 
     // MARK: - Colocación automática de plantas

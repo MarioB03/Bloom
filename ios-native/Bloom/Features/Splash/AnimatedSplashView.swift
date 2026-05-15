@@ -40,7 +40,6 @@ struct AnimatedSplashView: View {
     private static let petalH: CGFloat = 48
     private static let petalSpread: CGFloat = 24
     private static let centerR: CGFloat = 12
-    private static let stemH: CGFloat = 80
     private static let stemW: CGFloat = 3
     private static let leafW: CGFloat = 22
     private static let leafH: CGFloat = 32
@@ -50,8 +49,13 @@ struct AnimatedSplashView: View {
     private static let canvasH: CGFloat = 220
 
     /// Posición vertical del centro de la flor (donde se encuentran los
-    /// pétalos y el círculo dorado).
-    private static let flowerCenterY: CGFloat = 95
+    /// pétalos y el círculo dorado). El tallo se calcula a partir de aquí
+    /// para que su punta toque exactamente este punto, sin huecos.
+    private static let flowerCenterY: CGFloat = 110
+
+    /// Altura del tallo: desde el borde inferior del lienzo hasta el centro
+    /// de la flor.
+    private static let stemH: CGFloat = canvasH - flowerCenterY
 
     /// Tiempo mínimo que se muestra el splash antes de poder salir, incluso si
     /// la app está lista antes. Evita un parpadeo cuando la sesión se resuelve
@@ -103,10 +107,11 @@ struct AnimatedSplashView: View {
         .frame(width: Self.canvasW, height: Self.canvasH)
     }
 
-    /// Tallo: cápsula marrón que crece desde el borde inferior con `scaleY 0→1`.
+    /// Tallo: cápsula sage que crece desde el borde inferior con `scaleY 0→1`.
+    /// El tono coincide con el `#8BA888` del mark de marca v3.
     private var stem: some View {
         Capsule()
-            .fill(Color(hex: "8B7A6B"))
+            .fill(Theme.Palette.secondary400)
             .frame(width: Self.stemW, height: Self.stemH)
             .scaleEffect(x: 1, y: stemScale, anchor: .bottom)
             .position(
@@ -120,7 +125,7 @@ struct AnimatedSplashView: View {
     private var leaf: some View {
         let rotation = -10 + 35 * Double(leafProgress)
         return SplashLeafShape()
-            .fill(Theme.Palette.secondary300)
+            .fill(Theme.Palette.secondary400)
             .frame(width: Self.leafW, height: Self.leafH)
             .rotationEffect(.degrees(rotation), anchor: .bottomLeading)
             .scaleEffect(leafProgress, anchor: .bottomLeading)
@@ -149,19 +154,24 @@ struct AnimatedSplashView: View {
     private func petal(angleDeg: Double, progress: CGFloat) -> some View {
         // Pétalo dibujado con la base abajo (anchor) y la punta arriba. El
         // anchor `.bottom` hace que la rotación pivote sobre el centro de la
-        // flor, no sobre el centro geométrico del rect, así no hay huecos.
+        // flor, no sobre el centro geométrico del rect, así no hay huecos. El
+        // tono terracota (`#C4725A`) coincide con los pétalos del símbolo v3.
         SplashPetalShape()
-            .fill(Color(hex: "F0B8B8"))
+            .fill(Theme.Palette.primary400)
             .frame(width: Self.petalW, height: Self.petalH)
             // Pivota desde la base + rota hacia afuera. `angleDeg + 90` lleva
             // un pétalo "punta arriba" hacia el ángulo deseado.
             .scaleEffect(progress, anchor: .bottom)
             .opacity(progress)
             .rotationEffect(.degrees(angleDeg + 90), anchor: .bottom)
-            // Posiciona la BASE del pétalo en el centro de la flor.
+            // Posiciona la BASE del pétalo en el centro de la flor. El frame
+            // mide `petalW × petalH` con el pétalo dibujado punta-arriba (la
+            // base está en `local y = petalH`), y `.position` centra ese frame
+            // en el punto dado — para que la base caiga en `flowerCenterY`,
+            // el centro del frame queda `petalH/2` POR ENCIMA.
             .position(
                 x: Self.canvasW / 2,
-                y: Self.flowerCenterY + Self.petalH / 2
+                y: Self.flowerCenterY - Self.petalH / 2
             )
     }
 

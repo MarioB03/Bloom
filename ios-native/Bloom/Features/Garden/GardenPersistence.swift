@@ -17,12 +17,20 @@ enum GardenPersistence {
         static let achievements = "bloom.garden.achievements"
         static let cosmetics = "bloom.garden.cosmetics"
         static let celebratedMilestones = "bloom.garden.celebratedMilestones"
+        static let watering = "bloom.garden.watering"
     }
 
     /// Lo que se guarda del layout: solo decoraciones y baldosas de camino.
     private struct PersistedLayout: Codable {
         var decorations: [DecorationPlacement]
         var pathTiles: [GridPosition]
+    }
+
+    /// Riego del día en curso. Si la fecha no coincide con hoy al cargar, se
+    /// descarta (las plantas amanecen secas).
+    private struct PersistedWatering: Codable {
+        var date: String
+        var cells: [GridPosition]
     }
 
     // MARK: - Layout (decoraciones + camino)
@@ -88,6 +96,27 @@ enum GardenPersistence {
 
     static func saveActiveCosmetics(_ ids: [String]) {
         UserDefaults.standard.set(ids, forKey: Key.cosmetics)
+    }
+
+    // MARK: - Riego diario
+
+    /// Celdas regadas que corresponden a `today`, o un array vacío si el
+    /// registro guardado es de otro día (o no existe).
+    static func loadWateredCells(today: String) -> [GridPosition] {
+        guard
+            let data = UserDefaults.standard.data(forKey: Key.watering),
+            let stored = try? JSONDecoder().decode(PersistedWatering.self, from: data),
+            stored.date == today
+        else {
+            return []
+        }
+        return stored.cells
+    }
+
+    static func saveWateredCells(_ cells: [GridPosition], date: String) {
+        let payload = PersistedWatering(date: date, cells: cells)
+        guard let data = try? JSONEncoder().encode(payload) else { return }
+        UserDefaults.standard.set(data, forKey: Key.watering)
     }
 
     // MARK: - Hitos celebrados
