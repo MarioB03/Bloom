@@ -29,6 +29,7 @@ struct ProfileView: View {
     @Environment(FirestoreService.self) private var firestore
     @Environment(PremiumService.self) private var premium
     @Environment(GenderService.self) private var gender
+    @Environment(NotificationsService.self) private var notifications
 
     @State private var totalCheckins = 0
     @State private var uniqueDays = 0
@@ -36,6 +37,13 @@ struct ProfileView: View {
     @State private var isLoading = true
     @State private var loggingOut = false
     @State private var showLogoutConfirm = false
+    @State private var showPermissionAlert = false
+    @State private var editingReminderTime = false
+    @State private var showExportPremiumAlert = false
+    @State private var showPaywall = false
+    @State private var exporting = false
+    @State private var exportError: String?
+    @State private var exportShareItem: ExportShareItem?
     @State private var path: [ProfileRoute] = []
 
     var body: some View {
@@ -44,6 +52,7 @@ struct ProfileView: View {
                 profileHeader
                 statsRow
                 navCard
+                settingsCard
                 accountCard
                 aboutCard
                 logoutButton
@@ -153,6 +162,178 @@ struct ProfileView: View {
                 badge: premium.isPremium ? nil : Strings.Premium.entryLabel
             )
         }
+    }
+
+    private var settingsCard: some View {
+        BloomCard {
+            Text(Strings.Profile.settingsSection)
+                .font(.bodyBold)
+                .foregroundStyle(Theme.Palette.neutral700)
+                .padding(.bottom, Theme.Spacing.md)
+
+            reminderRow
+            Divider().overlay(Theme.Palette.neutral100)
+            exportRow
+        }
+        .sheet(isPresented: $editingReminderTime) {
+            ReminderTimeSheet(
+                hour: notifications.settings.hour,
+                minute: notifications.settings.minute
+            ) { hour, minute in
+                Task {
+                    var updated = notifications.settings
+                    updated.hour = hour
+                    updated.minute = minute
+                    await notifications.update(updated)
+                }
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        .alert(Strings.Profile.reminderPermissionTitle, isPresented: $showPermissionAlert) {
+            Button(Strings.Common.close, role: .cancel) {}
+        } message: {
+            Text(Strings.Profile.reminderPermissionMessage)
+        }
+        .alert(Strings.Profile.exportPremiumTitle, isPresented: $showExportPremiumAlert) {
+            Button(Strings.Profile.exportPremiumGoToPremium) { showPaywall = true }
+            Button(Strings.Common.close, role: .cancel) {}
+        } message: {
+            Text(Strings.Profile.exportPremiumMessage)
+        }
+        .errorAlert($exportError)
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack { PremiumView() }
+        }
+        .sheet(item: $exportShareItem) { item in
+            ExportShareSheet(url: item.url)
+        }
+    }
+
+    /// Fila "Exportar datos" del bloque de Ajustes. Si el usuario no es
+    /// Premium, abre la alerta con CTA al paywall; si lo es, lanza la
+    /// generación del PDF y abre la hoja de compartir del sistema.
+    private var exportRow: some View {
+        Button {
+            if !premium.isPremium {
+                showExportPremiumAlert = true
+            } else {
+                Task { await exportPDF() }
+            }
+        } label: {
+            HStack(spacing: Theme.Spacing.sm) {
+                iconBadge(
+                    systemName: "square.and.arrow.up.fill",
+                    tint: Theme.Palette.secondary500,
+                    background: Theme.Palette.secondary500.opacity(0.12)
+                )
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(Strings.Profile.exportTitle)
+                        .font(.bodyText)
+                        .foregroundStyle(Theme.Palette.neutral700)
+                    Text(exporting ? Strings.Profile.exporting : Strings.Profile.exportDesc)
+                        .font(.smallText)
+                        .foregroundStyle(Theme.Palette.neutral400)
+                }
+                Spacer()
+                if exporting {
+                    ProgressView().tint(Theme.Palette.neutral300)
+                } else if !premium.isPremium {
+                    Text(Strings.Premium.entryLabel)
+                        .font(.tag)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .padding(.vertical, 2)
+                        .background(Theme.Palette.accent500)
+                        .clipShape(Capsule())
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.neutral300)
+                }
+            }
+            .padding(.vertical, Theme.Spacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(exporting)
+    }
+
+    /// Carga todos los check-ins y genera el PDF en segundo plano. Si hay
+    /// resultado, lo presenta a través del share sheet del sistema.
+    private func exportPDF() async {
+        guard let userID = auth.currentUserID else { return }
+        exporting = true
+        defer { exporting = false }
+        do {
+            let checkins = try await firestore.allCheckins(userID: userID)
+            guard !checkins.isEmpty else {
+                exportError = Strings.Profile.exportEmpty
+                return
+            }
+            let url = try ExportService.exportCheckinsPdf(checkins, userName: displayName)
+            exportShareItem = ExportShareItem(url: url)
+        } catch {
+            exportError = Strings.Profile.exportError
+        }
+    }
+
+    /// Fila del recordatorio diario: icono, título, subtítulo con la hora si
+    /// está activo, y switch. Al activarse pide permiso; si se deniega el
+    /// switch se revierte y aparece una alerta con instrucciones.
+    private var reminderRow: some View {
+        let binding = Binding<Bool>(
+            get: { notifications.settings.enabled },
+            set: { newValue in
+                Task {
+                    var updated = notifications.settings
+                    updated.enabled = newValue
+                    let granted = await notifications.update(updated)
+                    if newValue && !granted {
+                        showPermissionAlert = true
+                    }
+                }
+            }
+        )
+
+        return Button {
+            // Tocar la fila edita la hora (solo si el recordatorio está activo).
+            if notifications.settings.enabled {
+                editingReminderTime = true
+            }
+        } label: {
+            HStack(spacing: Theme.Spacing.sm) {
+                iconBadge(
+                    systemName: "bell.fill",
+                    tint: Theme.Palette.primary400,
+                    background: Theme.Palette.primary400.opacity(0.12)
+                )
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(Strings.Profile.reminderTitle)
+                        .font(.bodyText)
+                        .foregroundStyle(Theme.Palette.neutral700)
+                    Text(reminderSubtitle)
+                        .font(.smallText)
+                        .foregroundStyle(Theme.Palette.neutral400)
+                }
+                Spacer()
+                Toggle("", isOn: binding)
+                    .labelsHidden()
+                    .tint(Theme.Palette.primary400)
+            }
+            .padding(.vertical, Theme.Spacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var reminderSubtitle: String {
+        notifications.settings.enabled
+            ? Strings.Profile.reminderTime(
+                hour: notifications.settings.hour,
+                minute: notifications.settings.minute
+            )
+            : Strings.Profile.reminderDisabled
     }
 
     private var accountCard: some View {
@@ -412,10 +593,82 @@ private struct StatCard: View {
     }
 }
 
+/// Hoja para elegir la hora del recordatorio diario. Sustituye al
+/// `setHours/setMinutes` manual del RN por el `DatePicker` (rueda) del sistema.
+private struct ReminderTimeSheet: View {
+    let hour: Int
+    let minute: Int
+    let onSave: (Int, Int) -> Void
+
+    @State private var date: Date
+    @Environment(\.dismiss) private var dismiss
+
+    init(hour: Int, minute: Int, onSave: @escaping (Int, Int) -> Void) {
+        self.hour = hour
+        self.minute = minute
+        self.onSave = onSave
+        var components = DateComponents()
+        components.hour = hour
+        components.minute = minute
+        let calendar = Calendar.current
+        let date = calendar.date(from: components) ?? Date()
+        _date = State(initialValue: date)
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                DatePicker(
+                    Strings.Profile.reminderTitle,
+                    selection: $date,
+                    displayedComponents: .hourAndMinute
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                .padding()
+                Spacer()
+            }
+            .navigationTitle(Strings.Profile.reminderTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(Strings.Common.cancel) { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(Strings.Common.save) {
+                        let comps = Calendar.current.dateComponents([.hour, .minute], from: date)
+                        onSave(comps.hour ?? 20, comps.minute ?? 0)
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+}
+
+/// URL del PDF generado, envuelta para usarse como `item` de `.sheet`.
+private struct ExportShareItem: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
+/// Envoltorio de `UIActivityViewController` para compartir el PDF generado.
+private struct ExportShareSheet: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
+}
+
 #Preview {
     ProfileView()
         .environment(AuthService())
         .environment(FirestoreService())
         .environment(PremiumService())
         .environment(GenderService())
+        .environment(NotificationsService())
 }

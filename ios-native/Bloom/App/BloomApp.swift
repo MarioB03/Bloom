@@ -9,6 +9,7 @@ struct BloomApp: App {
     @State private var premiumService: PremiumService
     @State private var sharingService: SharingService
     @State private var genderService: GenderService
+    @State private var notificationsService: NotificationsService
 
     init() {
         FirebaseBootstrap.configure()
@@ -18,6 +19,7 @@ struct BloomApp: App {
         _premiumService = State(initialValue: PremiumService())
         _sharingService = State(initialValue: SharingService())
         _genderService = State(initialValue: GenderService())
+        _notificationsService = State(initialValue: NotificationsService())
     }
 
     var body: some Scene {
@@ -28,6 +30,7 @@ struct BloomApp: App {
                 .environment(premiumService)
                 .environment(sharingService)
                 .environment(genderService)
+                .environment(notificationsService)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
