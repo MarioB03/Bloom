@@ -31,17 +31,27 @@ struct AnimatedSplashView: View {
     @State private var startTime = Date()
     @State private var exiting = false
 
-    // MARK: - Geometría de la flor (portada de RN)
+    // MARK: - Geometría de la flor
 
-    private static let petalAngles: [Double] = [-90, -18, 54, 126, 198]
+    /// Ángulos de los 5 pétalos. Empiezan en -90° (arriba) y avanzan cada
+    /// 72° en sentido horario para formar una estrella simétrica de 5 puntas.
+    private static let petalAngles: [Double] = (0..<5).map { -90 + Double($0) * 72 }
     private static let petalW: CGFloat = 22
-    private static let petalH: CGFloat = 50
-    private static let petalSpread: CGFloat = 28
-    private static let centerR: CGFloat = 14
+    private static let petalH: CGFloat = 48
+    private static let petalSpread: CGFloat = 24
+    private static let centerR: CGFloat = 12
     private static let stemH: CGFloat = 80
     private static let stemW: CGFloat = 3
-    private static let leafW: CGFloat = 20
-    private static let leafH: CGFloat = 36
+    private static let leafW: CGFloat = 22
+    private static let leafH: CGFloat = 32
+
+    /// Tamaño del lienzo de la flor en puntos.
+    private static let canvasW: CGFloat = 200
+    private static let canvasH: CGFloat = 220
+
+    /// Posición vertical del centro de la flor (donde se encuentran los
+    /// pétalos y el círculo dorado).
+    private static let flowerCenterY: CGFloat = 95
 
     /// Tiempo mínimo que se muestra el splash antes de poder salir, incluso si
     /// la app está lista antes. Evita un parpadeo cuando la sesión se resuelve
@@ -61,7 +71,7 @@ struct AnimatedSplashView: View {
                     .foregroundStyle(Theme.Palette.primary400)
                     .opacity(titleOpacity)
                     .offset(y: titleOffset)
-                    .padding(.top, 20)
+                    .padding(.top, 12)
                 Text("Tu jardín de bienestar")
                     .font(.custom("DMSans-Regular", size: 15))
                     .foregroundStyle(Theme.Palette.neutral400)
@@ -80,64 +90,79 @@ struct AnimatedSplashView: View {
 
     // MARK: - Flor
 
-    /// Container de 140×200 con la flor compuesta de tallo, hoja, pétalos y
-    /// centro. Cada pieza usa `offset` desde el centro del container.
+    /// Lienzo `canvasW × canvasH` con coordenadas absolutas. El centro
+    /// horizontal está en `canvasW/2`. El tallo crece desde el borde inferior
+    /// hasta `flowerCenterY` y los pétalos parten de ahí.
     private var flower: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             stem
             leaf
-            petals
+            petalGroup
             center
         }
-        .frame(width: 140, height: 200)
+        .frame(width: Self.canvasW, height: Self.canvasH)
     }
 
-    /// Tallo: rectángulo marrón que crece desde abajo (`scaleY 0→1`).
+    /// Tallo: cápsula marrón que crece desde el borde inferior con `scaleY 0→1`.
     private var stem: some View {
-        Rectangle()
+        Capsule()
             .fill(Color(hex: "8B7A6B"))
             .frame(width: Self.stemW, height: Self.stemH)
-            .clipShape(Capsule())
             .scaleEffect(x: 1, y: stemScale, anchor: .bottom)
-            // Ancla el tallo a la parte inferior del container.
-            .offset(y: (200 - Self.stemH) / 2)
+            .position(
+                x: Self.canvasW / 2,
+                y: Self.canvasH - Self.stemH / 2
+            )
     }
 
-    /// Hoja: gota verde-salvia que aparece a la izquierda del tallo, hacia su
-    /// base. Aparece con un spring que combina escala + rotación (-20°→35°).
+    /// Hoja: gota verde-salvia que asoma a la derecha del tallo, hacia la mitad
+    /// de su altura. Aparece con un spring que combina escala + rotación.
     private var leaf: some View {
-        SplashLeafShape()
+        let rotation = -10 + 35 * Double(leafProgress)
+        return SplashLeafShape()
             .fill(Theme.Palette.secondary300)
             .frame(width: Self.leafW, height: Self.leafH)
-            .rotationEffect(.degrees(-20 + (35 - -20) * Double(leafProgress)), anchor: .bottomLeading)
+            .rotationEffect(.degrees(rotation), anchor: .bottomLeading)
             .scaleEffect(leafProgress, anchor: .bottomLeading)
             .opacity(leafProgress)
-            // Posición: a la derecha del tallo (50% + margen 2), 30pt sobre la base.
-            .offset(x: 2 + Self.leafW / 2, y: 200 / 2 - 30 - Self.leafH / 2)
+            .position(
+                x: Self.canvasW / 2 + Self.stemW / 2 + Self.leafW / 2,
+                y: Self.canvasH - Self.stemH * 0.55
+            )
     }
 
     /// Cinco pétalos rosados anclados al centro de la flor, posicionados con
     /// los ángulos de `petalAngles` y un offset radial de `petalSpread`.
-    private var petals: some View {
+    private var petalGroup: some View {
         ZStack {
             ForEach(Array(Self.petalAngles.enumerated()), id: \.offset) { index, angleDeg in
-                let progress = petalProgress[index]
-                let radians = angleDeg * .pi / 180
-                let tx = CGFloat(cos(radians)) * Self.petalSpread
-                let ty = CGFloat(sin(radians)) * Self.petalSpread
-
-                SplashPetalShape()
-                    .fill(Color(hex: "F0B8B8"))
-                    .frame(width: Self.petalW, height: Self.petalH)
-                    .rotationEffect(.degrees(angleDeg + 90))
-                    .scaleEffect(progress)
-                    .opacity(progress)
-                    .offset(x: tx * progress, y: ty * progress)
+                petal(angleDeg: angleDeg, progress: petalProgress[index])
             }
         }
-        .frame(width: Self.petalSpread * 2 + Self.petalW, height: Self.petalSpread * 2 + Self.petalH)
-        // Pétalos anclados arriba (top: 20 en RN).
-        .offset(y: -((200 - (Self.petalSpread * 2 + Self.petalH)) / 2) + 20)
+        .frame(width: Self.canvasW, height: Self.canvasH)
+    }
+
+    /// Un único pétalo, anclado por su base al centro de la flor y rotado para
+    /// apuntar hacia `angleDeg`. La animación de entrada combina escala +
+    /// opacidad; el desplazamiento radial está implícito en el anclaje, no se
+    /// necesita un offset extra.
+    private func petal(angleDeg: Double, progress: CGFloat) -> some View {
+        // Pétalo dibujado con la base abajo (anchor) y la punta arriba. El
+        // anchor `.bottom` hace que la rotación pivote sobre el centro de la
+        // flor, no sobre el centro geométrico del rect, así no hay huecos.
+        SplashPetalShape()
+            .fill(Color(hex: "F0B8B8"))
+            .frame(width: Self.petalW, height: Self.petalH)
+            // Pivota desde la base + rota hacia afuera. `angleDeg + 90` lleva
+            // un pétalo "punta arriba" hacia el ángulo deseado.
+            .scaleEffect(progress, anchor: .bottom)
+            .opacity(progress)
+            .rotationEffect(.degrees(angleDeg + 90), anchor: .bottom)
+            // Posiciona la BASE del pétalo en el centro de la flor.
+            .position(
+                x: Self.canvasW / 2,
+                y: Self.flowerCenterY + Self.petalH / 2
+            )
     }
 
     /// Centro dorado: círculo en el corazón del grupo de pétalos. Aparece con
@@ -147,23 +172,19 @@ struct AnimatedSplashView: View {
             .fill(Theme.Palette.accent400)
             .frame(width: Self.centerR * 2, height: Self.centerR * 2)
             .scaleEffect(centerScale)
-            // Centrado en la zona de pétalos: top 20 + spread + petalH/2 (RN).
-            .offset(y: -((200 - (Self.petalSpread * 2 + Self.petalH)) / 2) + 20
-                       + Self.petalSpread + Self.petalH / 2 - Self.centerR)
+            .position(x: Self.canvasW / 2, y: Self.flowerCenterY)
     }
 
     // MARK: - Coreografía
 
     /// Ejecuta la entrada respetando los delays y curvas del componente RN.
-    /// Cada pieza se anima por su lado para no acoplarlas en una sola
-    /// secuencia (los pétalos se solapan con la hoja y el centro).
     private func runEntranceAnimation() async {
         startTime = Date()
 
-        // Tallo (inmediato, 350ms ease-out cubic ≈ `.easeOut(duration: 0.35)`).
+        // Tallo (inmediato, 350ms ease-out cubic).
         withAnimation(.easeOut(duration: 0.35)) { stemScale = 1 }
 
-        // Hoja (delay 150ms, spring damping 10 / stiffness 130).
+        // Hoja (delay 150ms, spring).
         Task {
             try? await Task.sleep(nanoseconds: 150_000_000)
             withAnimation(.spring(response: 0.45, dampingFraction: 0.5)) {
@@ -190,7 +211,7 @@ struct AnimatedSplashView: View {
             }
         }
 
-        // Título (delay 650ms, 400ms ease-out).
+        // Título (delay 650ms).
         Task {
             try? await Task.sleep(nanoseconds: 650_000_000)
             withAnimation(.easeOut(duration: 0.4)) {
@@ -233,64 +254,51 @@ struct AnimatedSplashView: View {
 
 // MARK: - Formas
 
-/// Pétalo: rectángulo con esquinas superiores muy redondeadas e inferiores
-/// poco redondeadas. Equivalente a los `borderRadius` asimétricos de RN.
+/// Pétalo en forma de gota: punta arriba, base abajo, lados convexos. Se
+/// dibuja con dos curvas Bézier simétricas que arrancan en la base, suben
+/// por los lados y se juntan en la punta.
 private struct SplashPetalShape: Shape {
     func path(in rect: CGRect) -> Path {
-        let topRadius = rect.height * 0.8
-        let bottomRadius = rect.height * 0.15
+        let w = rect.width
+        let h = rect.height
+        let tip = CGPoint(x: w / 2, y: 0)
+        let baseLeft = CGPoint(x: 0, y: h)
+        let baseRight = CGPoint(x: w, y: h)
+
         return Path { path in
-            path.move(to: CGPoint(x: rect.minX, y: rect.maxY - bottomRadius))
-            path.addQuadCurve(
-                to: CGPoint(x: rect.minX + bottomRadius, y: rect.maxY),
-                control: CGPoint(x: rect.minX, y: rect.maxY)
-            )
-            path.addLine(to: CGPoint(x: rect.maxX - bottomRadius, y: rect.maxY))
-            path.addQuadCurve(
-                to: CGPoint(x: rect.maxX, y: rect.maxY - bottomRadius),
-                control: CGPoint(x: rect.maxX, y: rect.maxY)
-            )
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + topRadius))
-            path.addQuadCurve(
-                to: CGPoint(x: rect.maxX - topRadius, y: rect.minY),
-                control: CGPoint(x: rect.maxX, y: rect.minY)
-            )
-            path.addLine(to: CGPoint(x: rect.minX + topRadius, y: rect.minY))
-            path.addQuadCurve(
-                to: CGPoint(x: rect.minX, y: rect.minY + topRadius),
-                control: CGPoint(x: rect.minX, y: rect.minY)
-            )
+            path.move(to: baseLeft)
+            // Lado izquierdo: curva hacia la punta, control fuera del rect
+            // para dar volumen al pétalo.
+            path.addQuadCurve(to: tip, control: CGPoint(x: -w * 0.1, y: h * 0.25))
+            // Lado derecho: simétrico.
+            path.addQuadCurve(to: baseRight, control: CGPoint(x: w * 1.1, y: h * 0.25))
+            // Cierra la base con una curva ligera (no un segmento recto)
+            // para suavizar la unión con el centro.
+            path.addQuadCurve(to: baseLeft, control: CGPoint(x: w / 2, y: h * 1.1))
             path.closeSubpath()
         }
     }
 }
 
-/// Hoja: gota con borde superior-izquierdo e inferior-derecho muy
-/// redondeados. Mismo asimétrico que `LEAF_H * 0.8` / `0.15` en RN.
+/// Hoja: gota asimétrica con el extremo superior-izquierdo afilado y el
+/// inferior-derecho redondeado. Se ancla por la esquina inferior izquierda
+/// (donde se une al tallo).
 private struct SplashLeafShape: Shape {
     func path(in rect: CGRect) -> Path {
-        let big = rect.height * 0.8
-        let small = rect.height * 0.15
+        let w = rect.width
+        let h = rect.height
+        let topTip = CGPoint(x: w * 0.15, y: 0)
+        let bottomTip = CGPoint(x: w, y: h)
+
         return Path { path in
-            path.move(to: CGPoint(x: rect.minX, y: rect.minY + big))
+            path.move(to: topTip)
             path.addQuadCurve(
-                to: CGPoint(x: rect.minX + big, y: rect.minY),
-                control: CGPoint(x: rect.minX, y: rect.minY)
+                to: bottomTip,
+                control: CGPoint(x: w * 1.2, y: h * 0.2)
             )
-            path.addLine(to: CGPoint(x: rect.maxX - small, y: rect.minY))
             path.addQuadCurve(
-                to: CGPoint(x: rect.maxX, y: rect.minY + small),
-                control: CGPoint(x: rect.maxX, y: rect.minY)
-            )
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - big))
-            path.addQuadCurve(
-                to: CGPoint(x: rect.maxX - big, y: rect.maxY),
-                control: CGPoint(x: rect.maxX, y: rect.maxY)
-            )
-            path.addLine(to: CGPoint(x: rect.minX + small, y: rect.maxY))
-            path.addQuadCurve(
-                to: CGPoint(x: rect.minX, y: rect.maxY - small),
-                control: CGPoint(x: rect.minX, y: rect.maxY)
+                to: topTip,
+                control: CGPoint(x: -w * 0.2, y: h * 0.8)
             )
             path.closeSubpath()
         }
