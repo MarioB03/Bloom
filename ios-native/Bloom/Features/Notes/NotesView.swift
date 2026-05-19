@@ -336,10 +336,11 @@ struct DiaryView: View {
     @ViewBuilder
     private var resultsBlock: some View {
         if isLoading {
-            ProgressView()
-                .tint(Theme.Palette.primary400)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.Spacing.xxl)
+            VStack(spacing: 0) {
+                ForEach(0..<3, id: \.self) { _ in
+                    SkeletonCard()
+                }
+            }
         } else {
             let sections = groupedSections()
 

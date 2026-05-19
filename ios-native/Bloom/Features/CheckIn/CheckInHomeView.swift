@@ -17,6 +17,7 @@ struct CheckInHomeView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
+    @Environment(GenderService.self) private var gender
 
     @State private var checkins: [CheckinEntry] = []
     @State private var streak = 0
@@ -246,28 +247,28 @@ struct CheckInHomeView: View {
 
     @ViewBuilder
     private var recordsSection: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text(Strings.CheckIn.todayRecords)
-                .font(.heading3)
-                .foregroundStyle(Theme.Palette.neutral700)
+        if isLoading {
+            SkeletonHomeRecords()
+                .padding(.top, Theme.Spacing.sm)
+        } else {
+            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                Text(Strings.CheckIn.todayRecords)
+                    .font(.heading3)
+                    .foregroundStyle(Theme.Palette.neutral700)
 
-            if isLoading {
-                ProgressView()
-                    .tint(Theme.Palette.primary400)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Theme.Spacing.xl)
-            } else if checkins.isEmpty {
-                EmptyState(emoji: "📝", message: Strings.CheckIn.noRecordsToday)
-            } else {
-                ForEach(checkins) { checkin in
-                    NavigationLink(value: CheckInRoute.detail(id: checkin.id ?? "")) {
-                        CheckinCard(checkin: checkin)
+                if checkins.isEmpty {
+                    EmptyState(emoji: "📝", message: Strings.CheckIn.noRecordsToday)
+                } else {
+                    ForEach(checkins) { checkin in
+                        NavigationLink(value: CheckInRoute.detail(id: checkin.id ?? "")) {
+                            CheckinCard(checkin: checkin)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
+            .padding(.top, Theme.Spacing.sm)
         }
-        .padding(.top, Theme.Spacing.sm)
     }
 
     // MARK: - Toast de logros
@@ -279,7 +280,7 @@ struct CheckInHomeView: View {
         if let currentToast {
             AchievementToastView(
                 emoji: currentToast.emoji,
-                title: currentToast.title,
+                title: currentToast.resolvedTitle(using: gender),
                 description: currentToast.description
             ) {
                 self.currentToast = nil

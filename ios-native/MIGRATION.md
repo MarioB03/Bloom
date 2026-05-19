@@ -17,26 +17,24 @@ Contexto de arquitectura y stack: ver `README.md`.
 |---|---|---|
 | Proyecto XcodeGen + SPM Firebase + GoogleSignIn | ✅ | `project.yml`, iOS 17+, Swift 6 estricto |
 | Design System (Theme, Typography, fuentes) | ✅ | Portado de `src/constants/theme.ts` |
-| Modelos core (Emotion, CheckinEntry, UserProfile) | 🚧 | Solo 3 de ~10 modelos (+ `CheckinDraft`) — ver "Modelos pendientes" |
+| Modelos core | ✅ | `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`, `GratitudeEntry`, `AppAchievement`, `Premium`, `SafetyPlan`, `Sharing`, `Skill`, `GenderedText`. Solo `Template` + `TemplateField` + `RegisterEntry` quedan fuera (feature pospuesta, ver "Plantillas y registros dinámicos") |
 | `AuthService` | ✅ | Email/password, social (Apple/Google), creación de perfil Firestore |
-| `FirestoreService` | 🚧 | CRUD cifrado de check-ins, registros emocionales (`registers`) y diario de gratitud (`gratitude`); resto de colecciones pendiente |
+| `FirestoreService` | ✅ | CRUD de todas las colecciones en uso: check-ins, registros emocionales (`registers`), gratitud, prácticas de habilidades, plan de seguridad, sharing (códigos + viewers + viewerLinks), Premium (status + canje + admin), preferencia de género, `deleteAllUserData`. Cifrado AES-256-CBC en notas/eventos/registros/gratitud/plan |
 | Navegación raíz + TabView 5 pestañas | ✅ | `RootView` con auth guard, vistas placeholder |
-| **Componentes UI base** | 🚧 | Hechos: `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`. Pendientes: LoadingSpinner, Skeleton, FadeIn, 2× AchievementToast |
+| **Componentes UI base** | ✅ | `BloomButton`, `BloomTextField`, `AuthScaffold`, `ScreenWrapper`, `BloomCard`, `Badge`, `EmptyState`, `LoadingSpinner`, `Skeleton` (Box/Card/Stats/Registros/Profile/HomeRecords/Agenda), `FadeIn`, `AchievementToastView` (compartido jardín + app). Skeletons cableados en home (`SkeletonHomeRecords`), Registros (`SkeletonCard ×3`) y perfil (`SkeletonProfile`) |
 | **Splash animado** | ✅ | `Features/Splash/AnimatedSplashView.swift` — flor que crece (tallo, hoja, 5 pétalos, centro) y lockup "Bloom · Tu jardín de bienestar". Overlay sobre `RootView` con `minDisplay` de 1.6 s antes de salir. Reemplaza al antiguo `LoadingScreen` |
 | **Lenguaje con género** (cross-cutting) | ✅ | `Services/GenderService.swift` + `Models/GenderedText.swift`. Persistencia local (`UserDefaults @ bloom.genderForm`) + sync con `users/{uid}.preferences.genderForm`. Selector en `ProfileView`. `gender.resolve(GenderedText)` reemplaza al `g()` de RN |
-| **Lógica de racha / streak** (cross-cutting) | 🚧 | `Utils/Streak.swift` portado y en uso en el home; falta integrarlo en jardín, insights y perfil cuando se porten |
+| **Lógica de racha / streak** (cross-cutting) | ✅ | `Utils/Streak.swift` en uso en home, jardín, insights, perfil, logros y widget |
 | Cifrado de campos sensibles (CryptoJS → CryptoKit) | ✅ | `Services/BloomCrypto.swift` — AES-256-CBC + `EVP_BytesToKey`/MD5, compatible byte a byte con `src/lib/crypto.ts`. Round-trip de notas/eventos con la app RN |
 | `Utils/BloomDate.swift` | ✅ | Portado de `src/utils/date.ts` (dateKey, time, displayDate, greeting) |
 | `strings.ts` → catálogo de textos | 🚧 | `Strings.swift` con namespace `Auth`/`SocialAuth`/`App`. Se completa feature a feature. Estrategia definitiva (`String(localized:)` vs enum) ❓ |
 | Notificaciones (recordatorios diarios) | ✅ | `Services/NotificationsService.swift` con `UNCalendarNotificationTrigger` repetitivo. Toggle + edición de hora en la pestaña Tú. 4 mensajes aleatorios igual que RN. RN: `src/lib/notifications.ts` |
 | Export PDF | ✅ | `Services/ExportService.swift` — porta el HTML del RN 1:1 y lo rasteriza con `UIPrintPageRenderer` + `UIMarkupTextPrintFormatter` (A4, margen 40pt). Entrada en Ajustes (Tu) detrás del muro Premium |
-| Widget iOS | ✅ | Target `BloomWidget` (app extension), App Group `group.com.akemi01.bloom`, `WidgetSyncService` escribe el snapshot tras cambios en check-ins/jardín |
+| Widget iOS | ✅ | Target `BloomWidget` (app extension), App Group `group.com.akemi01.bloom.shared`, `WidgetSyncService` escribe el snapshot tras cambios en check-ins/jardín |
 
-### Modelos pendientes de portar (se harán con cada feature)
-`Skill` · `Template` + `TemplateField` + `RegisterEntry` · `PremiumStatus` ·
-tipos de `SafetyPlan` · tipos de `Sharing`.
-Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
-`GratitudeEntry`.
+### Modelos pendientes de portar
+Solo `Template` + `TemplateField` + `RegisterEntry` (feature pospuesta, ver
+"Plantillas y registros dinámicos"). El resto están portados.
 
 ---
 
@@ -67,8 +65,14 @@ Hechos: `Emotion`, `CheckinEntry`, `UserProfile`, `EmotionalRegisterEntry`,
   logros. El CTA de gratitud y el mini-libro flotante del diario ya están (ver
   Diario de gratitud y Agenda); el CTA de registro emocional se sustituye por
   el CTA propio de la pestaña Registros
-- **Compostar**: omitido en el detalle — depende de la economía del jardín (no portada).
-  El detalle sí muestra `compostReflection` si ya existe
+- **Compostar**: editor inline en el detalle (botón 🍃 en la toolbar) con
+  mínimo de 30 caracteres, alerta de éxito y badge "Compostado" en la
+  reflexión guardada. Acredita 8 🌰 al saldo del jardín
+  (`GardenEconomy.creditSeeds(_:)`, persistencia en `UserDefaults` + sync del
+  widget) y dispara la comprobación de logros (`app_first_compost`,
+  `app_5_composts`). Reflexión cifrada en Firestore vía
+  `FirestoreService.compostCheckin(checkinID:userID:reflection:)`. Bloqueado
+  en modo solo-lectura (`ownerID != nil`)
 
 ### Calendario emocional — ✅
 - [x] Vista mensual con punto de la emoción predominante por día
@@ -264,9 +268,12 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - RN: `app/logros.tsx`, `src/lib/achievements.ts`
 - **Punto de entrada**: en RN vive en la pestaña de perfil (aún no portada);
   aquí se accede desde el botón 🏆 de la cabecera del home
-- **Divergencia de RN**: los títulos con género (`{ f, m, n }`) usan la forma
-  neutra hasta que se porte el lenguaje con género. El compostaje aún no es una
-  acción nativa, así que sus logros solo se desbloquean con datos de la app RN
+- **Divergencia de RN**: los títulos con flexión por género (5 logros:
+  `app_100_checkins`, `app_first_gratitude`, `app_5_composts`,
+  `app_15_practices`, `app_all_categories`) se resuelven via
+  `GenderService.resolve(_:)` tanto en la pantalla de logros como en el toast
+  del home. Los logros de compostaje ya se desbloquean en nativo desde que el
+  detalle de check-in permite compostar (ver "Check-in diario")
 
 ### Diario de gratitud — ✅
 - [x] Modelo `GratitudeEntry` + colección `users/{uid}/gratitude` con `items[]`
@@ -279,10 +286,10 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - Nativo: `Features/Gratitude/GratitudeView.swift`,
   `Models/GratitudeEntry.swift`, `Strings.Gratitude`
 - RN: `app/gratitud/nuevo.tsx`, colección `users/{uid}/gratitude`
-- **Divergencia de RN**: solo se edita la gratitud de **hoy**. La app RN admite
-  un modo de solo lectura para días pasados (al abrirlo desde la agenda o el
-  calendario); llegará con esas features. La comprobación de logros la dispara
-  el home al recargarse tras guardar (ver "Logros de app")
+- **Sin divergencia**: solo se edita la gratitud de **hoy**, igual que en RN
+  (la app RN tampoco tiene ruta de detalle ni modo solo-lectura: solo
+  `/gratitud/nuevo`). La comprobación de logros la dispara el home al
+  recargarse tras guardar (ver "Logros de app")
 
 ### Plan de seguridad — ✅
 - [x] Editor de plan: 5 secciones plegables (señales de alerta, estrategias de
@@ -309,9 +316,11 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - **Divergencia clave**: pasarela de pago en **StoreKit 2 nativo**, no
   RevenueCat (la app RN usa `react-native-purchases`). Decisión del usuario:
   ir directo contra App Store.
-- **Product IDs**: `bloom.premium.annual` y `bloom.premium.monthly`. Pendiente
-  crearlos en App Store Connect y configurarlos (precio, free trial,
-  introductory offer)
+- **Product IDs**: `bloom_premium_annual` y `bloom_premium_monthly` (con guion
+  bajo, los IDs que ya existían en ASC desde la versión RN — no se pueden
+  renombrar). Subscription group "Bloom Premium". Free trial 1 semana en el
+  anual, sin trial en el mensual. Quedan en estado "Lista para enviar" hasta
+  que se adjunten a una versión de la app y se envíen a revisión
 - **Gift codes**: lógica idéntica a RN — `premiumCodes/{code}` +
   `users/{uid}.premium`. La suscripción tiene prioridad sobre el gift code
   como fuente que se muestra
@@ -323,7 +332,12 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
   `FirestoreService.setAdminPremium(userID:active:)` que escribe el mismo
   formato de gift code "ADMIN" + 365 días que `setAdminPremium` de RN, y
   refresca `PremiumService` al instante
-- [ ] Sección admin completa (generar códigos manualmente, ver lista) — pendiente
+- [x] Sección admin "Generar código Premium" en `PremiumView`. Gated por
+  `adminUserID = "IUrBhjLrTLZZkwuj8B8qSXRX7iH3"` (mismo UID que RN). Crea un
+  gift code de 365 días con caducidad de 30 días via
+  `FirestoreService.createPremiumCode(adminUserID:)`, lo copia al portapapeles
+  y lo muestra en una alerta. Listar códigos existentes no se porta (tampoco
+  existe en RN). El toggle Premium DEBUG sigue en la pestaña Tú
 - [x] Gating real de features:
   - Compartir cuenta (Sharing): generar/canjear código bloqueado tras alerta
   - Insights avanzados: candado tappable que abre el paywall como hoja modal
@@ -340,7 +354,10 @@ del home** (`CheckInRoute.garden`), no es pestaña — igual que en RN.
 - **SharingService**: `@Observable`, expone `viewer` y `sharedAccount`. Se refresca al cambiar `auth.currentUserID` desde `MainTabView`
 - **Gating Premium**: generar y canjear código están bloqueados detrás de Premium con alerta (mismo criterio que RN). Una vez vinculado, la pestaña Compartido es accesible aunque se pierda Premium
 - **Registros emocionales filtrados**: `FirestoreService.emotionalRegisters(byDate:userID:sharedOnly:)` y `allEmotionalRegisters(userID:sharedOnly:)` filtran por `sharedVisible == true` para cumplir las reglas de Firestore (`registers/{id}` requiere ese filtro en lecturas de viewer)
-- **No portado**: el modo solo lectura de gratitud (cuando se porte la feature). Los mensajes con flexión por género (`revokeConfirmMessage`, `errorAlreadyLinked`) ya se resuelven con `GenderService.resolve(...)`
+- **Gratitud compartida**: RN tampoco abre la gratitud del dueño en modo
+  solo-lectura (no hay ruta), así que aquí no hay nada que portar. Los
+  mensajes con flexión por género (`revokeConfirmMessage`,
+  `errorAlreadyLinked`) ya se resuelven con `GenderService.resolve(...)`
 
 ### Perfil y cuenta — 🚧
 - [x] Pantalla de perfil / ajustes (pestaña `tu`) → `Features/Profile/ProfileView.swift`

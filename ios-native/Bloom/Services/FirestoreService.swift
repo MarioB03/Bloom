@@ -136,6 +136,18 @@ final class FirestoreService {
         try await checkinsCollection(for: userID).document(checkinID).delete()
     }
 
+    /// Marca un check-in como compostado y guarda la reflexión cifrada del
+    /// usuario. Equivalente de `compostCheckin` en `src/lib/firestore.ts:162`.
+    /// La acreditación de semillas (`GardenEconomy.compostReflection = 8`)
+    /// queda en la capa de UI/jardín, igual que en RN.
+    func compostCheckin(checkinID: String, userID: String, reflection: String) async throws {
+        try await checkinsCollection(for: userID).document(checkinID).updateData([
+            "composted": true,
+            "compostReflection": BloomCrypto.encrypt(reflection),
+            "updatedAt": Date(),
+        ])
+    }
+
     // MARK: - Registros emocionales (Observar y describir)
 
     /// Todos los registros emocionales del usuario, del más reciente al más antiguo.
@@ -416,6 +428,37 @@ final class FirestoreService {
     /// Wrapper para descodificar solo el campo `premium` del documento.
     private struct PremiumProfile: Codable {
         var premium: PremiumStatus
+    }
+
+    /// Crea un nuevo gift code de Premium en `premiumCodes/{code}`. Devuelve el
+    /// código generado para mostrarlo al admin. Equivalente de
+    /// `createPremiumCode` en `firestore.ts:537`. La duración del Premium y la
+    /// caducidad del propio código siguen los defaults de RN (365 / 30 días).
+    func createPremiumCode(
+        adminUserID: String,
+        durationDays: Int = 365,
+        codeExpiryDays: Int = 30
+    ) async throws -> String {
+        let code = Self.generatePremiumCode()
+        let now = Date()
+        let expiresAt = now.addingTimeInterval(Double(codeExpiryDays) * 86_400)
+        try await db.collection("premiumCodes").document(code).setData([
+            "code": code,
+            "createdBy": adminUserID,
+            "createdAt": now,
+            "expiresAt": expiresAt,
+            "durationDays": durationDays,
+            "redeemedBy": NSNull(),
+            "redeemedAt": NSNull(),
+            "status": PremiumCode.Status.active.rawValue,
+        ])
+        return code
+    }
+
+    /// Alfabeto compartido con los códigos de invitación (sin 0/O ni 1/I/L).
+    /// Idéntico al `SHARING_CODE_CHARS` de `firestore.ts:405`.
+    private static func generatePremiumCode() -> String {
+        String((0..<6).map { _ in sharingCodeChars.randomElement()! })
     }
 
     #if DEBUG

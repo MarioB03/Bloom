@@ -4,7 +4,7 @@ import WidgetKit
 /// Sincroniza el estado visible del widget de pantalla de inicio.
 ///
 /// Escribe un blob JSON en el `UserDefaults` del App Group
-/// `group.com.akemi01.bloom`, que el target `BloomWidget` lee desde
+/// `group.com.akemi01.bloom.shared`, que el target `BloomWidget` lee desde
 /// `BloomProvider`. Equivalente nativo de `src/lib/widget-sync.ts`.
 ///
 /// Uso típico: tras cualquier cambio que el widget pinta (racha, semillas,
@@ -39,7 +39,7 @@ enum WidgetSyncService {
         )
     }
 
-    private static let appGroupID = "group.com.akemi01.bloom"
+    private static let appGroupID = "group.com.akemi01.bloom.shared"
     private static let storageKey = "widgetData"
     private static let widgetKind = "BloomWidget"
 

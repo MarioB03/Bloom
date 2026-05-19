@@ -99,7 +99,6 @@ enum Strings {
         static let deleteTitle = "Eliminar registro"
         static let deleteMessage = "¿Seguro que quieres eliminar este registro?"
         static let notFound = "Registro no encontrado"
-        static let reflectionLabel = "Tu reflexión"
 
         /// Etiqueta de la intensidad emocional (1–5).
         static func intensityLabel(_ value: Int) -> String {
@@ -208,6 +207,25 @@ enum Strings {
         // Compartir
         static let shareButton = "Compartir jardín"
         static let shareError = "No se pudo compartir la imagen"
+    }
+
+    /// Compostaje de un check-in: el usuario escribe una reflexión sobre la
+    /// emoción registrada y a cambio gana semillas para el jardín. Portado de
+    /// `strings.compostar` en `src/constants/strings.ts`.
+    enum Compostar {
+        static let button = "Compostar"
+        static let title = "Reflexiona y transforma"
+        static let prompt = "¿Qué aprendiste de esta experiencia?"
+        static let placeholder = "Escribe tu reflexión..."
+        static let submit = "Compostar y ganar 8 🌰"
+        static let success = "¡Reflexión guardada! +8 🌰"
+        static let alreadyDone = "Compostado"
+        static let reflectionLabel = "Tu reflexión"
+
+        /// "Escribe al menos N caracteres", siendo N los que faltan.
+        static func minCharsRemaining(_ remaining: Int) -> String {
+            "Escribe al menos \(remaining) caracteres"
+        }
     }
 
     enum Insights {
@@ -432,6 +450,7 @@ enum Strings {
         static let fiftyCheckins = "Medio centenar"
         static let fiftyCheckinsDesc = "Completa 50 registros"
         static let hundredCheckins = "Cien registros"
+        static let hundredCheckinsGendered = GenderedText(f: "Centenaria", m: "Centenario", n: "Cien registros")
         static let hundredCheckinsDesc = "Completa 100 registros"
 
         // Rachas
@@ -448,6 +467,7 @@ enum Strings {
 
         // Gratitud
         static let firstGratitude = "Gratitud"
+        static let firstGratitudeGendered = GenderedText(f: "Agradecida", m: "Agradecido", n: "Gratitud")
         static let firstGratitudeDesc = "Escribe tu primera gratitud"
         static let sevenGratitudes = "Semana de gratitud"
         static let sevenGratitudesDesc = "Escribe 7 entradas de gratitud"
@@ -460,6 +480,7 @@ enum Strings {
         static let firstCompost = "Primera reflexión"
         static let firstCompostDesc = "Composta tu primer registro"
         static let fiveComposts = "Transformación"
+        static let fiveCompostsGendered = GenderedText(f: "Transformadora", m: "Transformador", n: "Transformación")
         static let fiveCompostsDesc = "Composta 5 registros"
 
         // Habilidades
@@ -468,8 +489,10 @@ enum Strings {
         static let fivePractices = "Practicante"
         static let fivePracticesDesc = "Completa 5 ejercicios"
         static let fifteenPractices = "Gran habilidad"
+        static let fifteenPracticesGendered = GenderedText(f: "Habilidosa", m: "Habilidoso", n: "Gran habilidad")
         static let fifteenPracticesDesc = "Completa 15 ejercicios"
         static let allCategories = "Exploración total"
+        static let allCategoriesGendered = GenderedText(f: "Exploradora", m: "Explorador", n: "Exploración total")
         static let allCategoriesDesc = "Practica en las 5 categorías"
 
         /// "3 / 31" — logros desbloqueados sobre el total.
@@ -567,8 +590,6 @@ enum Strings {
         static let aboutSection = "Acerca de"
         static let version = "Versión"
         static let versionNumber = "1.0.0"
-        static let madeWith = "Hecho con"
-        static let madeWithValue = "🌿 y SwiftUI"
 
         static let logout = "Cerrar sesión"
         static let loggingOut = "Cerrando sesión..."

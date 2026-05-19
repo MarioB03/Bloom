@@ -36,7 +36,7 @@ struct WidgetData: Codable {
 // MARK: - Provider
 
 struct BloomProvider: TimelineProvider {
-    private let appGroupID = "group.com.akemi01.bloom"
+    private let appGroupID = "group.com.akemi01.bloom.shared"
     private let storageKey = "widgetData"
 
     func placeholder(in context: Context) -> BloomEntry {

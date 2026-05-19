@@ -1,15 +1,20 @@
 import SwiftUI
 
-/// Detalle de un check-in: emoción, estado físico, eventos y notas.
-/// Portado de `app/checkin/[id].tsx`.
-///
-/// La acción de "compostar" de la app RN depende de la economía del jardín,
-/// que aún no está portada; aquí solo se muestra la reflexión si ya existe.
+/// Detalle de un check-in: emoción, estado físico, eventos, notas y, si el
+/// usuario lo decide, una reflexión de compostaje que premia con semillas para
+/// el jardín. Portado de `app/checkin/[id].tsx`.
 ///
 /// Modo solo lectura: si `ownerID` no es `nil`, el detalle se carga del
-/// dueño compartido y se ocultan los botones de editar y eliminar
+/// dueño compartido y se ocultan los botones de editar/eliminar/compostar
 /// (equivalente al parámetro `?owner=` de la app RN).
 struct CheckInDetailView: View {
+
+    /// Mínimo de caracteres de la reflexión para poder compostar — igual que en
+    /// `app/checkin/[id].tsx`.
+    private static let minReflectionChars = 30
+    /// Semillas que se acreditan al jardín tras compostar — fuente única en
+    /// `GardenEconomy.compostReflection`.
+    private static let compostReward = GardenEconomy.compostReflection
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
@@ -29,6 +34,11 @@ struct CheckInDetailView: View {
     @State private var isLoading = true
     @State private var showingEditForm = false
     @State private var showingDeleteConfirm = false
+    @State private var compostOpen = false
+    @State private var reflection = ""
+    @State private var compostSaving = false
+    @State private var compostSuccessVisible = false
+    @FocusState private var reflectionFocused: Bool
 
     var body: some View {
         Group {
@@ -64,12 +74,21 @@ struct CheckInDetailView: View {
         } message: {
             Text(Strings.CheckIn.deleteMessage)
         }
+        .alert(
+            Strings.Compostar.success,
+            isPresented: $compostSuccessVisible
+        ) {
+            Button("OK", role: .cancel) {}
+        }
     }
 
     // MARK: - Contenido
 
     private func content(_ checkin: CheckinEntry) -> some View {
-        ScreenWrapper {
+        let alreadyComposted = checkin.composted == true
+            && (checkin.compostReflection?.isEmpty == false)
+
+        return ScreenWrapper {
             heroCard(checkin)
             physicalStateCard(checkin)
             if !checkin.events.isEmpty {
@@ -78,14 +97,24 @@ struct CheckInDetailView: View {
             if !checkin.notes.isEmpty {
                 notesCard(checkin)
             }
-            if checkin.composted == true, let reflection = checkin.compostReflection,
-               !reflection.isEmpty {
-                reflectionCard(reflection)
+            if alreadyComposted, let stored = checkin.compostReflection {
+                reflectionCard(stored)
+            } else if compostOpen && !isReadOnly {
+                compostEditorCard
             }
         }
         .toolbar {
             if !isReadOnly {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    if !alreadyComposted {
+                        Button {
+                            openCompostEditor()
+                        } label: {
+                            Image(systemName: "leaf")
+                                .foregroundStyle(Theme.Palette.secondary500)
+                        }
+                        .disabled(compostOpen)
+                    }
                     Button {
                         showingEditForm = true
                     } label: {
@@ -98,6 +127,15 @@ struct CheckInDetailView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func openCompostEditor() {
+        compostOpen = true
+        // Pequeño retardo para que la animación de aparición termine antes de
+        // levantar el teclado.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            reflectionFocused = true
         }
     }
 
@@ -247,9 +285,13 @@ struct CheckInDetailView: View {
     private func reflectionCard(_ reflection: String) -> some View {
         BloomCard {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("🌿 \(Strings.CheckIn.reflectionLabel)")
-                    .font(.bodyBold)
-                    .foregroundStyle(Theme.Palette.neutral700)
+                HStack {
+                    Text("🌿 \(Strings.Compostar.reflectionLabel)")
+                        .font(.bodyBold)
+                        .foregroundStyle(Theme.Palette.neutral700)
+                    Spacer()
+                    Badge(label: Strings.Compostar.alreadyDone, color: Theme.Palette.secondary500)
+                }
                 Text(reflection)
                     .font(.bodyText)
                     .foregroundStyle(Theme.Palette.neutral600)
@@ -257,6 +299,60 @@ struct CheckInDetailView: View {
                     .padding(Theme.Spacing.md)
                     .background(Theme.Palette.neutral50)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+            }
+        }
+    }
+
+    /// Editor en línea del compostaje: prompt, textfield multilínea con
+    /// contador y botón de envío. Refleja el flujo de `app/checkin/[id].tsx`.
+    private var compostEditorCard: some View {
+        let remaining = max(0, Self.minReflectionChars - reflection.count)
+        return BloomCard {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                Text("🌿 \(Strings.Compostar.title)")
+                    .font(.bodyBold)
+                    .foregroundStyle(Theme.Palette.neutral700)
+                Text(Strings.Compostar.prompt)
+                    .font(.bodyText)
+                    .foregroundStyle(Theme.Palette.neutral500)
+                TextField(
+                    Strings.Compostar.placeholder,
+                    text: $reflection,
+                    axis: .vertical
+                )
+                .lineLimit(4...8)
+                .focused($reflectionFocused)
+                .font(.bodyText)
+                .foregroundStyle(Theme.Palette.neutral700)
+                .padding(Theme.Spacing.md)
+                .background(Theme.Palette.neutral50)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.md)
+                        .strokeBorder(
+                            reflection.isEmpty
+                                ? Theme.Palette.neutral200
+                                : Theme.Palette.accent500,
+                            lineWidth: 1
+                        )
+                )
+                HStack {
+                    Text(remaining > 0
+                        ? Strings.Compostar.minCharsRemaining(remaining)
+                        : "\(reflection.count) caracteres")
+                        .font(.smallText)
+                        .foregroundStyle(remaining > 0 ? Theme.Palette.warning : Theme.Palette.neutral400)
+                    Spacer()
+                }
+                BloomButton(
+                    title: Strings.Compostar.submit,
+                    size: .md,
+                    loading: compostSaving,
+                    isEnabled: remaining == 0
+                ) {
+                    Task { await performCompost() }
+                }
+                .padding(.top, Theme.Spacing.xs)
             }
         }
     }
@@ -303,6 +399,41 @@ struct CheckInDetailView: View {
             } catch {
                 // Si falla el borrado, se mantiene la pantalla abierta.
             }
+        }
+    }
+
+    /// Guarda la reflexión, acredita las semillas, refresca el detalle, lanza
+    /// la comprobación de logros y notifica al origen. Pensado para llamarse
+    /// desde el botón "Compostar y ganar 8 🌰". Equivalente a `handleCompost`
+    /// en `app/checkin/[id].tsx:71`.
+    private func performCompost() async {
+        guard
+            let userID = auth.currentUserID,
+            !isReadOnly,
+            reflection.count >= Self.minReflectionChars
+        else { return }
+        compostSaving = true
+        defer { compostSaving = false }
+        do {
+            try await firestore.compostCheckin(
+                checkinID: id,
+                userID: userID,
+                reflection: reflection
+            )
+            GardenEconomy.creditSeeds(Self.compostReward)
+            compostOpen = false
+            reflection = ""
+            reflectionFocused = false
+            compostSuccessVisible = true
+            // Logros: fire-and-forget para no bloquear el cierre del editor; el
+            // toast lo recoge el home al volver a foco.
+            Task {
+                await AppAchievements.checkAndUnlock(userID: userID, firestore: firestore)
+            }
+            await load()
+            onChanged()
+        } catch {
+            // Si falla la escritura, se conserva el editor abierto y el texto.
         }
     }
 }

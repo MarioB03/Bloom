@@ -1,9 +1,16 @@
 import SwiftUI
 import StoreKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Paywall + canje de código de regalo. Portado de `app/premium.tsx` con
 /// StoreKit 2 en vez de RevenueCat (la app RN sí usa RC; aquí divergimos).
 struct PremiumView: View {
+
+    /// UID del admin que ve la sección de generación de gift codes. Mismo
+    /// criterio que la app RN (`app/premium.tsx:52`).
+    private static let adminUserID = "IUrBhjLrTLZZkwuj8B8qSXRX7iH3"
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
@@ -17,9 +24,15 @@ struct PremiumView: View {
     @State private var purchasing = false
     @State private var redeeming = false
     @State private var restoring = false
+    @State private var generatingCode = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
     @State private var successTitle: String = ""
+    @State private var dismissOnSuccess: Bool = true
+
+    private var isAdmin: Bool {
+        auth.currentUserID == Self.adminUserID
+    }
 
     var body: some View {
         Group {
@@ -41,7 +54,9 @@ struct PremiumView: View {
             ),
             presenting: successMessage
         ) { _ in
-            Button("OK", role: .cancel) { dismiss() }
+            Button("OK", role: .cancel) {
+                if dismissOnSuccess { dismiss() }
+            }
         } message: { message in
             Text(message)
         }
@@ -86,6 +101,8 @@ struct PremiumView: View {
                 }
             }
             .padding(.top, Theme.Spacing.lg)
+
+            if isAdmin { adminSection }
         }
     }
 
@@ -97,6 +114,52 @@ struct PremiumView: View {
             featureList
             pricingSection
             giftCodeSection
+            if isAdmin { adminSection }
+        }
+    }
+
+    // MARK: - Admin
+
+    /// Sección admin con la acción de generar un gift code Premium. Visible
+    /// solo para `adminUserID` (mismo criterio que `app/premium.tsx:182,352`).
+    /// El toggle Premium ya vive en la pestaña Tú bajo `#if DEBUG`, así que
+    /// aquí solo se ofrece la generación de códigos.
+    private var adminSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            Text("Admin / Testing")
+                .font(.smallText)
+                .foregroundStyle(Theme.Palette.neutral500)
+                .textCase(.uppercase)
+
+            BloomButton(
+                title: generatingCode ? "Generando…" : "Generar código Premium",
+                size: .md,
+                loading: generatingCode
+            ) {
+                Task { await performGenerateCode() }
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.Palette.neutral100)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg))
+        .padding(.top, Theme.Spacing.lg)
+    }
+
+    private func performGenerateCode() async {
+        guard let userID = auth.currentUserID else { return }
+        generatingCode = true
+        defer { generatingCode = false }
+        do {
+            let newCode = try await firestore.createPremiumCode(adminUserID: userID)
+            #if canImport(UIKit)
+            UIPasteboard.general.string = newCode
+            #endif
+            dismissOnSuccess = false
+            successTitle = "Código generado"
+            successMessage = "\(newCode)\n\nCopiado al portapapeles."
+        } catch {
+            errorMessage = "No se pudo generar el código."
         }
     }
 
@@ -306,6 +369,7 @@ struct PremiumView: View {
                 userID: auth.currentUserID,
                 firestore: firestore
             )
+            dismissOnSuccess = true
             successTitle = Strings.Premium.successTitle
             successMessage = Strings.Premium.successMessage
         } catch PremiumService.PurchaseError.userCancelled {
@@ -324,6 +388,7 @@ struct PremiumView: View {
                 firestore: firestore
             )
             if premium.isPremium {
+                dismissOnSuccess = true
                 successTitle = Strings.Premium.restoreSuccess
                 successMessage = Strings.Premium.successMessage
             } else {
@@ -341,6 +406,7 @@ struct PremiumView: View {
         do {
             try await premium.redeemGiftCode(code, userID: userID, firestore: firestore)
             code = ""
+            dismissOnSuccess = true
             successTitle = Strings.Premium.successRedeemed
             successMessage = Strings.Premium.successRedeemedMessage
         } catch {

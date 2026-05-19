@@ -48,17 +48,27 @@ struct ProfileView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            ScreenWrapper {
-                profileHeader
-                statsRow
-                navCard
-                settingsCard
-                accountCard
-                aboutCard
-                #if DEBUG
-                devCard
-                #endif
-                logoutButton
+            Group {
+                if isLoading {
+                    ScrollView {
+                        SkeletonProfile()
+                    }
+                    .scrollIndicators(.hidden)
+                    .background(Theme.Palette.background)
+                } else {
+                    ScreenWrapper {
+                        profileHeader
+                        statsRow
+                        navCard
+                        settingsCard
+                        accountCard
+                        aboutCard
+                        #if DEBUG
+                        devCard
+                        #endif
+                        logoutButton
+                    }
+                }
             }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: ProfileRoute.self) { route in
@@ -432,9 +442,6 @@ struct ProfileView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            Divider().overlay(Theme.Palette.neutral100)
-
-            aboutRow(label: Strings.Profile.madeWith, value: Strings.Profile.madeWithValue)
             Divider().overlay(Theme.Palette.neutral100)
 
             Text(Strings.Profile.disclaimer)

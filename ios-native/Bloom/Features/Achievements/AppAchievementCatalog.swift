@@ -12,7 +12,7 @@ enum AppAchievementCatalog {
         AppAchievement(id: "app_5_checkins", title: Strings.Achievements.fiveCheckins, description: Strings.Achievements.fiveCheckinsDesc, emoji: "📝", threshold: 5, category: .checkins),
         AppAchievement(id: "app_25_checkins", title: Strings.Achievements.twentyFiveCheckins, description: Strings.Achievements.twentyFiveCheckinsDesc, emoji: "💪", threshold: 25, category: .checkins),
         AppAchievement(id: "app_50_checkins", title: Strings.Achievements.fiftyCheckins, description: Strings.Achievements.fiftyCheckinsDesc, emoji: "🏅", threshold: 50, category: .checkins),
-        AppAchievement(id: "app_100_checkins", title: Strings.Achievements.hundredCheckins, description: Strings.Achievements.hundredCheckinsDesc, emoji: "💯", threshold: 100, category: .checkins),
+        AppAchievement(id: "app_100_checkins", title: Strings.Achievements.hundredCheckins, genderedTitle: Strings.Achievements.hundredCheckinsGendered, description: Strings.Achievements.hundredCheckinsDesc, emoji: "💯", threshold: 100, category: .checkins),
         // Rachas
         AppAchievement(id: "app_streak_3", title: Strings.Achievements.streak3, description: Strings.Achievements.streak3Desc, emoji: "🔥", threshold: 3, category: .streaks),
         AppAchievement(id: "app_streak_7", title: Strings.Achievements.streak7, description: Strings.Achievements.streak7Desc, emoji: "⭐", threshold: 7, category: .streaks),
@@ -20,18 +20,18 @@ enum AppAchievementCatalog {
         AppAchievement(id: "app_streak_30", title: Strings.Achievements.streak30, description: Strings.Achievements.streak30Desc, emoji: "👑", threshold: 30, category: .streaks),
         AppAchievement(id: "app_streak_60", title: Strings.Achievements.streak60, description: Strings.Achievements.streak60Desc, emoji: "💎", threshold: 60, category: .streaks),
         // Gratitud
-        AppAchievement(id: "app_first_gratitude", title: Strings.Achievements.firstGratitude, description: Strings.Achievements.firstGratitudeDesc, emoji: "🙏", threshold: 1, category: .gratitude),
+        AppAchievement(id: "app_first_gratitude", title: Strings.Achievements.firstGratitude, genderedTitle: Strings.Achievements.firstGratitudeGendered, description: Strings.Achievements.firstGratitudeDesc, emoji: "🙏", threshold: 1, category: .gratitude),
         AppAchievement(id: "app_7_gratitudes", title: Strings.Achievements.sevenGratitudes, description: Strings.Achievements.sevenGratitudesDesc, emoji: "🌟", threshold: 7, category: .gratitude),
         // Emociones
         AppAchievement(id: "app_all_emotions", title: Strings.Achievements.allEmotions, description: Strings.Achievements.allEmotionsDesc, emoji: "🌈", threshold: 12, category: .emotions),
         // Compostaje
         AppAchievement(id: "app_first_compost", title: Strings.Achievements.firstCompost, description: Strings.Achievements.firstCompostDesc, emoji: "🌿", threshold: 1, category: .compost),
-        AppAchievement(id: "app_5_composts", title: Strings.Achievements.fiveComposts, description: Strings.Achievements.fiveCompostsDesc, emoji: "🦋", threshold: 5, category: .compost),
+        AppAchievement(id: "app_5_composts", title: Strings.Achievements.fiveComposts, genderedTitle: Strings.Achievements.fiveCompostsGendered, description: Strings.Achievements.fiveCompostsDesc, emoji: "🦋", threshold: 5, category: .compost),
         // Habilidades
         AppAchievement(id: "app_first_practice", title: Strings.Achievements.firstPractice, description: Strings.Achievements.firstPracticeDesc, emoji: "🧘", threshold: 1, category: .skills),
         AppAchievement(id: "app_5_practices", title: Strings.Achievements.fivePractices, description: Strings.Achievements.fivePracticesDesc, emoji: "💪", threshold: 5, category: .skills),
-        AppAchievement(id: "app_15_practices", title: Strings.Achievements.fifteenPractices, description: Strings.Achievements.fifteenPracticesDesc, emoji: "🏆", threshold: 15, category: .skills),
-        AppAchievement(id: "app_all_categories", title: Strings.Achievements.allCategories, description: Strings.Achievements.allCategoriesDesc, emoji: "🗺️", threshold: 5, category: .skills),
+        AppAchievement(id: "app_15_practices", title: Strings.Achievements.fifteenPractices, genderedTitle: Strings.Achievements.fifteenPracticesGendered, description: Strings.Achievements.fifteenPracticesDesc, emoji: "🏆", threshold: 15, category: .skills),
+        AppAchievement(id: "app_all_categories", title: Strings.Achievements.allCategories, genderedTitle: Strings.Achievements.allCategoriesGendered, description: Strings.Achievements.allCategoriesDesc, emoji: "🗺️", threshold: 5, category: .skills),
     ]
 
     /// Logro por su id, o `nil` si no existe.

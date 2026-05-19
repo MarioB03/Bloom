@@ -156,4 +156,16 @@ enum GardenEconomy {
         updated.spent += amount
         return updated
     }
+
+    /// Acredita semillas en el saldo persistido y sincroniza el widget. Para
+    /// usar desde fuera del `GardenStore` (p. ej. al compostar un check-in).
+    /// Devuelve el nuevo saldo total.
+    @discardableResult
+    static func creditSeeds(_ amount: Int) -> Int {
+        guard amount > 0 else { return GardenPersistence.loadSeedBalance().total }
+        let updated = adding(amount, to: GardenPersistence.loadSeedBalance())
+        GardenPersistence.saveSeedBalance(updated)
+        WidgetSyncService.update { $0.seedBalance = updated.total }
+        return updated.total
+    }
 }

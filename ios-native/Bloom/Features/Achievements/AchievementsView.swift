@@ -9,6 +9,7 @@ struct AchievementsView: View {
 
     @Environment(AuthService.self) private var auth
     @Environment(FirestoreService.self) private var firestore
+    @Environment(GenderService.self) private var gender
 
     @State private var appUnlocked: Set<String> = []
     @State private var gardenUnlocked: Set<String> = []
@@ -97,7 +98,7 @@ struct AchievementsView: View {
             AppAchievementCatalog.progress(for: achievement, data: $0)
         } ?? 0
         return achievementCard(
-            title: achievement.title,
+            title: achievement.resolvedTitle(using: gender),
             isUnlocked: isUnlocked,
             icon: { Text(isUnlocked ? achievement.emoji : "🔒").font(.system(size: 28)) }
         ) {
@@ -209,4 +210,5 @@ struct AchievementsView: View {
     }
     .environment(AuthService())
     .environment(FirestoreService())
+    .environment(GenderService())
 }

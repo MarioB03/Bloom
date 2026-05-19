@@ -17,9 +17,11 @@ import StoreKit
 final class PremiumService {
 
     /// IDs de los productos del App Store. Deben coincidir con los creados
-    /// en App Store Connect.
-    static let annualProductID = "bloom.premium.annual"
-    static let monthlyProductID = "bloom.premium.monthly"
+    /// en App Store Connect (subscription group "Bloom Premium" — los
+    /// productos vienen del proyecto RN, no se pueden renombrar una vez
+    /// creados en ASC).
+    static let annualProductID = "bloom_premium_annual"
+    static let monthlyProductID = "bloom_premium_monthly"
     static let productIDs: [String] = [annualProductID, monthlyProductID]
 
     enum PurchaseError: LocalizedError {
