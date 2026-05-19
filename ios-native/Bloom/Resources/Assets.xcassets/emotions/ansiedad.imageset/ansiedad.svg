@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Ansiedad · Hiedra</title>
+
+  
+  <path d="M32 60 Q24 54 28 46 Q34 40 28 32 Q22 26 30 20 Q38 16 34 8" stroke="#557055" stroke-width="2" stroke-linecap="round"></path>
+
+  
+  
+  <path d="M26 52 Q22 50 20 53 Q21 56 25 55 Z" fill="#B58B9E"></path>
+  <path d="M21 53 L25 54" stroke="#FAF6F0" stroke-width="0.5" opacity="0.6"></path>
+
+  
+  <path d="M30 46 Q36 44 38 48 Q35 51 31 49 Z" fill="#B58B9E"></path>
+
+  
+  <path d="M28 38 Q22 37 20 40 Q22 43 26 41 Z" fill="#9E7888"></path>
+
+  
+  <path d="M30 28 Q36 26 38 30 Q35 32 31 31 Z" fill="#B58B9E"></path>
+
+  
+  <path d="M28 20 Q22 18 20 22 Q23 24 27 22 Z" fill="#9E7888"></path>
+
+  
+  <path d="M34 10 Q40 8 41 12 Q38 14 34 12 Z" fill="#B58B9E"></path>
+
+  
+  <path d="M28 46 Q26 44 26 42" stroke="#557055" stroke-width="0.8" stroke-linecap="round"></path>
+  <path d="M28 32 Q31 33 32 32" stroke="#557055" stroke-width="0.8" stroke-linecap="round"></path>
+</svg>

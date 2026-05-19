@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Bebedero</title>
+
+  
+  <ellipse cx="32" cy="58" rx="16" ry="2" fill="#B8AFA6" opacity="0.25"></ellipse>
+  
+  <ellipse cx="32" cy="54" rx="10" ry="3" fill="#B8AFA6"></ellipse>
+  
+  <path d="M28 54 Q28 50 30 38 Q31 32 33 32 Q35 32 36 38 Q38 50 36 54 Z" fill="#D6CCC2"></path>
+  <path d="M30 50 Q32 50 34 50" stroke="#7A7570" stroke-width="0.8" opacity="0.5"></path>
+  
+  <ellipse cx="32" cy="28" rx="14" ry="4" fill="#D6CCC2"></ellipse>
+  <ellipse cx="32" cy="26" rx="14" ry="4" fill="#FAF6F0"></ellipse>
+  
+  <ellipse cx="32" cy="26" rx="11" ry="2.5" fill="#7E9EB5"></ellipse>
+  <ellipse cx="32" cy="25" rx="11" ry="2" fill="#FAF6F0" opacity="0.4"></ellipse>
+  
+  <g transform="translate(44 22)">
+    <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill="#A45B44"></ellipse>
+    <circle cx="2" cy="-1.5" r="1.8" fill="#A45B44"></circle>
+    <circle cx="2.7" cy="-1.8" r="0.4" fill="#1C1917"></circle>
+    <path d="M3.6 -1.5 L4.8 -1.2 L3.6 -0.8 Z" fill="#E8A948"></path>
+    <path d="M-3 0 L-4 -1 L-3.5 1 Z" fill="#8B4A37"></path>
+  </g>
+
+</svg>

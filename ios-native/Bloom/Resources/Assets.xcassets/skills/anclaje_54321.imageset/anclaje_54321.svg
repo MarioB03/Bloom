@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Anclaje 5-4-3-2-1</title>
+
+  
+  
+  <circle cx="32" cy="14" r="4" stroke="#7E9EB5" stroke-width="2" fill="none"></circle>
+  
+  <line x1="32" y1="18" x2="32" y2="48" stroke="#7E9EB5" stroke-width="2.4" stroke-linecap="round"></line>
+  
+  <line x1="22" y1="26" x2="42" y2="26" stroke="#7E9EB5" stroke-width="2.2" stroke-linecap="round"></line>
+  
+  <path d="M32 42 Q20 44 18 36" stroke="#7E9EB5" stroke-width="2.4" stroke-linecap="round" fill="none"></path>
+  <path d="M32 42 Q44 44 46 36" stroke="#7E9EB5" stroke-width="2.4" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M18 36 L14 34 L18 32" stroke="#7E9EB5" stroke-width="2" stroke-linecap="round" fill="none"></path>
+  <path d="M46 36 L50 34 L46 32" stroke="#7E9EB5" stroke-width="2" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M32 22 Q26 28 32 34 Q38 40 32 46" stroke="#6B8B6A" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+  <path d="M28 26 Q24 26 22 28" stroke="#6B8B6A" stroke-width="0.8" stroke-linecap="round"></path>
+  <ellipse cx="22" cy="28" rx="1.6" ry="1" fill="#6B8B6A"></ellipse>
+  <path d="M36 30 Q40 30 42 32" stroke="#6B8B6A" stroke-width="0.8" stroke-linecap="round"></path>
+  <ellipse cx="42" cy="32" rx="1.6" ry="1" fill="#6B8B6A"></ellipse>
+  <path d="M28 38 Q24 38 22 40" stroke="#6B8B6A" stroke-width="0.8" stroke-linecap="round"></path>
+  <ellipse cx="22" cy="40" rx="1.6" ry="1" fill="#6B8B6A"></ellipse>
+  
+  <g fill="#E8A948">
+    <circle cx="50" cy="14" r="1"></circle>
+    <circle cx="50" cy="18" r="1"></circle>
+    <circle cx="50" cy="22" r="1"></circle>
+    <circle cx="50" cy="26" r="1"></circle>
+    <circle cx="50" cy="30" r="1"></circle>
+  </g>
+
+</svg>

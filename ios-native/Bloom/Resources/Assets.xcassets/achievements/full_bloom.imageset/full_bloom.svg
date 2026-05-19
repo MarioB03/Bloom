@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Floración completa</title>
+
+  <circle cx="32" cy="32" r="28" fill="#C4725A" opacity="0.15"></circle>
+  <circle cx="32" cy="32" r="22" fill="#FAF6F0"></circle>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#C4725A" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"></circle>
+  
+  
+  <g transform="translate(32 32)">
+    <g><path d="M0 -4 C-8 -10 -10 -20 0 -22 C10 -20 8 -10 0 -4 Z" fill="#C4725A"></path></g>
+    <g transform="rotate(72)"><path d="M0 -4 C-8 -10 -10 -20 0 -22 C10 -20 8 -10 0 -4 Z" fill="#C4725A"></path></g>
+    <g transform="rotate(144)"><path d="M0 -4 C-8 -10 -10 -20 0 -22 C10 -20 8 -10 0 -4 Z" fill="#C4725A"></path></g>
+    <g transform="rotate(216)"><path d="M0 -4 C-8 -10 -10 -20 0 -22 C10 -20 8 -10 0 -4 Z" fill="#C4725A"></path></g>
+    <g transform="rotate(288)"><path d="M0 -4 C-8 -10 -10 -20 0 -22 C10 -20 8 -10 0 -4 Z" fill="#C4725A"></path></g>
+    
+    <g opacity="0.45">
+      <path d="M0 -8 Q-2 -12 -2 -16" stroke="#FAF6F0" stroke-width="1" fill="none" stroke-linecap="round"></path>
+      <g transform="rotate(72)"><path d="M0 -8 Q-2 -12 -2 -16" stroke="#FAF6F0" stroke-width="1" fill="none" stroke-linecap="round"></path></g>
+      <g transform="rotate(144)"><path d="M0 -8 Q-2 -12 -2 -16" stroke="#FAF6F0" stroke-width="1" fill="none" stroke-linecap="round"></path></g>
+      <g transform="rotate(216)"><path d="M0 -8 Q-2 -12 -2 -16" stroke="#FAF6F0" stroke-width="1" fill="none" stroke-linecap="round"></path></g>
+      <g transform="rotate(288)"><path d="M0 -8 Q-2 -12 -2 -16" stroke="#FAF6F0" stroke-width="1" fill="none" stroke-linecap="round"></path></g>
+    </g>
+    <circle r="4" fill="#E8A948"></circle>
+    <circle r="1.4" fill="#6E3A2B"></circle>
+  </g>
+
+  
+</svg>

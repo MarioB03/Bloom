@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Frustración · Rosa espinosa</title>
+
+  
+  <path d="M32 60 Q31 52 30 44 Q29 38 32 32" stroke="#6B8B6A" stroke-width="2.2" stroke-linecap="round"></path>
+
+  
+  <path d="M30.5 50 L27 49 L30.5 50.5 Z" fill="#557055"></path>
+  <path d="M30 42 L33.5 41 L30 42.5 Z" fill="#557055"></path>
+  <path d="M30 36 L26.5 35 L30 36.5 Z" fill="#557055"></path>
+
+  
+  <path d="M30 46 Q22 42 18 46 Q22 50 29 48 Z" fill="#6B8B6A"></path>
+  <path d="M21 46 Q25 47 28 47" stroke="#FAF6F0" stroke-width="0.5" opacity="0.5"></path>
+
+  
+  <path d="M28 31 Q32 33 36 31 Q35 34 32 34 Q29 34 28 31 Z" fill="#557055"></path>
+
+  
+  <g transform="translate(32 23)">
+    
+    <g>
+      <ellipse cx="0" cy="-9" rx="5" ry="6" fill="#C4725A"></ellipse>
+      <ellipse cx="-9" cy="-2" rx="6" ry="5" fill="#C4725A"></ellipse>
+      <ellipse cx="9" cy="-2" rx="6" ry="5" fill="#C4725A"></ellipse>
+      <ellipse cx="-6" cy="6" rx="5.5" ry="4.5" fill="#A45B44"></ellipse>
+      <ellipse cx="6" cy="6" rx="5.5" ry="4.5" fill="#A45B44"></ellipse>
+    </g>
+    
+    <g>
+      <ellipse cx="0" cy="-5" rx="3.5" ry="4" fill="#A45B44"></ellipse>
+      <ellipse cx="-5" cy="1" rx="4" ry="3.5" fill="#A45B44"></ellipse>
+      <ellipse cx="5" cy="1" rx="4" ry="3.5" fill="#A45B44"></ellipse>
+    </g>
+    
+    <path d="M-3 -1 Q-2 -4 0 -4 Q3 -4 3 -1 Q3 2 0 2 Q-3 2 -3 -1 Z" fill="#8B4A37"></path>
+    
+    <path d="M0 -2 Q2 -2 2 0 Q2 1 0 1 Q-1 1 -1 0" stroke="#6E3A2B" stroke-width="0.8" fill="none" stroke-linecap="round"></path>
+    
+    <g stroke="#FAF6F0" stroke-width="0.6" fill="none" opacity="0.35" stroke-linecap="round">
+      <path d="M0 -12 Q-2 -10 -2 -8"></path>
+      <path d="M-9 -4 Q-7 -3 -6 -2"></path>
+      <path d="M9 -4 Q7 -3 6 -2"></path>
+    </g>
+  </g>
+</svg>

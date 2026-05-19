@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Dos semanas</title>
+
+  <circle cx="32" cy="32" r="28" fill="#D49330" opacity="0.15"></circle>
+  <circle cx="32" cy="32" r="22" fill="#FAF6F0"></circle>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#D49330" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"></circle>
+  
+  
+  <g transform="translate(32 32)" fill="#E8A948">
+    <path d="M0 -18 L5 -6 L18 -5 L8 4 L11 17 L0 10 L-11 17 L-8 4 L-18 -5 L-5 -6 Z"></path>
+    <path d="M0 -18 L5 -6 L18 -5 L8 4 L11 17 L0 10 L-11 17 L-8 4 L-18 -5 L-5 -6 Z" fill="#F0C478" opacity="0.5"></path>
+  </g>
+  <g transform="translate(32 32)" fill="none" stroke="#D49330" stroke-width="0.6" opacity="0.8">
+    <path d="M0 -18 L5 -6 L18 -5 L8 4 L11 17 L0 10 L-11 17 L-8 4 L-18 -5 L-5 -6 Z"></path>
+  </g>
+  
+  <text x="44" y="20" font-family="DM Serif Display, serif" font-size="10" fill="#B57A20" font-style="italic">14</text>
+
+  
+</svg>

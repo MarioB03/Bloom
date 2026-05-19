@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Conejo</title>
+
+  
+  <ellipse cx="32" cy="46" rx="14" ry="12" fill="#F3EDE6"></ellipse>
+  <ellipse cx="32" cy="42" rx="12" ry="9" fill="#FAF6F0"></ellipse>
+  
+  <circle cx="32" cy="28" r="10" fill="#F3EDE6"></circle>
+  
+  <ellipse cx="27" cy="14" rx="2.5" ry="9" fill="#F3EDE6" transform="rotate(-10 27 14)"></ellipse>
+  <ellipse cx="37" cy="14" rx="2.5" ry="9" fill="#F3EDE6" transform="rotate(10 37 14)"></ellipse>
+  
+  <ellipse cx="27" cy="14" rx="1.2" ry="6" fill="#C9A0B0" transform="rotate(-10 27 14)"></ellipse>
+  <ellipse cx="37" cy="14" rx="1.2" ry="6" fill="#C9A0B0" transform="rotate(10 37 14)"></ellipse>
+  
+  <circle cx="28" cy="28" r="1.4" fill="#1C1917"></circle>
+  <circle cx="36" cy="28" r="1.4" fill="#1C1917"></circle>
+  <circle cx="28.4" cy="27.6" r="0.4" fill="#FAF6F0"></circle>
+  <circle cx="36.4" cy="27.6" r="0.4" fill="#FAF6F0"></circle>
+  
+  <path d="M30.5 32 L33.5 32 L32 34 Z" fill="#C9A0B0"></path>
+  <path d="M32 34 L32 36" stroke="#5C5752" stroke-width="0.4"></path>
+  
+  <line x1="26" y1="33" x2="22" y2="33" stroke="#7A7570" stroke-width="0.4"></line>
+  <line x1="38" y1="33" x2="42" y2="33" stroke="#7A7570" stroke-width="0.4"></line>
+  
+  <circle cx="25" cy="32" r="1.2" fill="#C9A0B0" opacity="0.5"></circle>
+  <circle cx="39" cy="32" r="1.2" fill="#C9A0B0" opacity="0.5"></circle>
+  
+  <ellipse cx="26" cy="52" rx="3" ry="4" fill="#FAF6F0"></ellipse>
+  <ellipse cx="38" cy="52" rx="3" ry="4" fill="#FAF6F0"></ellipse>
+
+</svg>

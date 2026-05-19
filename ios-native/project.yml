@@ -1,0 +1,84 @@
+name: Bloom
+options:
+  bundleIdPrefix: com.akemi01
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: LLU2292H63
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "11.0.0"
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "8.0.0"
+
+targets:
+  Bloom:
+    type: application
+    platform: iOS
+    sources:
+      - path: Bloom
+      # Configuración local de StoreKit para el paywall en simulador. No se
+      # empaqueta con la app (solo lo usa Xcode al simular compras), por eso
+      # `buildPhase: none`. Sin esta entrada xcodegen no añadía el archivo
+      # al proyecto y el scheme apuntaba a una referencia rota → el paywall
+      # mostraba "Suscripciones no disponibles".
+      - path: Bloom.storekit
+        buildPhase: none
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akemi01.bloom
+        INFOPLIST_FILE: Bloom/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Bloom/Resources/Bloom.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+    dependencies:
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      # Embed la extensión del widget para que aparezca en la galería de
+      # widgets del sistema al instalar la app. El target `BloomWidget` se
+      # define más abajo.
+      - target: BloomWidget
+    scheme:
+      testTargets: []
+      # Conecta el StoreKit Configuration local con el scheme para que el
+      # paywall vea los productos en simulador sin tener que pasar por App
+      # Store Connect. Path relativo al directorio del `.xcodeproj` (no al
+      # `.xcscheme`): el archivo vive al lado, en `ios-native/Bloom.storekit`.
+      # Antes vivía en `xcuserdata/`, que se borra con cada
+      # `xcodegen generate`.
+      storeKitConfiguration: Bloom.storekit
+
+  BloomWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: BloomWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akemi01.bloom.widget
+        INFOPLIST_FILE: BloomWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: BloomWidget/BloomWidget.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        # iOS 17 introduce containerBackground(_:for:) — exigido por el
+        # widget para no salir vacío en pantalla de inicio.
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        SKIP_INSTALL: YES

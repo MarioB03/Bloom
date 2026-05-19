@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Otoño · Hoja de arce</title>
+
+  
+  <path d="M32 58 L32 48" stroke="#6E3A2B" stroke-width="1.6" stroke-linecap="round"></path>
+
+  
+  
+  <path d="M32 48&#xA;           L26 42&#xA;           L18 44&#xA;           L22 36&#xA;           L14 32&#xA;           L20 30&#xA;           L16 22&#xA;           L24 24&#xA;           L24 16&#xA;           L30 22&#xA;           L32 8&#xA;           L34 22&#xA;           L40 16&#xA;           L40 24&#xA;           L48 22&#xA;           L44 30&#xA;           L50 32&#xA;           L42 36&#xA;           L46 44&#xA;           L38 42&#xA;           Z" fill="#C4725A"></path>
+
+  
+  <path d="M32 44&#xA;           L28 40&#xA;           L23 41&#xA;           L25 35&#xA;           L20 32&#xA;           L24 31&#xA;           L21 26&#xA;           L26 28&#xA;           L26 22&#xA;           L30 26&#xA;           L32 14&#xA;           L34 26&#xA;           L38 22&#xA;           L38 28&#xA;           L43 26&#xA;           L40 31&#xA;           L44 32&#xA;           L39 35&#xA;           L41 41&#xA;           L36 40&#xA;           Z" fill="#E8A948" opacity="0.85"></path>
+
+  
+  <path d="M32 46 L32 14" stroke="#8B4A37" stroke-width="0.8" stroke-linecap="round" opacity="0.6"></path>
+
+  
+  <path d="M32 40 L22 38" stroke="#8B4A37" stroke-width="0.6" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M32 40 L42 38" stroke="#8B4A37" stroke-width="0.6" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M32 32 L20 30" stroke="#8B4A37" stroke-width="0.6" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M32 32 L44 30" stroke="#8B4A37" stroke-width="0.6" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M32 24 L24 22" stroke="#8B4A37" stroke-width="0.6" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M32 24 L40 22" stroke="#8B4A37" stroke-width="0.6" stroke-linecap="round" opacity="0.5"></path>
+</svg>

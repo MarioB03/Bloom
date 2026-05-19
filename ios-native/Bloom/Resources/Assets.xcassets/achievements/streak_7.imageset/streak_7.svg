@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Una semana</title>
+
+  <circle cx="32" cy="32" r="28" fill="#A45B44" opacity="0.15"></circle>
+  <circle cx="32" cy="32" r="22" fill="#FAF6F0"></circle>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#A45B44" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"></circle>
+  
+  
+  <g transform="translate(32 36)">
+    <path d="M0 8 Q-12 4 -10 -8 Q-8 -16 -2 -18 Q-1 -12 2 -16 Q6 -10 8 -4 Q12 4 0 8 Z" fill="#C4725A"></path>
+    <path d="M0 6 Q-7 2 -6 -6 Q-4 -12 0 -14 Q4 -10 6 -4 Q8 2 0 6 Z" fill="#E8A948"></path>
+    <path d="M0 4 Q-3 0 -2 -6 Q0 -10 2 -6 Q3 0 0 4 Z" fill="#FAF6F0"></path>
+  </g>
+  
+  <g fill="#8B4A37" font-family="DM Serif Display, serif" font-size="11" font-style="italic">
+    <text x="46" y="22">7</text>
+  </g>
+
+  
+</svg>

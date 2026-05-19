@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Gato</title>
+
+  
+  
+  <path d="M44 50 Q52 46 52 38 Q50 34 44 36" stroke="#A45B44" stroke-width="4" fill="none" stroke-linecap="round"></path>
+  
+  <path d="M18 54 Q18 40 24 36 Q30 32 32 32 Q34 32 40 36 Q46 40 46 54 Z" fill="#A45B44"></path>
+  
+  <path d="M28 44 Q32 42 36 44 Q34 50 32 52 Q30 50 28 44 Z" fill="#F3EDE6"></path>
+  
+  <circle cx="32" cy="26" r="11" fill="#A45B44"></circle>
+  
+  <path d="M22 22 L24 12 L28 20 Z" fill="#A45B44"></path>
+  <path d="M42 22 L40 12 L36 20 Z" fill="#A45B44"></path>
+  <path d="M23 19 L25 14 L26 19 Z" fill="#8B4A37"></path>
+  <path d="M41 19 L39 14 L38 19 Z" fill="#8B4A37"></path>
+  
+  <ellipse cx="27" cy="26" rx="1.6" ry="2" fill="#1C1917"></ellipse>
+  <ellipse cx="37" cy="26" rx="1.6" ry="2" fill="#1C1917"></ellipse>
+  <circle cx="27.3" cy="25.4" r="0.5" fill="#FAF6F0"></circle>
+  <circle cx="37.3" cy="25.4" r="0.5" fill="#FAF6F0"></circle>
+  
+  <path d="M31 29 L33 29 L32 30.5 Z" fill="#6E3A2B"></path>
+  
+  <path d="M32 30.5 Q30 32 28 31" stroke="#6E3A2B" stroke-width="0.6" fill="none" stroke-linecap="round"></path>
+  <path d="M32 30.5 Q34 32 36 31" stroke="#6E3A2B" stroke-width="0.6" fill="none" stroke-linecap="round"></path>
+  
+  <line x1="24" y1="29" x2="20" y2="28" stroke="#5C5752" stroke-width="0.5"></line>
+  <line x1="24" y1="30" x2="20" y2="31" stroke="#5C5752" stroke-width="0.5"></line>
+  <line x1="40" y1="29" x2="44" y2="28" stroke="#5C5752" stroke-width="0.5"></line>
+  <line x1="40" y1="30" x2="44" y2="31" stroke="#5C5752" stroke-width="0.5"></line>
+  
+  <ellipse cx="22" cy="54" rx="3" ry="1.5" fill="#8B4A37"></ellipse>
+  <ellipse cx="32" cy="55" rx="3" ry="1.5" fill="#8B4A37"></ellipse>
+
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Banco</title>
+
+  
+  <ellipse cx="32" cy="56" rx="22" ry="2" fill="#B8AFA6" opacity="0.2"></ellipse>
+  
+  <rect x="14" y="20" width="4" height="20" rx="1.5" fill="#8B4A37"></rect>
+  <rect x="46" y="20" width="4" height="20" rx="1.5" fill="#8B4A37"></rect>
+  
+  <rect x="12" y="22" width="40" height="3" rx="1.2" fill="#A45B44"></rect>
+  <rect x="12" y="28" width="40" height="3" rx="1.2" fill="#A45B44"></rect>
+  
+  <rect x="10" y="38" width="44" height="5" rx="2" fill="#A45B44"></rect>
+  <rect x="10" y="41" width="44" height="2" fill="#8B4A37" opacity="0.5"></rect>
+  
+  <rect x="14" y="43" width="4" height="13" rx="1.5" fill="#8B4A37"></rect>
+  <rect x="46" y="43" width="4" height="13" rx="1.5" fill="#8B4A37"></rect>
+  
+  <line x1="14" y1="40" x2="50" y2="40" stroke="#6E3A2B" stroke-width="0.4" opacity="0.5"></line>
+
+</svg>

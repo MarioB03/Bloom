@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Calma · Bambú sereno</title>
+
+  
+  <path d="M22 60 L22 18" stroke="#6B8B6A" stroke-width="2.6" stroke-linecap="round"></path>
+  <path d="M32 60 L32 14" stroke="#8BA888" stroke-width="3" stroke-linecap="round"></path>
+  <path d="M42 60 L42 22" stroke="#6B8B6A" stroke-width="2.6" stroke-linecap="round"></path>
+
+  
+  <g stroke="#3F5440" stroke-width="0.9" stroke-linecap="round">
+    <line x1="20" y1="48" x2="24" y2="48"></line>
+    <line x1="20" y1="34" x2="24" y2="34"></line>
+    <line x1="20" y1="22" x2="24" y2="22"></line>
+
+    <line x1="30" y1="52" x2="34" y2="52"></line>
+    <line x1="30" y1="38" x2="34" y2="38"></line>
+    <line x1="30" y1="24" x2="34" y2="24"></line>
+
+    <line x1="40" y1="50" x2="44" y2="50"></line>
+    <line x1="40" y1="36" x2="44" y2="36"></line>
+    <line x1="40" y1="26" x2="44" y2="26"></line>
+  </g>
+
+  
+  
+  <path d="M22 18 Q14 14 12 18 Q16 20 22 18 Z" fill="#8BA888"></path>
+  <path d="M22 18 Q18 12 22 8 Q24 14 22 18 Z" fill="#A8C4A5"></path>
+
+  
+  <path d="M32 14 Q24 10 22 14 Q28 16 32 14 Z" fill="#6B8B6A"></path>
+  <path d="M32 14 Q40 10 42 14 Q36 16 32 14 Z" fill="#8BA888"></path>
+  <path d="M32 14 Q30 6 32 4 Q34 6 32 14 Z" fill="#A8C4A5"></path>
+
+  
+  <path d="M42 22 Q50 18 52 22 Q48 24 42 22 Z" fill="#8BA888"></path>
+  <path d="M42 22 Q44 14 42 12 Q40 16 42 22 Z" fill="#A8C4A5"></path>
+</svg>

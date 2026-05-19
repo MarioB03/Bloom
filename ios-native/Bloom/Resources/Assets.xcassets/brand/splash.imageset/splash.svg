@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1242" height="2688" viewBox="0 0 1242 2688" fill="none">
+  
+  <defs>
+    <linearGradient id="splashbg" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FAF6F0"></stop>
+      <stop offset="100%" stop-color="#F3EDE6"></stop>
+    </linearGradient>
+    <radialGradient id="auraGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F0C478" stop-opacity="0.18"></stop>
+      <stop offset="60%" stop-color="#F0C478" stop-opacity="0.05"></stop>
+      <stop offset="100%" stop-color="#F0C478" stop-opacity="0"></stop>
+    </radialGradient>
+  </defs>
+
+  
+  <rect x="0" y="0" width="1242" height="2688" fill="url(#splashbg)"></rect>
+
+  
+  <circle cx="621" cy="1180" r="700" fill="url(#auraGlow)"></circle>
+
+  
+  <g transform="translate(621 1180) scale(15)">
+    
+    <path d="M0 26 Q0 18 0 6" stroke="#8BA888" stroke-width="2.4" stroke-linecap="round"></path>
+    
+    <path d="M0 17 Q-10 13 -14 17 Q-10 22 -3 20 Q0 19 0 17 Z" fill="#8BA888"></path>
+    <path d="M-10 17 Q-6 18 -2 19" stroke="#FAF6F0" stroke-width="0.7" stroke-linecap="round" opacity="0.6"></path>
+
+    <g transform="translate(0 -6)">
+      <g><path d="M0 -4 C-6 -10 -7 -18 0 -22 C7 -18 6 -10 0 -4 Z" fill="#C4725A"></path></g>
+      <g transform="rotate(72)"><path d="M0 -4 C-6 -10 -7 -18 0 -22 C7 -18 6 -10 0 -4 Z" fill="#C4725A"></path></g>
+      <g transform="rotate(144)"><path d="M0 -4 C-6 -10 -7 -18 0 -22 C7 -18 6 -10 0 -4 Z" fill="#C4725A"></path></g>
+      <g transform="rotate(216)"><path d="M0 -4 C-6 -10 -7 -18 0 -22 C7 -18 6 -10 0 -4 Z" fill="#C4725A"></path></g>
+      <g transform="rotate(288)"><path d="M0 -4 C-6 -10 -7 -18 0 -22 C7 -18 6 -10 0 -4 Z" fill="#C4725A"></path></g>
+
+      <g opacity="0.32" stroke="#FAF6F0" stroke-width="1" fill="none" stroke-linecap="round">
+        <path d="M0 -8 C-2 -12 -2 -17 0 -20"></path>
+        <g transform="rotate(72)"><path d="M0 -8 C-2 -12 -2 -17 0 -20"></path></g>
+        <g transform="rotate(144)"><path d="M0 -8 C-2 -12 -2 -17 0 -20"></path></g>
+        <g transform="rotate(216)"><path d="M0 -8 C-2 -12 -2 -17 0 -20"></path></g>
+        <g transform="rotate(288)"><path d="M0 -8 C-2 -12 -2 -17 0 -20"></path></g>
+      </g>
+
+      <circle cx="0" cy="0" r="4.4" fill="#E8A948"></circle>
+      <circle cx="-1.4" cy="-1.4" r="1.2" fill="#FAF6F0" opacity="0.7"></circle>
+    </g>
+  </g>
+
+  
+  <g transform="translate(621 1600)" text-anchor="middle">
+    <text font-family="&#39;DM Serif Display&#39;, serif" font-size="120" fill="#1C1917" letter-spacing="-1">Bloom</text>
+    <text y="80" font-family="&#39;DM Sans&#39;, sans-serif" font-size="38" fill="#7A7570" font-weight="400" letter-spacing="2">diario emocional</text>
+  </g>
+
+  
+  <g transform="translate(0 2688)" opacity="0.85">
+    
+    <path d="M120 0 Q120 -120 120 -200" stroke="#8BA888" stroke-width="6" stroke-linecap="round"></path>
+    <path d="M120 -120 Q100 -130 88 -120 Q98 -108 118 -114 Z" fill="#8BA888"></path>
+    <path d="M120 -200 Q108 -218 100 -214 Q108 -228 120 -224 Q132 -228 140 -214 Q132 -218 120 -200 Z" fill="#C4725A"></path>
+    <circle cx="120" cy="-216" r="6" fill="#E8A948"></circle>
+
+    <path d="M200 0 Q200 -90 200 -160" stroke="#6B8B6A" stroke-width="5" stroke-linecap="round"></path>
+    <path d="M200 -90 Q220 -100 230 -90 Q220 -78 202 -84 Z" fill="#6B8B6A"></path>
+    <g transform="translate(200 -170)">
+      <g><ellipse cx="0" cy="-10" rx="6" ry="11" fill="#E8A948"></ellipse></g>
+      <g transform="rotate(72)"><ellipse cx="0" cy="-10" rx="6" ry="11" fill="#E8A948"></ellipse></g>
+      <g transform="rotate(144)"><ellipse cx="0" cy="-10" rx="6" ry="11" fill="#E8A948"></ellipse></g>
+      <g transform="rotate(216)"><ellipse cx="0" cy="-10" rx="6" ry="11" fill="#E8A948"></ellipse></g>
+      <g transform="rotate(288)"><ellipse cx="0" cy="-10" rx="6" ry="11" fill="#E8A948"></ellipse></g>
+      <circle r="5" fill="#8B4A37"></circle>
+    </g>
+
+    
+    <path d="M340 0 L340 -240" stroke="#6B8B6A" stroke-width="5" stroke-linecap="round"></path>
+    <g fill="#8B7EB5">
+      <ellipse cx="340" cy="-240" rx="6" ry="9"></ellipse>
+      <ellipse cx="342" cy="-225" rx="6" ry="9"></ellipse>
+      <ellipse cx="338" cy="-210" rx="6" ry="9"></ellipse>
+      <ellipse cx="340" cy="-195" rx="5" ry="7"></ellipse>
+    </g>
+
+    
+    <path d="M900 0 Q900 -100 900 -190" stroke="#6B8B6A" stroke-width="5" stroke-linecap="round"></path>
+    <path d="M900 -100 Q880 -110 870 -100 Q880 -88 898 -94 Z" fill="#8BA888"></path>
+    <g transform="translate(900 -200)">
+      <g><ellipse cx="0" cy="-10" rx="7" ry="12" fill="#C4725A"></ellipse></g>
+      <g transform="rotate(72)"><ellipse cx="0" cy="-10" rx="7" ry="12" fill="#C4725A"></ellipse></g>
+      <g transform="rotate(144)"><ellipse cx="0" cy="-10" rx="7" ry="12" fill="#C4725A"></ellipse></g>
+      <g transform="rotate(216)"><ellipse cx="0" cy="-10" rx="7" ry="12" fill="#C4725A"></ellipse></g>
+      <g transform="rotate(288)"><ellipse cx="0" cy="-10" rx="7" ry="12" fill="#C4725A"></ellipse></g>
+      <circle r="5" fill="#E8A948"></circle>
+    </g>
+
+    
+    <path d="M1060 0 Q1060 -60 1064 -140" stroke="#8BA888" stroke-width="5" stroke-linecap="round"></path>
+    <path d="M1100 0 Q1100 -40 1090 -110" stroke="#6B8B6A" stroke-width="4" stroke-linecap="round"></path>
+
+    
+    <path d="M0 -8 Q600 -22 1242 -10" stroke="#D4937E" stroke-width="2" stroke-linecap="round" opacity="0.35" fill="none"></path>
+  </g>
+</svg>

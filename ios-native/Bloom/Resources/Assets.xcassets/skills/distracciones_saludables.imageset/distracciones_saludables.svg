@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Distracciones saludables</title>
+
+  
+  <circle cx="32" cy="32" r="20" fill="#C4725A" opacity="0.15"></circle>
+  <circle cx="32" cy="32" r="20" stroke="#A45B44" stroke-width="1.5" fill="none"></circle>
+  <circle cx="32" cy="32" r="14" stroke="#A45B44" stroke-width="1.2" fill="none" opacity="0.7"></circle>
+  <circle cx="32" cy="32" r="8" fill="#E8A948" opacity="0.4"></circle>
+  <circle cx="32" cy="32" r="4" fill="#A45B44"></circle>
+  <circle cx="32" cy="32" r="1.6" fill="#FAF6F0"></circle>
+  
+  <path d="M50 14 L36 28" stroke="#6E3A2B" stroke-width="2" stroke-linecap="round"></path>
+  <path d="M40 28 L36 28 L36 32" stroke="#6E3A2B" stroke-width="2" stroke-linecap="round" fill="none"></path>
+  
+  <path d="M50 14 L52 12 L50 10 L48 12 Z" fill="#A45B44"></path>
+  <path d="M50 14 L54 14 L52 16" stroke="#A45B44" stroke-width="1" fill="none"></path>
+
+</svg>

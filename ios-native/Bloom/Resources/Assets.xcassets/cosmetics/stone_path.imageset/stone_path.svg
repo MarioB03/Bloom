@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Camino de piedra</title>
+
+  
+  <rect x="4" y="4" width="56" height="56" rx="8" fill="#8BA888"></rect>
+  
+  <g fill="#6B8B6A" opacity="0.5">
+    <circle cx="14" cy="14" r="0.8"></circle><circle cx="48" cy="18" r="0.8"></circle>
+    <circle cx="50" cy="46" r="0.8"></circle><circle cx="10" cy="44" r="0.8"></circle>
+    <circle cx="20" cy="52" r="0.8"></circle><circle cx="56" cy="32" r="0.8"></circle>
+  </g>
+  
+  <ellipse cx="20" cy="14" rx="6" ry="4" fill="#D6CCC2"></ellipse>
+  <ellipse cx="20" cy="13" rx="6" ry="4" fill="#F3EDE6"></ellipse>
+  <ellipse cx="34" cy="24" rx="7" ry="4.5" fill="#D6CCC2"></ellipse>
+  <ellipse cx="34" cy="23" rx="7" ry="4.5" fill="#F3EDE6"></ellipse>
+  <ellipse cx="22" cy="36" rx="6" ry="4" fill="#D6CCC2"></ellipse>
+  <ellipse cx="22" cy="35" rx="6" ry="4" fill="#F3EDE6"></ellipse>
+  <ellipse cx="40" cy="44" rx="7" ry="4.5" fill="#D6CCC2"></ellipse>
+  <ellipse cx="40" cy="43" rx="7" ry="4.5" fill="#F3EDE6"></ellipse>
+  <ellipse cx="26" cy="54" rx="6" ry="4" fill="#D6CCC2"></ellipse>
+  <ellipse cx="26" cy="53" rx="6" ry="4" fill="#F3EDE6"></ellipse>
+  
+  <path d="M17 12 Q19 11 22 12" stroke="#B8AFA6" stroke-width="0.4" fill="none" opacity="0.6"></path>
+  <path d="M31 22 Q34 21 37 22" stroke="#B8AFA6" stroke-width="0.4" fill="none" opacity="0.6"></path>
+
+</svg>

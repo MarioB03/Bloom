@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Verano</title>
+
+  
+  <g transform="translate(32 32)">
+    
+    <g stroke="#E8A948" stroke-width="2.4" stroke-linecap="round">
+      <line x1="0" y1="-22" x2="0" y2="-15"></line>
+      <line x1="0" y1="22" x2="0" y2="15"></line>
+      <line x1="-22" y1="0" x2="-15" y2="0"></line>
+      <line x1="22" y1="0" x2="15" y2="0"></line>
+      <line x1="-15" y1="-15" x2="-11" y2="-11"></line>
+      <line x1="15" y1="-15" x2="11" y2="-11"></line>
+      <line x1="-15" y1="15" x2="-11" y2="11"></line>
+      <line x1="15" y1="15" x2="11" y2="11"></line>
+    </g>
+    
+    <circle r="10" fill="#E8A948"></circle>
+    <circle r="10" fill="#F0C478" opacity="0.4"></circle>
+    <circle r="6" fill="#E8A948"></circle>
+    
+    <path d="M-3 -2 Q-3 -1 -2.5 -1" stroke="#8B4A37" stroke-width="1" stroke-linecap="round"></path>
+    <path d="M3 -2 Q3 -1 2.5 -1" stroke="#8B4A37" stroke-width="1" stroke-linecap="round"></path>
+    <path d="M-3 2 Q0 5 3 2" stroke="#8B4A37" stroke-width="1" stroke-linecap="round" fill="none"></path>
+  </g>
+
+</svg>

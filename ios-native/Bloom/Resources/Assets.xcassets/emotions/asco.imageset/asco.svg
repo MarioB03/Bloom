@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  
+  <title>Asco · Musgo</title>
+
+  
+  <ellipse cx="32" cy="56" rx="22" ry="2.5" fill="#557055" opacity="0.2"></ellipse>
+
+  
+  <path d="M10 54 Q8 42 16 40 Q22 38 24 42 Q28 38 32 40 Q36 38 40 42 Q44 38 50 42 Q56 44 54 54 Z" fill="#7A9E7E"></path>
+
+  
+  <path d="M14 54 Q14 48 18 46 Q22 44 24 48 Q28 46 30 50 Q32 46 36 48 Q40 46 44 50 Q48 48 50 54 Z" fill="#557055" opacity="0.4"></path>
+
+  
+  <circle cx="16" cy="42" r="2" fill="#A8C4A5" opacity="0.8"></circle>
+  <circle cx="22" cy="40" r="1.6" fill="#A8C4A5" opacity="0.8"></circle>
+  <circle cx="32" cy="40" r="1.8" fill="#A8C4A5" opacity="0.8"></circle>
+  <circle cx="42" cy="40" r="1.6" fill="#A8C4A5" opacity="0.8"></circle>
+  <circle cx="50" cy="42" r="2" fill="#A8C4A5" opacity="0.8"></circle>
+
+  
+  <g fill="#FAF6F0" opacity="0.55">
+    <circle cx="15" cy="46" r="0.7"></circle>
+    <circle cx="20" cy="50" r="0.6"></circle>
+    <circle cx="27" cy="47" r="0.7"></circle>
+    <circle cx="34" cy="50" r="0.6"></circle>
+    <circle cx="40" cy="47" r="0.7"></circle>
+    <circle cx="46" cy="50" r="0.6"></circle>
+    <circle cx="50" cy="48" r="0.7"></circle>
+  </g>
+
+  
+  <g stroke="#557055" stroke-width="0.9" stroke-linecap="round">
+    <path d="M18 40 Q18 36 19 34"></path>
+    <path d="M30 39 Q30 35 31 33"></path>
+    <path d="M44 39 Q44 35 43 33"></path>
+  </g>
+  
+  <circle cx="19" cy="34" r="1" fill="#557055"></circle>
+  <circle cx="31" cy="33" r="1.1" fill="#557055"></circle>
+  <circle cx="43" cy="33" r="1" fill="#557055"></circle>
+</svg>

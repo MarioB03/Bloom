@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Puente</title>
+
+  
+  <rect x="2" y="44" width="60" height="14" fill="#7E9EB5" opacity="0.5"></rect>
+  <path d="M4 50 Q10 48 16 50 Q22 48 28 50 Q34 48 40 50 Q46 48 52 50 Q58 48 60 50" stroke="#5C7E96" stroke-width="0.8" stroke-linecap="round" opacity="0.6"></path>
+  
+  <path d="M6 44 Q6 32 18 26 Q32 22 46 26 Q58 32 58 44" stroke="#8B4A37" stroke-width="3" fill="none" stroke-linecap="round"></path>
+  
+  <path d="M8 32 Q22 24 32 22 Q42 24 56 32 L56 36 Q42 28 32 26 Q22 28 8 36 Z" fill="#A45B44"></path>
+  
+  <line x1="14" y1="29" x2="14" y2="35" stroke="#6E3A2B" stroke-width="0.6"></line>
+  <line x1="22" y1="26" x2="22" y2="32" stroke="#6E3A2B" stroke-width="0.6"></line>
+  <line x1="32" y1="24" x2="32" y2="30" stroke="#6E3A2B" stroke-width="0.6"></line>
+  <line x1="42" y1="26" x2="42" y2="32" stroke="#6E3A2B" stroke-width="0.6"></line>
+  <line x1="50" y1="29" x2="50" y2="35" stroke="#6E3A2B" stroke-width="0.6"></line>
+  
+  <path d="M8 30 Q22 22 32 20 Q42 22 56 30" stroke="#6E3A2B" stroke-width="1.6" fill="none" stroke-linecap="round"></path>
+  
+  <line x1="14" y1="27" x2="14" y2="22" stroke="#6E3A2B" stroke-width="1.4" stroke-linecap="round"></line>
+  <line x1="32" y1="23" x2="32" y2="18" stroke="#6E3A2B" stroke-width="1.4" stroke-linecap="round"></line>
+  <line x1="50" y1="27" x2="50" y2="22" stroke="#6E3A2B" stroke-width="1.4" stroke-linecap="round"></line>
+
+</svg>

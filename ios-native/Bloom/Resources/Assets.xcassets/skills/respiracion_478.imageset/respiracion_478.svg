@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Respiración 4-7-8</title>
+
+  
+  
+  <path d="M32 12 L32 28" stroke="#A45B44" stroke-width="2.4" stroke-linecap="round"></path>
+  
+  <path d="M28 28 Q18 28 16 38 Q14 48 22 52 Q30 50 30 40 Q30 32 28 28 Z" fill="#C4725A"></path>
+  
+  <path d="M36 28 Q46 28 48 38 Q50 48 42 52 Q34 50 34 40 Q34 32 36 28 Z" fill="#C4725A"></path>
+  
+  <path d="M22 36 Q20 42 22 46" stroke="#FAF6F0" stroke-width="0.8" stroke-linecap="round" opacity="0.6"></path>
+  <path d="M42 36 Q44 42 42 46" stroke="#FAF6F0" stroke-width="0.8" stroke-linecap="round" opacity="0.6"></path>
+  
+  <path d="M22 16 Q26 12 30 14" stroke="#7E9EB5" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.7"></path>
+  <path d="M34 14 Q38 12 42 16" stroke="#7E9EB5" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.7"></path>
+  
+  <text x="14" y="14" font-family="DM Serif Display, serif" font-size="9" fill="#8B4A37" font-style="italic">4</text>
+  <text x="46" y="14" font-family="DM Serif Display, serif" font-size="9" fill="#8B4A37" font-style="italic">8</text>
+
+</svg>

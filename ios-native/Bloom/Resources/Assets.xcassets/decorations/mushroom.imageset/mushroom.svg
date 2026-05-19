@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Seta</title>
+
+  
+  <ellipse cx="32" cy="56" rx="14" ry="2" fill="#B8AFA6" opacity="0.25"></ellipse>
+  
+  <path d="M27 56 Q26 42 28 36 Q32 33 36 36 Q38 42 37 56 Z" fill="#F3EDE6"></path>
+  <path d="M28 50 Q32 51 36 50" stroke="#E8E0D8" stroke-width="0.8" stroke-linecap="round" opacity="0.7"></path>
+  
+  <path d="M14 36 Q14 22 32 18 Q50 22 50 36 Q50 38 48 38 Q32 40 16 38 Q14 38 14 36 Z" fill="#A45B44"></path>
+  
+  <path d="M16 36 Q32 40 48 36" stroke="#6E3A2B" stroke-width="1.2" stroke-linecap="round" opacity="0.5"></path>
+  
+  <ellipse cx="22" cy="26" rx="3" ry="2.5" fill="#FAF6F0"></ellipse>
+  <ellipse cx="38" cy="24" rx="2.5" ry="2" fill="#FAF6F0"></ellipse>
+  <ellipse cx="44" cy="32" rx="2" ry="1.5" fill="#FAF6F0"></ellipse>
+  <ellipse cx="30" cy="30" rx="2" ry="1.5" fill="#FAF6F0"></ellipse>
+  
+  <path d="M14 56 Q14 53 16 51" stroke="#6B8B6A" stroke-width="1.2" stroke-linecap="round"></path>
+  <path d="M48 56 Q48 53 50 51" stroke="#6B8B6A" stroke-width="1.2" stroke-linecap="round"></path>
+
+</svg>
