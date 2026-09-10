@@ -92,4 +92,4 @@ firebase deploy --only hosting
 
 ## Licencia
 
-Proyecto privado.
+Proyecto personal de portfolio (SwiftUI nativo).
