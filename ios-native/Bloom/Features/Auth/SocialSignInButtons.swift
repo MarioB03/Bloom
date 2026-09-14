@@ -1,7 +1,7 @@
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
-@preconcurrency import GoogleSignIn
+import GoogleSignIn
 
 /// Botones de inicio de sesión social (Apple y Google).
 /// Portado de `src/components/auth/SocialSignInButtons.tsx`.
@@ -128,6 +128,8 @@ struct SocialSignInButtons: View {
 
     // MARK: - Google
 
+    /// Uses the completion-handler API (not async/await) to avoid Swift 6
+    /// Sendable errors on `GIDSignInResult`.
     @MainActor
     private func handleGoogleSignIn() {
         guard let presenter = Self.rootViewController() else {
@@ -135,26 +137,39 @@ struct SocialSignInButtons: View {
             return
         }
         loadingProvider = .google
-        Task { @MainActor in
-            do {
-                // Keep GIDSignInResult on MainActor; extract Sendable strings before further work.
-                let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
-                guard let idToken = result.user.idToken?.tokenString else {
-                    throw AuthService.AuthServiceError(message: "No se recibió el token de Google")
+        GIDSignIn.sharedInstance.signIn(withPresenting: presenter) { result, error in
+            Task { @MainActor in
+                defer { loadingProvider = nil }
+
+                if let error {
+                    if let gidError = error as? GIDSignInError, gidError.code == .canceled {
+                        return
+                    }
+                    onError(AuthService.message(for: error))
+                    return
                 }
+
+                guard
+                    let result,
+                    let idToken = result.user.idToken?.tokenString
+                else {
+                    onError("No se recibió el token de Google")
+                    return
+                }
+
                 let accessToken = result.user.accessToken.tokenString
                 let email = result.user.profile?.email
-                try await authService.signInWithGoogle(
-                    idToken: idToken,
-                    accessToken: accessToken,
-                    email: email
-                )
-            } catch let error as GIDSignInError where error.code == .canceled {
-                // Cancelación del usuario: no se informa.
-            } catch {
-                onError(AuthService.message(for: error))
+
+                do {
+                    try await authService.signInWithGoogle(
+                        idToken: idToken,
+                        accessToken: accessToken,
+                        email: email
+                    )
+                } catch {
+                    onError(AuthService.message(for: error))
+                }
             }
-            loadingProvider = nil
         }
     }
 
