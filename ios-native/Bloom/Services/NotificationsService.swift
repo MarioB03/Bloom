@@ -94,8 +94,14 @@ final class NotificationsService {
     /// si el sistema falla al consultarlo.
     func requestPermission() async -> Bool {
         let center = UNUserNotificationCenter.current()
-        let current = await center.notificationSettings()
-        switch current.authorizationStatus {
+        // Avoid non-Sendable `UNNotificationSettings` from the async API:
+        // extract only Sendable `authorizationStatus` via completion handler.
+        let status: UNAuthorizationStatus = await withCheckedContinuation { cont in
+            center.getNotificationSettings { settings in
+                cont.resume(returning: settings.authorizationStatus)
+            }
+        }
+        switch status {
         case .authorized, .provisional, .ephemeral:
             return true
         case .denied:
