@@ -245,29 +245,46 @@ struct DeleteAccountView: View {
         }
     }
 
+    /// Completion-handler Google Sign-In (avoids Swift 6 Sendable on GIDSignInResult).
+    @MainActor
     private func handleGoogleReAuth() {
         guard let presenter = Self.rootViewController() else {
             errorMessage = Strings.DeleteAccount.errorReAuth
             return
         }
         reAuthLoading = true
-        Task {
-            do {
-                let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
-                guard let idToken = result.user.idToken?.tokenString else {
-                    throw AuthService.AuthServiceError(message: "Sin idToken de Google")
+        GIDSignIn.sharedInstance.signIn(withPresenting: presenter) { result, error in
+            Task { @MainActor in
+                defer { reAuthLoading = false }
+
+                if let error {
+                    if let gidError = error as? GIDSignInError, gidError.code == .canceled {
+                        return
+                    }
+                    errorMessage = Strings.DeleteAccount.errorReAuth
+                    return
                 }
-                try await auth.reauthenticateWithGoogle(
-                    idToken: idToken,
-                    accessToken: result.user.accessToken.tokenString
-                )
-                reAuthenticated = true
-            } catch let error as GIDSignInError where error.code == .canceled {
-                // Cancelación del usuario: no se informa.
-            } catch {
-                errorMessage = Strings.DeleteAccount.errorReAuth
+
+                guard
+                    let result,
+                    let idToken = result.user.idToken?.tokenString
+                else {
+                    errorMessage = Strings.DeleteAccount.errorReAuth
+                    return
+                }
+
+                let accessToken = result.user.accessToken.tokenString
+
+                do {
+                    try await auth.reauthenticateWithGoogle(
+                        idToken: idToken,
+                        accessToken: accessToken
+                    )
+                    reAuthenticated = true
+                } catch {
+                    errorMessage = Strings.DeleteAccount.errorReAuth
+                }
             }
-            reAuthLoading = false
         }
     }
 
