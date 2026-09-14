@@ -1,7 +1,7 @@
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
-import GoogleSignIn
+@preconcurrency import GoogleSignIn
 
 /// Botones de inicio de sesión social (Apple y Google).
 /// Portado de `src/components/auth/SocialSignInButtons.tsx`.
@@ -128,22 +128,26 @@ struct SocialSignInButtons: View {
 
     // MARK: - Google
 
+    @MainActor
     private func handleGoogleSignIn() {
         guard let presenter = Self.rootViewController() else {
             onError("No se pudo abrir el inicio de sesión de Google")
             return
         }
         loadingProvider = .google
-        Task {
+        Task { @MainActor in
             do {
+                // Keep GIDSignInResult on MainActor; extract Sendable strings before further work.
                 let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
                 guard let idToken = result.user.idToken?.tokenString else {
                     throw AuthService.AuthServiceError(message: "No se recibió el token de Google")
                 }
+                let accessToken = result.user.accessToken.tokenString
+                let email = result.user.profile?.email
                 try await authService.signInWithGoogle(
                     idToken: idToken,
-                    accessToken: result.user.accessToken.tokenString,
-                    email: result.user.profile?.email
+                    accessToken: accessToken,
+                    email: email
                 )
             } catch let error as GIDSignInError where error.code == .canceled {
                 // Cancelación del usuario: no se informa.
