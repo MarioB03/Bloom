@@ -1,0 +1,3 @@
+app_identifier("com.akemi01.bloom")
+apple_id(ENV["APPLE_ID"]) # optional; API key preferred
+team_id("LLU2292H63")
