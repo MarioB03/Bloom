@@ -50,7 +50,7 @@ final class AuthService {
     // MARK: - Email / contraseña
 
     func signIn(email: String, password: String) async throws {
-        try await Auth.auth().signIn(withEmail: email, password: password)
+        try await signInWithEmail(email, password: password)
     }
 
     func signUp(
@@ -59,12 +59,15 @@ final class AuthService {
         displayName: String,
         genderForm: GenderForm
     ) async throws {
-        let result = try await Auth.auth().createUser(withEmail: email, password: password)
+        try await createUser(email: email, password: password)
+        guard let user = Auth.auth().currentUser else {
+            throw AuthServiceError(message: "No se pudo crear la cuenta")
+        }
 
-        try await updateDisplayName(displayName, for: result.user)
+        try await updateDisplayName(displayName, for: user)
 
         try createProfile(
-            for: result.user,
+            for: user,
             displayName: displayName,
             genderForm: genderForm,
             provider: .email
@@ -72,7 +75,15 @@ final class AuthService {
     }
 
     func sendPasswordReset(email: String) async throws {
-        try await Auth.auth().sendPasswordReset(withEmail: email)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Auth.auth().sendPasswordReset(withEmail: email) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
     }
 
     func signOut() throws {
@@ -100,12 +111,12 @@ final class AuthService {
             throw AuthServiceError(message: "No hay sesión activa")
         }
         let credential = EmailAuthProvider.credential(withEmail: email, password: password)
-        try await user.reauthenticate(with: credential)
+        try await reauthenticate(with: credential)
     }
 
     /// Reautentica con una credencial fresca de Apple.
     func reauthenticateWithApple(idToken: String, rawNonce: String) async throws {
-        guard let user = Auth.auth().currentUser else {
+        guard Auth.auth().currentUser != nil else {
             throw AuthServiceError(message: "No hay sesión activa")
         }
         let credential = OAuthProvider.appleCredential(
@@ -113,19 +124,19 @@ final class AuthService {
             rawNonce: rawNonce,
             fullName: nil
         )
-        try await user.reauthenticate(with: credential)
+        try await reauthenticate(with: credential)
     }
 
     /// Reautentica con una credencial fresca de Google.
     func reauthenticateWithGoogle(idToken: String, accessToken: String) async throws {
-        guard let user = Auth.auth().currentUser else {
+        guard Auth.auth().currentUser != nil else {
             throw AuthServiceError(message: "No hay sesión activa")
         }
         let credential = GoogleAuthProvider.credential(
             withIDToken: idToken,
             accessToken: accessToken
         )
-        try await user.reauthenticate(with: credential)
+        try await reauthenticate(with: credential)
     }
 
     /// Elimina la cuenta: primero los datos de Firestore y los locales
@@ -139,7 +150,7 @@ final class AuthService {
         try? await firestore.deleteAllUserData(userID: user.uid)
         clearLocalData()
         WidgetSyncService.clear()
-        try await user.delete()
+        try await deleteCurrentUser(user)
     }
 
     /// Borra las claves locales de la app (`bloom.*`) en `UserDefaults`.
@@ -163,12 +174,11 @@ final class AuthService {
             rawNonce: rawNonce,
             fullName: fullName
         )
-        let result = try await signInWithSocial(
+        let user = try await signInWithSocial(
             credential: credential,
             email: nil,
             providerID: "apple.com"
         )
-        let user = result.user
 
         // Apple solo entrega el nombre en el primer inicio de sesión.
         var displayName = user.displayName ?? ""
@@ -197,14 +207,14 @@ final class AuthService {
             withIDToken: idToken,
             accessToken: accessToken
         )
-        let result = try await signInWithSocial(
+        let user = try await signInWithSocial(
             credential: credential,
             email: email,
             providerID: "google.com"
         )
         try await createProfileIfNeeded(
-            for: result.user,
-            displayName: result.user.displayName ?? "Usuario",
+            for: user,
+            displayName: user.displayName ?? "Usuario",
             provider: .google
         )
     }
@@ -216,9 +226,9 @@ final class AuthService {
         credential: AuthCredential,
         email: String?,
         providerID: String
-    ) async throws -> AuthDataResult {
+    ) async throws -> User {
         if let email {
-            let methods = try await Auth.auth().fetchSignInMethods(forEmail: email)
+            let methods = try await fetchSignInMethods(forEmail: email)
             if !methods.isEmpty && !methods.contains(providerID) {
                 let methodName: String
                 if methods.contains("password") {
@@ -235,7 +245,91 @@ final class AuthService {
                 )
             }
         }
-        return try await Auth.auth().signIn(with: credential)
+        try await signInWithCredential(credential)
+        guard let user = Auth.auth().currentUser else {
+            throw AuthServiceError(message: "No se pudo iniciar sesión")
+        }
+        return user
+    }
+
+    // MARK: - Firebase Auth completion wrappers
+    // Async Firebase Auth APIs return non-Sendable `AuthDataResult` and trip
+    // Swift 6 concurrency checks on CI. Prefer completion handlers, then read
+    // `Auth.auth().currentUser` on the MainActor.
+
+    private func signInWithEmail(_ email: String, password: String) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Auth.auth().signIn(withEmail: email, password: password) { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func createUser(email: String, password: String) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Auth.auth().createUser(withEmail: email, password: password) { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func signInWithCredential(_ credential: AuthCredential) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Auth.auth().signIn(with: credential) { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func reauthenticate(with credential: AuthCredential) async throws {
+        guard let user = Auth.auth().currentUser else {
+            throw AuthServiceError(message: "No hay sesión activa")
+        }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            user.reauthenticate(with: credential) { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func deleteCurrentUser(_ user: User) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            user.delete { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func fetchSignInMethods(forEmail email: String) async throws -> [String] {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[String], Error>) in
+            Auth.auth().fetchSignInMethods(forEmail: email) { methods, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: methods ?? [])
+                }
+            }
+        }
     }
 
     // MARK: - Perfil en Firestore
@@ -284,8 +378,16 @@ final class AuthService {
         provider: AuthProvider
     ) async throws {
         let docRef = db.collection("users").document(user.uid)
-        let snapshot = try await docRef.getDocument()
-        guard !snapshot.exists else { return }
+        let exists = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
+            docRef.getDocument { snapshot, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: snapshot?.exists ?? false)
+                }
+            }
+        }
+        guard !exists else { return }
 
         let now = Date()
         let profile = UserProfile(
