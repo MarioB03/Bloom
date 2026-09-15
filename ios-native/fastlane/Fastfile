@@ -1,7 +1,7 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "Build Bloom and upload to TestFlight (automatic signing + ASC API key)"
+  desc "Build Bloom and upload to TestFlight (cert + sigh + ASC API key)"
   lane :beta do
     setup_ci(force: true) if ENV["CI"]
 
@@ -17,25 +17,49 @@ platform :ios do
       in_house: false
     )
 
-    # Automatic signing + ASC API auth — avoids get_certificates keychain errors on GHA
-    update_code_signing_settings(
-      use_automatic_signing: true,
-      path: "Bloom.xcodeproj",
-      team_id: "LLU2292H63",
-      targets: ["Bloom", "BloomWidget"]
+    # Install Apple Distribution cert + App Store profiles into the CI keychain.
+    # Automatic/cloud signing failed on GHA with "Cloud signing permission error".
+    cert(
+      api_key: api_key,
+      development: false
     )
 
-    # Pass auth flags only via xcargs. gym also feeds xcargs into export;
-    # setting the same flags again in export_xcargs makes xcodebuild error with
-    # "option '-authenticationKeyPath' may only be provided once".
-    auth_xcargs = [
-      "DEVELOPMENT_TEAM=LLU2292H63",
-      "-allowProvisioningUpdates",
-      "-allowProvisioningDeviceRegistration",
-      "-authenticationKeyPath #{key_path}",
-      "-authenticationKeyID #{ENV.fetch('APP_STORE_CONNECT_API_KEY_ID')}",
-      "-authenticationKeyIssuerID #{ENV.fetch('APP_STORE_CONNECT_ISSUER_ID')}"
-    ].join(" ")
+    sigh(
+      api_key: api_key,
+      app_identifier: "com.akemi01.bloom",
+      force: true
+    )
+    bloom_profile_name = lane_context[SharedValues::SIGH_NAME]
+    bloom_profile_path = lane_context[SharedValues::SIGH_PROFILE_PATH]
+
+    sigh(
+      api_key: api_key,
+      app_identifier: "com.akemi01.bloom.widget",
+      force: true
+    )
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
+    widget_profile_path = lane_context[SharedValues::SIGH_PROFILE_PATH]
+
+    UI.message("Bloom profile: #{bloom_profile_name} (#{bloom_profile_path})")
+    UI.message("Widget profile: #{widget_profile_name} (#{widget_profile_path})")
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Bloom.xcodeproj",
+      team_id: "LLU2292H63",
+      code_sign_identity: "iPhone Distribution",
+      profile_name: bloom_profile_name,
+      targets: ["Bloom"]
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Bloom.xcodeproj",
+      team_id: "LLU2292H63",
+      code_sign_identity: "iPhone Distribution",
+      profile_name: widget_profile_name,
+      targets: ["BloomWidget"]
+    )
 
     build_app(
       project: "Bloom.xcodeproj",
@@ -45,7 +69,15 @@ platform :ios do
       clean: true,
       output_directory: "./build",
       output_name: "Bloom.ipa",
-      xcargs: auth_xcargs
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        teamID: "LLU2292H63",
+        provisioningProfiles: {
+          "com.akemi01.bloom" => bloom_profile_name,
+          "com.akemi01.bloom.widget" => widget_profile_name
+        }
+      }
     )
 
     upload_to_testflight(
