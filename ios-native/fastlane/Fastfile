@@ -25,6 +25,9 @@ platform :ios do
       targets: ["Bloom", "BloomWidget"]
     )
 
+    # Pass auth flags only via xcargs. gym also feeds xcargs into export;
+    # setting the same flags again in export_xcargs makes xcodebuild error with
+    # "option '-authenticationKeyPath' may only be provided once".
     auth_xcargs = [
       "DEVELOPMENT_TEAM=LLU2292H63",
       "-allowProvisioningUpdates",
@@ -42,8 +45,7 @@ platform :ios do
       clean: true,
       output_directory: "./build",
       output_name: "Bloom.ipa",
-      xcargs: auth_xcargs,
-      export_xcargs: auth_xcargs
+      xcargs: auth_xcargs
     )
 
     upload_to_testflight(
