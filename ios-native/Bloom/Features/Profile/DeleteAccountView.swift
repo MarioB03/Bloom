@@ -245,7 +245,8 @@ struct DeleteAccountView: View {
         }
     }
 
-    /// Completion-handler Google Sign-In (avoids Swift 6 Sendable on GIDSignInResult).
+    /// Extracts Sendable Google token strings before the Xcode 26 MainActor hop
+    /// (avoids sending non-Sendable `GIDSignInResult` into `Task { @MainActor in }`).
     @MainActor
     private func handleGoogleReAuth() {
         guard let presenter = Self.rootViewController() else {
@@ -254,27 +255,31 @@ struct DeleteAccountView: View {
         }
         reAuthLoading = true
         GIDSignIn.sharedInstance.signIn(withPresenting: presenter) { result, error in
+            if let error {
+                let canceled = (error as? GIDSignInError)?.code == .canceled
+                Task { @MainActor in
+                    defer { reAuthLoading = false }
+                    if canceled { return }
+                    errorMessage = Strings.DeleteAccount.errorReAuth
+                }
+                return
+            }
+
+            guard
+                let result,
+                let idToken = result.user.idToken?.tokenString
+            else {
+                Task { @MainActor in
+                    defer { reAuthLoading = false }
+                    errorMessage = Strings.DeleteAccount.errorReAuth
+                }
+                return
+            }
+
+            let accessToken = result.user.accessToken.tokenString
+
             Task { @MainActor in
                 defer { reAuthLoading = false }
-
-                if let error {
-                    if let gidError = error as? GIDSignInError, gidError.code == .canceled {
-                        return
-                    }
-                    errorMessage = Strings.DeleteAccount.errorReAuth
-                    return
-                }
-
-                guard
-                    let result,
-                    let idToken = result.user.idToken?.tokenString
-                else {
-                    errorMessage = Strings.DeleteAccount.errorReAuth
-                    return
-                }
-
-                let accessToken = result.user.accessToken.tokenString
-
                 do {
                     try await auth.reauthenticateWithGoogle(
                         idToken: idToken,

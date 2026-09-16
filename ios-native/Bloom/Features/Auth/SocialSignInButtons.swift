@@ -128,8 +128,9 @@ struct SocialSignInButtons: View {
 
     // MARK: - Google
 
-    /// Uses the completion-handler API (not async/await) to avoid Swift 6
-    /// Sendable errors on `GIDSignInResult`.
+    /// Uses the completion-handler API and extracts Sendable token strings
+    /// before the Xcode 26 MainActor hop (avoids sending non-Sendable
+    /// `GIDSignInResult` into `Task { @MainActor in }`).
     @MainActor
     private func handleGoogleSignIn() {
         guard let presenter = Self.rootViewController() else {
@@ -138,28 +139,34 @@ struct SocialSignInButtons: View {
         }
         loadingProvider = .google
         GIDSignIn.sharedInstance.signIn(withPresenting: presenter) { result, error in
+            // Extract Sendable values before hopping to MainActor (Xcode 26).
+            if let error {
+                let canceled = (error as? GIDSignInError)?.code == .canceled
+                let message = AuthService.message(for: error)
+                Task { @MainActor in
+                    defer { loadingProvider = nil }
+                    if canceled { return }
+                    onError(message)
+                }
+                return
+            }
+
+            guard
+                let result,
+                let idToken = result.user.idToken?.tokenString
+            else {
+                Task { @MainActor in
+                    defer { loadingProvider = nil }
+                    onError("No se recibió el token de Google")
+                }
+                return
+            }
+
+            let accessToken = result.user.accessToken.tokenString
+            let email = result.user.profile?.email
+
             Task { @MainActor in
                 defer { loadingProvider = nil }
-
-                if let error {
-                    if let gidError = error as? GIDSignInError, gidError.code == .canceled {
-                        return
-                    }
-                    onError(AuthService.message(for: error))
-                    return
-                }
-
-                guard
-                    let result,
-                    let idToken = result.user.idToken?.tokenString
-                else {
-                    onError("No se recibió el token de Google")
-                    return
-                }
-
-                let accessToken = result.user.accessToken.tokenString
-                let email = result.user.profile?.email
-
                 do {
                     try await authService.signInWithGoogle(
                         idToken: idToken,
